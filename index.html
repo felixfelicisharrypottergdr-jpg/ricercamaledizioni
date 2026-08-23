@@ -37,9 +37,11 @@ text-align:center;
 border-bottom: 1px solid var(--line); 
 background:linear-gradient(180deg, #26170F, transparent)} 
 #ricerca-maledizioni header.top h1 {font-family:var(--serif); 
-font-size: 2.6em; 
+font-size: 3.15em; 
+line-height:1.08;
 letter-spacing: 0.03em; 
-margin: 0 0 8px; 
+margin: 0 0 10px; 
+text-align:center;
 color:var(--gold-soft); 
 text-shadow: 0 0 24px rgba(183, 125, 77, 0.28)} 
 #ricerca-maledizioni header.top p {color:var(--ink-muted); 
@@ -49,18 +51,19 @@ font-size: 0.98em}
 #ricerca-maledizioni header.top .seal {display:inline-flex; 
 align-items:center; 
 justify-content:center; 
-width: 68px; 
-height: 68px; 
+width: 78px; 
+height: 78px; 
 margin: 0 auto 18px; 
 border: 1px solid var(--gold-soft); 
 border-radius: 50%; 
 background:var(--bg2); 
 color:var(--gold-soft); 
-font-size: 30px; 
 line-height: 1; 
+overflow:visible;
 box-shadow: 0 0 0 4px rgba(232, 197, 162, .10), 0 0 18px rgba(183, 125, 77, .16)} 
+#ricerca-maledizioni header.top .seal svg {display:block; width:36px; height:36px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; overflow:visible} 
 #ricerca-maledizioni header.top .seal i {color:inherit; line-height: 1} 
-#ricerca-maledizioni header.top .eyebrow {color:var(--gold-soft); line-height: 1.15; text-shadow: 0 0 24px rgba(183, 125, 77, .28)} 
+#ricerca-maledizioni header.top .eyebrow {color:var(--gold-soft); line-height: 1.15; text-shadow: 0 0 24px rgba(183, 125, 77, .28); font-size:16px; letter-spacing:.18em; text-transform:uppercase} 
 #ricerca-maledizioni header.top .subtitle {margin-top: 8px} 
 #ricerca-maledizioni .rune {display:inline-block; 
 color:var(--gold); 
@@ -235,7 +238,7 @@ color:var(--ink-muted);
 font-size: 0.8em; 
 margin-top: 40px; 
 padding: 20px} 
-@media(max-width: 600px) {#ricerca-maledizioni header.top h1 {font-size: 2em} #ricerca-maledizioni header.top .eyebrow {font-size: 32px !important} 
+@media(max-width: 600px) {#ricerca-maledizioni header.top h1 {font-size: 2.35em} #ricerca-maledizioni header.top .eyebrow {font-size: 13px !important; letter-spacing:.14em !important} 
 #ricerca-maledizioni .stat-field {min-width: 100px}} 
 #ricerca-maledizioni {width: 100% !important; 
  max-width:none !important; 
@@ -599,7 +602,7 @@ padding: 20px}
  <div class="session-warning"><b>Le sessioni in corso sono personali.</b> Puoi visualizzare quelle degli altri giocatori, ma non modificarle o concluderle. Solo chi ha creato la sessione e il Narratore possono intervenire sui suoi dati.</div> 
  <div id="firebase-auth-status" class="session-status">Connessione a Firebase…</div> 
  <div class="session-new-row"> 
- <input id="new-session-pg" type="text" maxlength="80" placeholder="Nome del PG principale (es. Coral)"> 
+ <input id="new-session-pg" type="text" maxlength="80" placeholder="Nome del PG principale (es. Billy Weasley)"> 
  <button class="session-btn" id="btn-new-session" type="button" data-session-control="1">+ Nuova Ricerca</button> 
  <button class="session-btn ghost" id="btn-refresh-sessions" type="button" data-session-control="1">Aggiorna elenco</button> 
  </div> 
@@ -628,9 +631,10 @@ padding: 20px}
  </div> 
  
 <header class="top"> 
- <div class="seal" style="font-size:30px"><i class="fa-solid fa-scroll"></i></div> 
- <div class="eyebrow" style="font-size:40px; font-family:magic">• Ricerca Maledizioni •</div> 
-<p class="subtitle">Per PG Spezzaincantesimi e Acumen</p> 
+ <div class="seal" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 4h8a3 3 0 0 1 3 3v9a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V7a3 3 0 0 1 3-3Z"></path><path d="M8 4a3 3 0 1 0 0 6h2"></path><path d="M16 20a3 3 0 1 0 0-6h-1"></path><path d="M10 9h6"></path><path d="M10 12h5"></path><path d="M10 15h4"></path></svg></div> 
+ <div class="eyebrow">Felix Felicis GDR</div> 
+ <h1>Ricerca Maledizioni</h1>
+ <p class="subtitle">Per PG Spezzaincantesimi e Acumen</p> 
 </header> 
  
 <main> 
