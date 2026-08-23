@@ -1,3 +1,6 @@
+<!-- Revisione v9: bonus generali e di Fase distinti, Oggetti/Borsa multipli, usi automatici, validazione numerica e invalidazione coerente; Firebase v8 preservato -->
+<!-- Revisione v8: compatibilità diretta con passagePicker v6/v7 + correzione intestazione HTML; mantiene la migrazione legacy rafforzata della v7 -->
+<!-- Revisione v6: determinazione Passaggio consolidata (scelta/1d5, massimo 3 determinazioni, Ricerca collegata e requisiti) + sessioni Firebase allineate agli standard definitivi: readonly reversibile, salvataggio/uscita/eliminazione sicuri, doppia creazione bloccata, metadata live e migrazione legacy -->
 <!-- Revisione v5: quote numerici semplificati — i dadi che restituiscono direttamente il proprio valore non elencano inutilmente tutte le facce -->
 <!-- Revisione v2 standard completo: BBCode esteso, copia stabile, popup locale, navigazione Configurazione/Riepilogo/Fasi/Esito, ripresa intelligente e controlli di coerenza -->
 <!-- Revisione Firebase: sessioni multiple, autosalvataggio, ripresa, sola lettura e cancellazione definitiva protetta --> 
@@ -598,6 +601,47 @@ padding: 20px}
 #ricerca-maledizioni .maledizioni-global-top{width:100%;margin:0 0 28px;overflow:visible;text-align:center;padding:48px 20px 32px;}
 #ricerca-maledizioni .maledizioni-global-top .seal{display:inline-flex !important;overflow:visible;}
 #ricerca-maledizioni .maledizioni-global-top h1{font-family:'magic',var(--serif) !important;font-size:clamp(2.35rem,5vw,3.25rem) !important;line-height:1.08;text-align:center;margin:8px 0 10px;}
+
+/* ===== Determinazione Passaggio v7 ===== */
+#ricerca-maledizioni .rm-picker-box{margin-top:18px;padding:16px 18px;border:1px solid var(--line);border-radius:10px;background:#21150F}
+#ricerca-maledizioni .rm-picker-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
+#ricerca-maledizioni .rm-picker-row select{flex:1 1 260px;min-height:44px;background:#160E09;border:1px solid #765640;color:#F7EADC;border-radius:8px;padding:9px 12px;font-size:15px}
+#ricerca-maledizioni .rm-picker-check{display:flex;gap:10px;align-items:flex-start;margin-top:12px;color:#E4CEBA;line-height:1.55;font-size:14px}
+#ricerca-maledizioni .rm-picker-check input{margin-top:4px;flex:0 0 auto}
+#ricerca-maledizioni .rm-picker-status{margin-top:12px;padding:10px 12px;border:1px solid #694C38;border-radius:8px;background:#332217;color:#D6C0AA;font-size:14px;line-height:1.55}
+#ricerca-maledizioni .rm-picker-status.ok{border-color:#8A9B73;color:#C4D8AA}
+#ricerca-maledizioni .rm-picker-status.bad{border-color:#9E5F4B;color:#EFB09B}
+#ricerca-maledizioni .rm-picker-attempts{font-weight:700;color:#E8C5A2}
+#ricerca-maledizioni .rm-picker-separator{height:1px;background:rgba(232,197,162,.14);margin:18px 0}
+
+/* ===== Revisione v9: bonus multipli e validazione numerica ===== */
+#ricerca-maledizioni .number-only-hint{display:block;margin-top:5px;color:#BFA991 !important;font-family:var(--sans);font-size:11px;line-height:1.3;font-style:normal;text-transform:none;letter-spacing:0}
+#ricerca-maledizioni .bonus-manager{grid-column:1/-1;width:100%;margin-top:12px;padding:15px;border:1px solid rgba(183,125,77,.48);border-radius:9px;background:#2A1B13}
+#ricerca-maledizioni .bonus-manager.general-bonus-manager{flex:1 1 100%;margin:8px 0 4px;background:#2A1B13}
+#ricerca-maledizioni .bonus-manager-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+#ricerca-maledizioni .bonus-manager-title{color:#E8C5A2 !important;font-family:var(--serif);font-size:15px;font-weight:700}
+#ricerca-maledizioni .bonus-manager-help{max-width:760px;color:#CDB49C !important;font-size:12px;line-height:1.5}
+#ricerca-maledizioni .bonus-rows{display:flex;flex-direction:column;gap:10px}
+#ricerca-maledizioni .bonus-row{padding:12px;border:1px solid #694C38;border-radius:8px;background:#21150F}
+#ricerca-maledizioni .bonus-row-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px 12px;align-items:end}
+#ricerca-maledizioni .bonus-row .stat-field{min-width:0 !important}
+#ricerca-maledizioni .bonus-row .stat-field.wide{grid-column:span 2}
+#ricerca-maledizioni .bonus-row-actions{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:10px}
+#ricerca-maledizioni .bonus-active{display:flex;gap:8px;align-items:center;color:#E4CEBA !important;font-size:13px}
+#ricerca-maledizioni .bonus-active input{width:auto !important;min-height:auto !important}
+#ricerca-maledizioni .bonus-remove{min-height:36px !important;padding:6px 11px !important;border-color:#9E5F4B !important;color:#EFB09B !important}
+#ricerca-maledizioni .bonus-add{margin-top:10px}
+#ricerca-maledizioni .bonus-applied-summary{margin-top:10px;padding:10px 12px;border:1px solid rgba(196,216,170,.35);border-radius:8px;background:#28301F}
+#ricerca-maledizioni .bonus-applied-line{margin:4px 0;color:#DDE8CC !important;font-size:12px;line-height:1.5}
+#ricerca-maledizioni .bonus-invalid{margin-top:8px;color:#EFB09B !important;font-size:12px;line-height:1.45}
+#ricerca-maledizioni .legacy-extra-bridge{display:none !important}
+#ricerca-maledizioni .effective-param-note{margin:8px 0 0;color:#D6C0AA !important;font-size:12px;line-height:1.5}
+#ricerca-maledizioni .final-effects-box{order:1;margin:0 0 26px;padding:18px 20px;border:1px solid rgba(196,216,170,.42);border-radius:10px;background:#28301F}
+#ricerca-maledizioni .final-effects-box h4{margin:0 0 10px;color:#DDE8CC !important;font-family:var(--serif);font-size:1.08rem}
+#ricerca-maledizioni .final-effects-box p{margin:5px 0;color:#DDE8CC !important;font-size:13px;line-height:1.55}
+#ricerca-maledizioni .pg-row{flex-wrap:wrap}
+@media(max-width:760px){#ricerca-maledizioni .bonus-row-grid{grid-template-columns:1fr}#ricerca-maledizioni .bonus-row .stat-field.wide{grid-column:auto}}
+
 </style> 
  
 <header class="top maledizioni-global-top"> 
@@ -660,7 +704,33 @@ padding: 20px}
  
 <p class="step-eyebrow" style="margin-top:20px;">Dopo il tiro</p> 
 <p class="muted" style="margin-top:0;">Seleziona il numero e il nome del Passaggio corrispondente al risultato ottenuto: la scheda si aprirà automaticamente qui sotto.</p> 
-<div class="d5-choice-grid" id="d5choiceGrid"></div> 
+<div class="d5-choice-grid" id="d5choiceGrid"></div>
+
+<div class="rm-picker-box" id="rm-picker-box">
+  <div class="rm-picker-attempts" id="rm-passage-attempts">Determinazioni utilizzate: 0/3</div>
+  <label class="rm-picker-check"><input type="checkbox" id="rm-participants-confirm" data-picker-control="1"><span><b>Confermo che la role coinvolge almeno 2 PG</b> e che tutti i partecipanti sono Spezzaincantesimi, Acumen o entrambi.</span></label>
+  <div class="rm-picker-row">
+    <button class="small" id="rm-confirm-passage" type="button" data-picker-control="1">Conferma Passaggio</button>
+    <button class="small" id="rm-renounce-passage" type="button" data-picker-control="1" disabled>Rinuncia al Passaggio e scegline un altro</button>
+  </div>
+  <div class="rm-picker-status" id="rm-passage-status">Scegli uno dei cinque Passaggi qui sopra, liberamente oppure in base al risultato del tuo 1d5, quindi conferma.</div>
+
+  <div class="rm-picker-separator"></div>
+  <div class="step-eyebrow">Ricerca collegata</div>
+  <div class="note-line">Usa questa opzione soltanto se la nuova role prosegue narrativamente una Ricerca Maledizioni precedente.</div>
+  <label class="rm-picker-check"><input type="checkbox" id="rm-linked-confirm" data-picker-control="1"><span>Confermo che <b>almeno uno dei PG coinvolti ha ottenuto un successo nella Fase III</b> del Passaggio precedente.</span></label>
+  <div class="rm-picker-row">
+    <select id="rm-linked-passage" data-picker-control="1">
+      <option value="">— scegli il Passaggio successivo —</option>
+      <option value="p1">1. Analisi e Tracciatura</option>
+      <option value="p2">2. Scavo e Recupero</option>
+      <option value="p3">3. Esecuzione dello Spezzamento</option>
+      <option value="p4">4. Esecuzione dell’Esorcismo</option>
+      <option value="p5">5. Affronto dell’Ombra</option>
+    </select>
+    <button class="small" id="rm-open-linked" type="button" data-picker-control="1">Avvia Ricerca collegata</button>
+  </div>
+</div>
 </section> 
  
 <nav class="tabs" id="tabsNav"></nav> 
@@ -892,7 +962,9 @@ pgs: [ {nome:'PG 1'}, {nome:'PG 2'} ],
 vals: [ [{}], [{}] ], /* vals[pgIndex][faseIndex] = {campo:valore} */ 
 bonusC: [], 
 bonusP: [], 
-extra: [], 
+extra: [], /* ponte legacy v8 */
+generalBonuses: [], 
+phaseEffects: [], 
 rolls: [], 
 rolls2: [], 
 risultati: [], 
@@ -909,6 +981,8 @@ if(!state.vals[t]){ state.vals[t] = []; }
 if(!state.bonusC[t]){ state.bonusC[t] = []; } 
 if(!state.bonusP[t]){ state.bonusP[t] = []; } 
 if(!state.extra[t]){ state.extra[t] = []; } 
+if(!state.generalBonuses[t]){ state.generalBonuses[t] = []; }
+if(!state.phaseEffects[t]){ state.phaseEffects[t] = []; }
 if(!state.rolls[t]){ state.rolls[t] = []; } 
 if(!state.rolls2[t]){ state.rolls2[t] = []; } 
 if(!state.risultati[t]){ state.risultati[t] = []; } 
@@ -917,14 +991,243 @@ if(!state.vals[t][f]){ state.vals[t][f] = {}; }
 if(state.bonusC[t][f] === undefined){ state.bonusC[t][f] = 0; } 
 if(state.bonusP[t][f] === undefined){ state.bonusP[t][f] = 0; } 
 if(state.extra[t][f] === undefined){ state.extra[t][f] = 0; } 
+if(!state.phaseEffects[t][f]){ state.phaseEffects[t][f] = []; }
 if(state.rolls[t][f] === undefined){ state.rolls[t][f] = ''; } 
 if(state.rolls2[t][f] === undefined){ state.rolls2[t][f] = ''; } 
 } 
 } 
 } 
  
+
+function strictIntValue(v,allowNegative){
+ var s=String(v===undefined||v===null?'':v).trim();
+ var re=allowNegative?/^-?\d+$/:/^\d+$/;
+ if(!re.test(s)){return null;}
+ var n=Number(s);return Number.isSafeInteger(n)?n:null;
+}
+function emptyGeneralBonus(){return {source:'',target:'',value:'0',active:true};}
+function emptyPhaseEffect(){return {source:'',condition:'',kind:'threshold',target:'__threshold',value:'0',maxUses:'',usedUses:'',active:true};}
+function allParameterOptions(){
+ var seen={},out=[];
+ config.fasi.forEach(function(f){(f.campi||[]).forEach(function(c){if(!seen[c.key]){seen[c.key]=true;out.push({key:c.key,label:c.label});}});});
+ return out;
+}
+function phaseParameterOptions(fase){return (fase.campi||[]).map(function(c){return {key:c.key,label:c.label};});}
+function generalBonusValue(pgIdx,key){
+ var total=0,rows=state.generalBonuses[pgIdx]||[];
+ rows.forEach(function(r){var v=strictIntValue(r.value,true);if(r.active!==false&&r.target===key&&v!==null){total+=v;}});
+ return total;
+}
+function phaseEffectState(row){
+ var value=strictIntValue(row&&row.value,true);
+ var hasMax=!!(row&&String(row.maxUses||'').trim()!=='');
+ var max=hasMax?strictIntValue(row.maxUses,false):null;
+ var used=row&&String(row.usedUses||'').trim()!==''?strictIntValue(row.usedUses,false):0;
+ var valid=value!==null&&used!==null&&(!hasMax||(max!==null&&used<=max));
+ var usageReady=!hasMax||(max>0&&used>0&&used<=max);
+ return {value:value,max:max,used:used,valid:valid,usageReady:usageReady,remaining:hasMax&&max!==null?max-used:null,applied:!!(row&&row.active!==false&&valid&&usageReady&&value!==0)};
+}
+function phaseParamBonus(pgIdx,faseIdx,key){
+ var total=0,rows=(state.phaseEffects[pgIdx]&&state.phaseEffects[pgIdx][faseIdx])||[];
+ rows.forEach(function(r){var st=phaseEffectState(r);if(st.applied&&r.kind==='param'&&r.target===key){total+=st.value;}});
+ return total;
+}
+function phaseThresholdBonus(pgIdx,faseIdx){
+ var total=0,rows=(state.phaseEffects[pgIdx]&&state.phaseEffects[pgIdx][faseIdx])||[];
+ rows.forEach(function(r){var st=phaseEffectState(r);if(st.applied&&r.kind==='threshold'){total+=st.value;}});
+ return total;
+}
+function effectivePhaseValues(pgIdx,faseIdx,fase){
+ var base=state.vals[pgIdx]&&state.vals[pgIdx][faseIdx]?state.vals[pgIdx][faseIdx]:{},eff={},notes=[];
+ (fase.campi||[]).forEach(function(c){
+  var raw=base[c.key],gb=generalBonusValue(pgIdx,c.key),pb=phaseParamBonus(pgIdx,faseIdx,c.key),b=gb+pb;
+  eff[c.key]=(typeof raw==='number'&&isFinite(raw))?raw+b:raw;
+  if(b&&typeof raw==='number'&&isFinite(raw)){notes.push(c.label+': '+raw+(b>0?' + ':' - ')+Math.abs(b)+' = '+eff[c.key]);}
+ });
+ return {values:eff,notes:notes};
+}
+function clearRollsFromPhase(startIdx){
+ for(var p=0;p<state.pgs.length;p++){
+  for(var f=startIdx;f<config.fasi.length;f++){
+   if(state.rolls[p])state.rolls[p][f]='';
+   if(state.rolls2[p])state.rolls2[p][f]='';
+  }
+ }
+ state.special={};
+}
+function clearRollsAfterPhase(faseIdx){
+ if(faseIdx+1<config.fasi.length)clearRollsFromPhase(faseIdx+1);else state.special={};
+}
+function invalidatePhaseFormula(pgIdx,faseIdx){
+ if(state.rolls[pgIdx])state.rolls[pgIdx][faseIdx]='';
+ if(state.rolls2[pgIdx])state.rolls2[pgIdx][faseIdx]='';
+ if(faseIdx+1<config.fasi.length)clearRollsFromPhase(faseIdx+1);else state.special={};
+}
+function firstPhaseUsingKey(key){
+ if(!key)return 0;
+ for(var i=0;i<config.fasi.length;i++){
+  var found=(config.fasi[i].campi||[]).some(function(c){return c.key===key;});
+  if(found)return i;
+ }
+ return 0;
+}
+function invalidateGeneralTransition(pgIdx,beforeKey,afterKey){
+ if(beforeKey===afterKey)return;
+ var targets=[];
+ if(beforeKey)targets.push(String(beforeKey).split(':')[0]);
+ if(afterKey)targets.push(String(afterKey).split(':')[0]);
+ if(!targets.length)return;
+ var start=config.fasi.length-1;
+ targets.forEach(function(k){start=Math.min(start,firstPhaseUsingKey(k));});
+ invalidatePhaseFormula(pgIdx,start);
+}
+function sourceName(row,fallback){
+ var s=String(row&&row.source||'').trim();
+ return (s||fallback||'EFFETTO').toUpperCase();
+}
+function usageText(st){
+ if(st.max===null)return '';
+ return ' · '+(st.used||0)+'/'+st.max+' USI → '+Math.max(0,st.remaining===null?0:st.remaining)+' RIMASTI';
+}
+function effectLine(row,faseLabel,paramLabel){
+ var st=phaseEffectState(row),cond=String(row.condition||'').trim(),kind=row.kind==='param'?('PARAMETRO '+(paramLabel||row.target||'')):'POSSIBILITÀ';
+ return sourceName(row,'OGGETTO/BORSA')+(cond?' · '+cond.toUpperCase():'')+' → '+(st.value>=0?'+':'')+st.value+' '+kind+' · '+faseLabel.toUpperCase()+usageText(st);
+}
+function generalLine(row){
+ var v=strictIntValue(row.value,true),opts=allParameterOptions(),label=row.target||'Parametro';
+ opts.forEach(function(o){if(o.key===row.target)label=o.label;});
+ return sourceName(row,'BONUS GENERALE')+' → '+(v>=0?'+':'')+v+' '+label.toUpperCase()+' · GENERALE';
+}
+function generalContributionKey(row){
+ var v=strictIntValue(row&&row.value,true);
+ return row&&row.active!==false&&row.target&&v!==null&&v!==0?(row.target+':'+v):'';
+}
+function phaseContributionKey(row){
+ var st=phaseEffectState(row);
+ return st.applied?((row.kind||'threshold')+':'+(row.target||'')+':'+st.value):'';
+}
+function makeField(label,node,wide){
+ var w=el('div','stat-field'+(wide?' wide':''));
+ w.appendChild(el('label',null,label));
+ w.appendChild(node);
+ return w;
+}
+function buildGeneralBonusManager(pgIdx){
+ var box=el('div','bonus-manager general-bonus-manager');
+ var head=el('div','bonus-manager-head'),left=el('div');
+ left.appendChild(el('div','bonus-manager-title','Bonus generali del personaggio'));
+ left.appendChild(el('div','bonus-manager-help','Inseriscili qui una sola volta. Modificano il Parametro prima delle formule e delle divisioni; nelle Fasi inserisci soltanto effetti specifici.'));
+ head.appendChild(left);box.appendChild(head);
+ var rows=el('div','bonus-rows'),opts=allParameterOptions();
+ (state.generalBonuses[pgIdx]||[]).forEach(function(row,rowIdx){
+  var rbox=el('div','bonus-row'),grid=el('div','bonus-row-grid');
+  var source=document.createElement('input');source.type='text';source.value=row.source||'';source.placeholder='Es. Oggetto permanente';source.id='rmg-'+config.id+'-'+pgIdx+'-'+rowIdx+'-source';
+  var sf='rmg-source-'+pgIdx+'-'+rowIdx;source.setAttribute('data-focus-key',sf);source.addEventListener('input',function(){row.source=source.value;rerenderFocus(sf);});grid.appendChild(makeField('Fonte',source,true));
+  var target=document.createElement('select');target.id='rmg-'+config.id+'-'+pgIdx+'-'+rowIdx+'-target';
+  var blank=document.createElement('option');blank.value='';blank.textContent='— scegli Parametro —';target.appendChild(blank);
+  opts.forEach(function(o){var op=document.createElement('option');op.value=o.key;op.textContent=o.label;if(row.target===o.key)op.selected=true;target.appendChild(op);});
+  target.addEventListener('change',function(){var before=generalContributionKey(row);row.target=target.value;invalidateGeneralTransition(pgIdx,before,generalContributionKey(row));render();});grid.appendChild(makeField('Parametro modificato',target,false));
+  var val=document.createElement('input');val.type='number';val.value=row.value;val.step='1';val.setAttribute('data-allow-negative','1');val.id='rmg-'+config.id+'-'+pgIdx+'-'+rowIdx+'-value';
+  var vf='rmg-value-'+pgIdx+'-'+rowIdx;val.setAttribute('data-focus-key',vf);val.addEventListener('input',function(){var before=generalContributionKey(row);row.value=val.value;invalidateGeneralTransition(pgIdx,before,generalContributionKey(row));rerenderFocus(vf);});grid.appendChild(makeField('Bonus al Parametro',val,false));
+  rbox.appendChild(grid);
+  var acts=el('div','bonus-row-actions'),active=el('label','bonus-active'),ck=document.createElement('input');
+  ck.type='checkbox';ck.checked=row.active!==false;ck.id='rmg-'+config.id+'-'+pgIdx+'-'+rowIdx+'-active';ck.addEventListener('input',function(){var before=generalContributionKey(row);row.active=ck.checked;invalidateGeneralTransition(pgIdx,before,generalContributionKey(row));render();});
+  active.appendChild(ck);active.appendChild(document.createTextNode('Applica ai calcoli'));acts.appendChild(active);
+  var rm=el('button','small bonus-remove','Elimina');rm.type='button';rm.addEventListener(EVT,function(){var before=generalContributionKey(row);state.generalBonuses[pgIdx].splice(rowIdx,1);invalidateGeneralTransition(pgIdx,before,'');render();});acts.appendChild(rm);rbox.appendChild(acts);
+  var gv=strictIntValue(row.value,true);if(row.active!==false&&row.target&&gv!==null&&gv!==0){var s=el('div','bonus-applied-summary');s.appendChild(el('div','bonus-applied-line',generalLine(row)));rbox.appendChild(s);}
+  rows.appendChild(rbox);
+ });
+ box.appendChild(rows);
+ var add=el('button','small bonus-add','+ Aggiungi bonus generale');add.type='button';add.addEventListener(EVT,function(){state.generalBonuses[pgIdx].push(emptyGeneralBonus());render();});box.appendChild(add);
+ return box;
+}
+function buildPhaseEffectManager(pgIdx,faseIdx,fase){
+ var box=el('div','bonus-manager');
+ var head=el('div','bonus-manager-head'),left=el('div');
+ left.appendChild(el('div','bonus-manager-title','Oggetti / Borsa / altri effetti di questa Fase'));
+ left.appendChild(el('div','bonus-manager-help','Aggiungi più effetti se il regolamento lo consente. I bonus al Parametro entrano prima della formula; i bonus alle possibilità vengono aggiunti dopo. Conoscenza e Pozione restano nei selettori dedicati e non vanno duplicate qui.'));
+ head.appendChild(left);box.appendChild(head);
+ var rows=el('div','bonus-rows'),params=phaseParameterOptions(fase),arr=state.phaseEffects[pgIdx][faseIdx];
+ arr.forEach(function(row,rowIdx){
+  var rbox=el('div','bonus-row'),grid=el('div','bonus-row-grid');
+  var source=document.createElement('input');source.type='text';source.value=row.source||'';source.placeholder='Es. Borsa / oggetto';source.id='rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-'+rowIdx+'-source';
+  var sf='rmx-source-'+faseIdx+'-'+pgIdx+'-'+rowIdx;source.setAttribute('data-focus-key',sf);source.addEventListener('input',function(){row.source=source.value;rerenderFocus(sf);});grid.appendChild(makeField('Fonte / Oggetto',source,true));
+  var cond=document.createElement('input');cond.type='text';cond.value=row.condition||'';cond.placeholder='Es. solo su maledizioni';cond.id='rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-'+rowIdx+'-condition';
+  var cf='rmx-condition-'+faseIdx+'-'+pgIdx+'-'+rowIdx;cond.setAttribute('data-focus-key',cf);cond.addEventListener('input',function(){row.condition=cond.value;rerenderFocus(cf);});grid.appendChild(makeField('Condizione / efficacia',cond,true));
+  var kind=document.createElement('select');[['threshold','Bonus alle possibilità'],['param','Bonus al Parametro']].forEach(function(x){var op=document.createElement('option');op.value=x[0];op.textContent=x[1];if(row.kind===x[0])op.selected=true;kind.appendChild(op);});
+  kind.id='rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-'+rowIdx+'-kind';kind.addEventListener('change',function(){var before=phaseContributionKey(row);row.kind=kind.value;if(row.kind==='threshold')row.target='__threshold';else if(!params.some(function(p){return p.key===row.target;}))row.target=params.length?params[0].key:'';if(before!==phaseContributionKey(row))invalidatePhaseFormula(pgIdx,faseIdx);render();});grid.appendChild(makeField('Tipo di bonus',kind,false));
+  var target=document.createElement('select');target.id='rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-'+rowIdx+'-target';
+  if(row.kind==='threshold'){var sop=document.createElement('option');sop.value='__threshold';sop.textContent='Soglia / possibilità';target.appendChild(sop);row.target='__threshold';}
+  else{params.forEach(function(p){var op=document.createElement('option');op.value=p.key;op.textContent=p.label;if(row.target===p.key)op.selected=true;target.appendChild(op);});if(!row.target&&params.length)row.target=params[0].key;}
+  target.addEventListener('change',function(){var before=phaseContributionKey(row);row.target=target.value;if(before!==phaseContributionKey(row))invalidatePhaseFormula(pgIdx,faseIdx);render();});grid.appendChild(makeField('Su cosa agisce',target,false));
+  var val=document.createElement('input');val.type='number';val.step='1';val.value=row.value;val.setAttribute('data-allow-negative','1');val.id='rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-'+rowIdx+'-value';
+  var vf='rmx-value-'+faseIdx+'-'+pgIdx+'-'+rowIdx;val.setAttribute('data-focus-key',vf);val.addEventListener('input',function(){var before=phaseContributionKey(row);row.value=val.value;if(before!==phaseContributionKey(row))invalidatePhaseFormula(pgIdx,faseIdx);rerenderFocus(vf);});grid.appendChild(makeField('Valore del bonus',val,false));
+  var max=document.createElement('input');max.type='number';max.min='0';max.step='1';max.value=row.maxUses;max.placeholder='vuoto = non limitato';max.id='rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-'+rowIdx+'-max';
+  var mf='rmx-max-'+faseIdx+'-'+pgIdx+'-'+rowIdx;max.setAttribute('data-focus-key',mf);max.addEventListener('input',function(){var before=phaseContributionKey(row);row.maxUses=max.value;if(before!==phaseContributionKey(row))invalidatePhaseFormula(pgIdx,faseIdx);rerenderFocus(mf);});grid.appendChild(makeField('Usi disponibili',max,false));
+  var used=document.createElement('input');used.type='number';used.min='0';used.step='1';used.value=row.usedUses;used.placeholder='0';used.id='rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-'+rowIdx+'-used';
+  var uf='rmx-used-'+faseIdx+'-'+pgIdx+'-'+rowIdx;used.setAttribute('data-focus-key',uf);used.addEventListener('input',function(){var before=phaseContributionKey(row);row.usedUses=used.value;if(before!==phaseContributionKey(row))invalidatePhaseFormula(pgIdx,faseIdx);rerenderFocus(uf);});grid.appendChild(makeField('Usi consumati',used,false));
+  var phase=document.createElement('input');phase.type='text';phase.readOnly=true;phase.value=fase.nome;grid.appendChild(makeField('Fase',phase,true));
+  rbox.appendChild(grid);
+  var acts=el('div','bonus-row-actions'),active=el('label','bonus-active'),ck=document.createElement('input');
+  ck.type='checkbox';ck.checked=row.active!==false;ck.id='rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-'+rowIdx+'-active';ck.addEventListener('input',function(){var before=phaseContributionKey(row);row.active=ck.checked;if(before!==phaseContributionKey(row))invalidatePhaseFormula(pgIdx,faseIdx);render();});
+  active.appendChild(ck);active.appendChild(document.createTextNode('Applica ai calcoli (condizione soddisfatta)'));acts.appendChild(active);
+  var rm=el('button','small bonus-remove','Elimina');rm.type='button';rm.addEventListener(EVT,function(){var had=phaseEffectState(row).applied;arr.splice(rowIdx,1);if(had)invalidatePhaseFormula(pgIdx,faseIdx);render();});acts.appendChild(rm);rbox.appendChild(acts);
+  var st=phaseEffectState(row);
+  if(!st.valid||(st.max!==null&&!st.usageReady)){rbox.appendChild(el('div','bonus-invalid',!st.valid?'Controlla valore e usi: sono ammessi solo interi e gli usi consumati non possono superare quelli disponibili.':'Per applicare un effetto con usi limitati, indica almeno 1 uso consumato.'));}
+  if(st.applied){var lab='';params.forEach(function(p){if(p.key===row.target)lab=p.label;});var s=el('div','bonus-applied-summary');s.appendChild(el('div','bonus-applied-line',effectLine(row,fase.nome,lab)));rbox.appendChild(s);}
+  rows.appendChild(rbox);
+ });
+ box.appendChild(rows);
+ var add=el('button','small bonus-add','+ Aggiungi bonus');add.type='button';add.addEventListener(EVT,function(){arr.push(emptyPhaseEffect());render();});box.appendChild(add);
+ var summary=el('div','bonus-applied-summary'),has=false;
+ var bc=fase.bonusConoscenza?fase.bonusConoscenza[state.bonusC[pgIdx][faseIdx]]:0,bp=fase.bonusPozione?fase.bonusPozione[state.bonusP[pgIdx][faseIdx]]:0,legacy=state.extra[pgIdx][faseIdx]||0;
+ if(bc){summary.appendChild(el('div','bonus-applied-line','CONOSCENZA → +'+bc+' POSSIBILITÀ · '+fase.nome.toUpperCase()));has=true;}
+ if(bp){summary.appendChild(el('div','bonus-applied-line','POZIONE → +'+bp+' POSSIBILITÀ · '+fase.nome.toUpperCase()));has=true;}
+ if(legacy){summary.appendChild(el('div','bonus-applied-line','OGGETTO/BORSA (SESSIONE PRECEDENTE) → '+(legacy>=0?'+':'')+legacy+' POSSIBILITÀ · '+fase.nome.toUpperCase()));has=true;}
+ if(has)box.appendChild(summary);
+ return box;
+}
+function buildFinalEffectsBox(){
+ var box=el('div','final-effects-box');box.setAttribute('data-flow-part','outcome');box.appendChild(el('h4',null,'Oggetti, Pozioni e Conoscenze usati'));
+ var count=0;
+ state.pgs.forEach(function(pg,p){
+  (state.generalBonuses[p]||[]).forEach(function(r){var v=strictIntValue(r.value,true);if(r.active!==false&&r.target&&v!==null&&v!==0){box.appendChild(el('p',null,pg.nome+' · '+generalLine(r)));count++;}});
+  config.fasi.forEach(function(fase,fi){
+   var bc=fase.bonusConoscenza?fase.bonusConoscenza[state.bonusC[p][fi]]:0,bp=fase.bonusPozione?fase.bonusPozione[state.bonusP[p][fi]]:0,legacy=state.extra[p][fi]||0;
+   if(bc){box.appendChild(el('p',null,pg.nome+' · CONOSCENZA → +'+bc+' POSSIBILITÀ · '+fase.nome.toUpperCase()));count++;}
+   if(bp){box.appendChild(el('p',null,pg.nome+' · POZIONE → +'+bp+' POSSIBILITÀ · '+fase.nome.toUpperCase()));count++;}
+   if(legacy){box.appendChild(el('p',null,pg.nome+' · OGGETTO/BORSA (SESSIONE PRECEDENTE) → '+(legacy>=0?'+':'')+legacy+' POSSIBILITÀ · '+fase.nome.toUpperCase()));count++;}
+   ((state.phaseEffects[p]&&state.phaseEffects[p][fi])||[]).forEach(function(r){var st=phaseEffectState(r);if(st.applied){var lab='';phaseParameterOptions(fase).forEach(function(x){if(x.key===r.target)lab=x.label;});box.appendChild(el('p',null,pg.nome+' · '+effectLine(r,fase.nome,lab)));count++;}});
+  });
+ });
+ if(!count){box.style.display='none';}
+ return box;
+}
+function decorateNumericFields(scope){
+ var host=scope||panel;if(!host)return;
+ Array.prototype.forEach.call(host.querySelectorAll('input[type="number"]'),function(inp){
+  inp.setAttribute('inputmode','numeric');
+  if(inp.getAttribute('step')==='any'||!inp.getAttribute('step'))inp.setAttribute('step','1');
+  if(inp.getAttribute('data-number-decorated')==='1')return;
+  inp.setAttribute('data-number-decorated','1');
+  var parent=inp.parentElement;if(!parent)return;
+  var target=parent,children=target.children||[],hasHint=false;
+  for(var j=0;j<children.length;j++){if(children[j].classList&&children[j].classList.contains('number-only-hint')){hasHint=true;break;}}
+  if(hasHint)return;
+  target.appendChild(el('span','number-only-hint','Inserire solo numeri'));
+ });
+}
+
 var panel = el('section','passaggio'); 
-panel.id = 'panel-' + config.id; 
+panel.id = 'panel-' + config.id;
+panel.addEventListener('keydown',function(e){
+ var t=e.target;if(!t||t.tagName!=='INPUT'||t.type!=='number')return;
+ if(e.ctrlKey||e.metaKey||e.altKey)return;
+ if(['Backspace','Delete','Tab','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','Enter'].indexOf(e.key)!==-1)return;
+ if(/^\d$/.test(e.key))return;
+ if(e.key==='-'&&t.getAttribute('data-allow-negative')==='1'&&String(t.value||'').indexOf('-')===-1&&(typeof t.selectionStart!=='number'||t.selectionStart===0))return;
+ if(e.key.length===1)e.preventDefault();
+},true); 
  
 function rerenderFocus(focusKey){ 
 render(); 
@@ -972,20 +1275,25 @@ state.vals.splice(idx,1);
 state.bonusC.splice(idx,1); 
 state.bonusP.splice(idx,1); 
 state.extra.splice(idx,1); 
+state.generalBonuses.splice(idx,1);
+state.phaseEffects.splice(idx,1);
 state.rolls.splice(idx,1); 
 state.rolls2.splice(idx,1); 
 state.risultati.splice(idx,1); 
-state.special = {}; 
+state.special = {};
+if(config.fasi.length>1)clearRollsFromPhase(1); 
 render(); 
 }); 
 row.appendChild(rm); 
 } 
+row.appendChild(buildGeneralBonusManager(idx));
 mgr.appendChild(row); 
 }); 
  
 var addBtn = el('button','small add-pg','+ Aggiungi PG'); 
 addBtn.addEventListener(EVT, function(){ 
-state.pgs.push({nome:'PG ' + (state.pgs.length+1)}); 
+state.pgs.push({nome:'PG ' + (state.pgs.length+1)});
+if(config.fasi.length>1)clearRollsFromPhase(1); 
 render(); 
 }); 
 mgr.appendChild(addBtn);
@@ -1030,8 +1338,10 @@ if(!outcomeBlock){
 }
 outcomeBlock.setAttribute('data-flow-part','outcome');
 panel.appendChild(outcomeBlock);
+panel.appendChild(buildFinalEffectsBox());
 
 buildFlowUI();
+decorateNumericFields(panel);
 applyFlowView(false);
 }
 
@@ -1058,6 +1368,7 @@ function phaseHasData(idx){
   if(state.bonusC[i]&&state.bonusC[i][idx]){ return true; }
   if(state.bonusP[i]&&state.bonusP[i][idx]){ return true; }
   if(state.extra[i]&&state.extra[i][idx]){ return true; }
+  if(state.phaseEffects[i]&&state.phaseEffects[i][idx]&&state.phaseEffects[i][idx].length){ return true; }
  }
  return false;
 }
@@ -1077,12 +1388,12 @@ function baselinePhaseEstimate(idx){
   var ready=true;
   fase.campi.forEach(function(c){var x=v[c.key];if(typeof x!=='number'||!isFinite(x)||x<0){ready=false;}});
   if(!ready){ return null; }
-  var terms=fase.formula(v), total=0;
+  var ev=effectivePhaseValues(i,idx,fase),terms=fase.formula(ev.values), total=0;
   terms.forEach(function(tt){total+=(tt.v||0);});
   var bc=fase.bonusConoscenza?fase.bonusConoscenza[state.bonusC[i][idx]]:0;
   var bp=fase.bonusPozione?fase.bonusPozione[state.bonusP[i][idx]]:0;
   var be=state.extra[i][idx]||0;
-  total+=bc+bp+(isFinite(be)?be:0);
+  total+=bc+bp+(isFinite(be)?be:0)+phaseThresholdBonus(i,idx);
   if(total<0)total=0;if(total>fase.dado)total=fase.dado;
   probs.push(total/fase.dado);
  }
@@ -1110,7 +1421,7 @@ function summaryHtml(){
   var pars=f.campi.map(function(c){return c.label;}).join(', ');
   h+='<li><b>Fase '+(i+1)+':</b> '+phasePlainName(f)+' — '+pars+' — 1d'+f.dado+'</li>';
  });
- h+='</ul><p>I bonus facoltativi di Conoscenze, Pozioni e Borsa vengono considerati soltanto quando sono realmente selezionati; i bonus/malus derivanti dagli esiti delle Fasi precedenti non vengono anticipati.</p></div>';
+ h+='</ul><p>I bonus generali ai Parametri sono già inclusi nelle stime quando configurati. Conoscenze, Pozioni e Oggetti/Borsa di Fase vengono considerati soltanto quando realmente applicati; i bonus/malus derivanti dagli esiti delle Fasi precedenti non vengono anticipati.</p></div>';
  var any=sd.phaseEst.some(function(x){return !!x;});
  if(any){
   h+='<div class="flow-summary-section"><b>Impatto previsto sulle Fasi</b><ul>';
@@ -1190,7 +1501,7 @@ function firstIncompleteIn(part){
   var n=fields[i];if(n.disabled||n.offsetParent===null)continue;
   var txt=String(n.value||'').trim();
   if(txt===''||(part==='config'&&/^PG\s*\d+$/i.test(txt)))return n;
-  if(n.type==='number'){var v=Number(n.value),min=n.min!==''?Number(n.min):null,max=n.max!==''?Number(n.max):null;if(!isFinite(v)||(min!==null&&isFinite(min)&&v<min)||(max!==null&&isFinite(max)&&v>max))return n;}
+  if(n.type==='number'){var v=Number(n.value),min=n.min!==''?Number(n.min):null,max=n.max!==''?Number(n.max):null;if(!isFinite(v)||Math.floor(v)!==v||(min!==null&&isFinite(min)&&v<min)||(max!==null&&isFinite(max)&&v>max))return n;}
  }
  return null;
 }
@@ -1278,11 +1589,13 @@ var storedVal = state.vals[pgIdx][faseIdx][campo.key];
 inp.value = (storedVal !== undefined && storedVal !== null) ? storedVal : ''; 
 inp.placeholder = 'Inserisci valore'; 
 inp.min = '0'; 
-inp.step = 'any'; 
+inp.step = '1'; 
 var statFocusKey = 'stat-' + faseIdx + '-' + pgIdx + '-' + campo.key; 
 inp.setAttribute('data-focus-key', statFocusKey); 
 inp.addEventListener('input', function(){ 
-state.vals[pgIdx][faseIdx][campo.key] = inp.value === '' ? null : parseFloat(inp.value); 
+var rawStat=String(inp.value||'').trim();
+state.vals[pgIdx][faseIdx][campo.key] = rawStat===''?null:(/^\d+$/.test(rawStat)?Number(rawStat):null);
+invalidatePhaseFormula(pgIdx,faseIdx);
 rerenderFocus(statFocusKey); 
 }); 
 wrap.appendChild(inp); 
@@ -1304,6 +1617,7 @@ selC.appendChild(o);
 }); 
 selC.addEventListener('change', function(){ 
 state.bonusC[pgIdx][faseIdx] = parseInt(selC.value,10); 
+invalidatePhaseFormula(pgIdx,faseIdx);
 render(); 
 }); 
 wrapC.appendChild(selC); 
@@ -1323,28 +1637,32 @@ selP.appendChild(o);
 }); 
 selP.addEventListener('change', function(){ 
 state.bonusP[pgIdx][faseIdx] = parseInt(selP.value,10); 
+invalidatePhaseFormula(pgIdx,faseIdx);
 render(); 
 }); 
 wrapP.appendChild(selP); 
 grid.appendChild(wrapP); 
 } 
  
-var wrapE = el('div','stat-field'); 
+var wrapE = el('div','stat-field legacy-extra-bridge'); 
 wrapE.appendChild(el('label', null, 'Altro bonus (Borsa / Prezzario)')); 
 var inpE = document.createElement('input'); 
 inpE.type = 'number';
 inpE.setAttribute('data-optional-flow','1');
 inpE.value = state.extra[pgIdx][faseIdx] || ''; 
 inpE.placeholder = '0 (facoltativo)'; 
-inpE.step = 'any'; 
+inpE.step = '1'; 
 var extraFocusKey = 'extra-' + faseIdx + '-' + pgIdx; 
 inpE.setAttribute('data-focus-key', extraFocusKey); 
 inpE.addEventListener('input', function(){ 
-state.extra[pgIdx][faseIdx] = inpE.value === '' ? 0 : parseFloat(inpE.value); 
+var legacyRaw=String(inpE.value||'').trim();
+state.extra[pgIdx][faseIdx] = legacyRaw===''?0:(/^\d+$/.test(legacyRaw)?Number(legacyRaw):0);
+invalidatePhaseFormula(pgIdx,faseIdx);
 rerenderFocus(extraFocusKey); 
 }); 
 wrapE.appendChild(inpE); 
-grid.appendChild(wrapE); 
+grid.appendChild(wrapE);
+grid.appendChild(buildPhaseEffectManager(pgIdx,faseIdx,fase)); 
  
 card.appendChild(grid); 
  
@@ -1356,18 +1674,20 @@ var vv = state.vals[pgIdx][faseIdx][campo.key];
 if(typeof vv !== 'number' || !isFinite(vv) || vv < 0){ datiValidi = false; datiMancanti.push(campo.label); } 
 }); 
  
-var termini = []; 
-if(datiValidi){ termini = fase.formula(state.vals[pgIdx][faseIdx]); } 
+var termini = [],effPack=effectivePhaseValues(pgIdx,faseIdx,fase); 
+if(datiValidi){ termini = fase.formula(effPack.values); } 
 var bC = fase.bonusConoscenza ? fase.bonusConoscenza[state.bonusC[pgIdx][faseIdx]] : 0; 
 var bP = fase.bonusPozione ? fase.bonusPozione[state.bonusP[pgIdx][faseIdx]] : 0; 
-var bE = state.extra[pgIdx][faseIdx] || 0; 
+var bE = state.extra[pgIdx][faseIdx] || 0;
+var bDynamic = phaseThresholdBonus(pgIdx,faseIdx); 
 if(typeof bE !== 'number' || !isFinite(bE)){ bE = 0; } 
 var nomiC = ['','Conoscenza Scolastica','Conoscenza Extra','Conoscenza Avanzata']; 
 var nomiP = ['','Pozione Standard','Pozione Oltre Ogni Previsione','Pozione Eccezionale']; 
 if(datiValidi){ 
 if(bC){ termini.push({t:nomiC[state.bonusC[pgIdx][faseIdx]], v:bC}); } 
 if(bP){ termini.push({t:nomiP[state.bonusP[pgIdx][faseIdx]], v:bP}); } 
-if(bE){ termini.push({t:'Bonus extra', v:bE}); } 
+if(bE){ termini.push({t:'Bonus Oggetto/Borsa (sessione precedente)', v:bE}); }
+if(bDynamic){ termini.push({t:'Bonus Oggetti/Borsa di Fase', v:bDynamic}); } 
 if(carryInfo.bonus){ termini.push({t:carryInfo.label, v:carryInfo.bonus}); } 
 } 
  
@@ -1423,7 +1743,8 @@ rollInp.disabled = faseBloccata;
 var rollFocusKey = 'roll-' + faseIdx + '-' + pgIdx + '-1'; 
 rollInp.setAttribute('data-focus-key', rollFocusKey); 
 rollInp.addEventListener('input', function(){ 
-state.rolls[pgIdx][faseIdx] = rollInp.value; 
+state.rolls[pgIdx][faseIdx] = rollInp.value;
+clearRollsAfterPhase(faseIdx); 
 rerenderFocus(rollFocusKey); 
 }); 
 rollRow.appendChild(rollInp); 
@@ -1441,7 +1762,8 @@ roll2Inp.disabled = faseBloccata;
 var roll2FocusKey = 'roll-' + faseIdx + '-' + pgIdx + '-2'; 
 roll2Inp.setAttribute('data-focus-key', roll2FocusKey); 
 roll2Inp.addEventListener('input', function(){ 
-state.rolls2[pgIdx][faseIdx] = roll2Inp.value; 
+state.rolls2[pgIdx][faseIdx] = roll2Inp.value;
+clearRollsAfterPhase(faseIdx); 
 rerenderFocus(roll2FocusKey); 
 }); 
 rollRow.appendChild(roll2Inp); 
@@ -2020,8 +2342,75 @@ var TUTTI_I_PASSAGGI = [P1, P2, P3, P4, P5];
  
 /* ---------- avvio ---------- */ 
  
-var REGISTRO_PASSAGGI = {}; 
- 
+var REGISTRO_PASSAGGI = {};
+var PASSAGE_PICKER={attempts:0,locked:false,linked:false,active:null,pending:null,eligible:false,linkedConfirmed:false,linkedChoice:'',legacy:false};
+
+function passageConfigById(id){for(var i=0;i<TUTTI_I_PASSAGGI.length;i++)if(TUTTI_I_PASSAGGI[i].id===id)return TUTTI_I_PASSAGGI[i];return null;}
+function pickerNotify(){try{if(typeof window.RicercaMaledizioniSessionSave==='function')window.RicercaMaledizioniSessionSave();}catch(e){}}
+function pickerStatus(text,kind){var n=document.getElementById('rm-passage-status');if(!n)return;n.textContent=text||'';n.className='rm-picker-status'+(kind?' '+kind:'');}
+function pickerPassageName(id){var c=passageConfigById(id);return c?c.titolo:'Passaggio';}
+function pickerSnapshot(){return {attempts:PASSAGE_PICKER.attempts,locked:PASSAGE_PICKER.locked,linked:PASSAGE_PICKER.linked,active:PASSAGE_PICKER.active,pending:PASSAGE_PICKER.pending,eligible:PASSAGE_PICKER.eligible,linkedConfirmed:PASSAGE_PICKER.linkedConfirmed,linkedChoice:PASSAGE_PICKER.linkedChoice,legacy:PASSAGE_PICKER.legacy};}
+function applyPassagePickerUi(){
+ var attempts=document.getElementById('rm-passage-attempts');if(attempts)attempts.textContent='Determinazioni utilizzate: '+PASSAGE_PICKER.attempts+'/3'+(PASSAGE_PICKER.linked?' · Ricerca collegata':'');
+ var elig=document.getElementById('rm-participants-confirm');if(elig){elig.checked=!!PASSAGE_PICKER.eligible;elig.disabled=!!PASSAGE_PICKER.locked;}
+ var lc=document.getElementById('rm-linked-confirm');if(lc){lc.checked=!!PASSAGE_PICKER.linkedConfirmed;lc.disabled=!!PASSAGE_PICKER.locked||PASSAGE_PICKER.attempts>0;}
+ var ls=document.getElementById('rm-linked-passage');if(ls){ls.value=PASSAGE_PICKER.linkedChoice||'';ls.disabled=!!PASSAGE_PICKER.locked||PASSAGE_PICKER.attempts>0;}
+ var lo=document.getElementById('rm-open-linked');if(lo)lo.disabled=!!PASSAGE_PICKER.locked||PASSAGE_PICKER.attempts>0;
+ var confirm=document.getElementById('rm-confirm-passage');if(confirm)confirm.disabled=!!PASSAGE_PICKER.locked||!PASSAGE_PICKER.pending||PASSAGE_PICKER.attempts>=3;
+ var ren=document.getElementById('rm-renounce-passage');if(ren)ren.disabled=!PASSAGE_PICKER.locked||(PASSAGE_PICKER.attempts>=3&&!PASSAGE_PICKER.linked);
+ var choices=document.querySelectorAll('#d5choiceGrid button');Array.prototype.forEach.call(choices,function(b,idx){var id='p'+(idx+1);b.disabled=!!PASSAGE_PICKER.locked||PASSAGE_PICKER.attempts>=3;b.classList.toggle('active',PASSAGE_PICKER.pending===id&&!PASSAGE_PICKER.locked);});
+ Object.keys(REGISTRO_PASSAGGI).forEach(function(id){var rec=REGISTRO_PASSAGGI[id];if(!rec||!rec.tabBtn)return;rec.tabBtn.disabled=!(PASSAGE_PICKER.locked&&PASSAGE_PICKER.active===id);});
+ if(PASSAGE_PICKER.locked&&PASSAGE_PICKER.active)attivaPassaggio(PASSAGE_PICKER.active);
+}
+function choosePassageCandidate(id){
+ if(PASSAGE_PICKER.locked||PASSAGE_PICKER.attempts>=3||!passageConfigById(id))return;
+ PASSAGE_PICKER.pending=id;PASSAGE_PICKER.linkedChoice='';
+ pickerStatus('Passaggio selezionato: '+pickerPassageName(id)+'. Conferma per renderlo definitivo per questo tentativo.','');
+ applyPassagePickerUi();pickerNotify();
+}
+function rebuildPassage(id){
+ var cfg=passageConfigById(id),old=REGISTRO_PASSAGGI[id];if(!cfg||!old)return;
+ var built=creaPassaggio(cfg),tabs=document.getElementById('tabsNav'),panels=document.getElementById('panelsRoot');
+ if(tabs&&old.tabBtn&&old.tabBtn.parentNode===tabs)tabs.replaceChild(built.tabBtn,old.tabBtn);
+ if(panels&&old.panel&&old.panel.parentNode===panels)panels.replaceChild(built.panel,old.panel);
+ REGISTRO_PASSAGGI[id]=built;
+}
+function rebuildAllPassages(){Object.keys(REGISTRO_PASSAGGI).forEach(function(id){rebuildPassage(id);});}
+function confirmPassageSelection(){
+ if(PASSAGE_PICKER.locked||!PASSAGE_PICKER.pending||PASSAGE_PICKER.attempts>=3)return;
+ if(!PASSAGE_PICKER.eligible){pickerStatus('Conferma prima che la role coinvolga almeno 2 PG e che tutti siano Spezzaincantesimi e/o Acumen.','bad');return;}
+ PASSAGE_PICKER.attempts++;PASSAGE_PICKER.active=PASSAGE_PICKER.pending;PASSAGE_PICKER.pending=null;PASSAGE_PICKER.locked=true;PASSAGE_PICKER.linked=false;PASSAGE_PICKER.linkedConfirmed=false;PASSAGE_PICKER.linkedChoice='';
+ pickerStatus('Passaggio confermato: '+pickerPassageName(PASSAGE_PICKER.active)+(PASSAGE_PICKER.attempts>=3?' · terza determinazione: non è possibile rinunciare nuovamente.':''),'ok');
+ applyPassagePickerUi();pickerNotify();
+}
+function renouncePassage(){
+ if(!PASSAGE_PICKER.locked||!PASSAGE_PICKER.active)return;
+ if(PASSAGE_PICKER.attempts>=3&&!PASSAGE_PICKER.linked){pickerStatus('Hai già utilizzato 3 determinazioni: questo Passaggio è definitivo per la role.','bad');return;}
+ var old=PASSAGE_PICKER.active;try{if(typeof window.RicercaMaledizioniClearPassageActions==='function')window.RicercaMaledizioniClearPassageActions(old);}catch(e){}
+ rebuildPassage(old);PASSAGE_PICKER.active=null;PASSAGE_PICKER.pending=null;PASSAGE_PICKER.locked=false;PASSAGE_PICKER.linked=false;PASSAGE_PICKER.linkedConfirmed=false;PASSAGE_PICKER.linkedChoice='';
+ pickerStatus('Rinuncia registrata. Scegli un nuovo Passaggio e confermalo; le informazioni del Passaggio rinunciato sono state azzerate.','');
+ applyPassagePickerUi();pickerNotify();
+}
+function openLinkedPassage(){
+ if(PASSAGE_PICKER.locked||PASSAGE_PICKER.attempts>0)return;
+ if(!PASSAGE_PICKER.eligible){pickerStatus('Conferma prima i requisiti dei partecipanti.','bad');return;}
+ if(!PASSAGE_PICKER.linkedConfirmed){pickerStatus('Per una Ricerca collegata devi confermare il successo di almeno un PG nella Fase III precedente.','bad');return;}
+ if(!passageConfigById(PASSAGE_PICKER.linkedChoice)){pickerStatus('Scegli il Passaggio successivo della Ricerca collegata.','bad');return;}
+ PASSAGE_PICKER.active=PASSAGE_PICKER.linkedChoice;PASSAGE_PICKER.pending=null;PASSAGE_PICKER.locked=true;PASSAGE_PICKER.linked=true;
+ pickerStatus('Ricerca collegata avviata: '+pickerPassageName(PASSAGE_PICKER.active)+'.','ok');
+ applyPassagePickerUi();pickerNotify();
+}
+function resetPassagePicker(all){
+ PASSAGE_PICKER={attempts:0,locked:false,linked:false,active:null,pending:null,eligible:false,linkedConfirmed:false,linkedChoice:'',legacy:false};
+ if(all)rebuildAllPassages();
+ pickerStatus('Scegli uno dei cinque Passaggi qui sopra, liberamente oppure in base al risultato del tuo 1d5, quindi conferma.','');applyPassagePickerUi();
+}
+function restorePassagePicker(state){
+ state=state||{};PASSAGE_PICKER={attempts:Math.max(0,Math.min(3,parseInt(state.attempts,10)||0)),locked:!!state.locked,linked:!!state.linked,active:passageConfigById(state.active)?state.active:null,pending:passageConfigById(state.pending)?state.pending:null,eligible:!!state.eligible,linkedConfirmed:!!state.linkedConfirmed,linkedChoice:passageConfigById(state.linkedChoice)?state.linkedChoice:'',legacy:!!state.legacy};
+ if(PASSAGE_PICKER.active)PASSAGE_PICKER.locked=true;
+ pickerStatus(PASSAGE_PICKER.active?((PASSAGE_PICKER.linked?'Ricerca collegata: ':'Passaggio attivo: ')+pickerPassageName(PASSAGE_PICKER.active)):'Scegli uno dei cinque Passaggi e conferma.','');applyPassagePickerUi();
+}
+
 function attivaPassaggio(id){
 Object.keys(REGISTRO_PASSAGGI).forEach(function(k){
  var voce=REGISTRO_PASSAGGI[k];voce.tabBtn.classList.remove('active');voce.panel.classList.remove('active');
@@ -2060,12 +2449,29 @@ var nameSpan = document.createElement('span');
 nameSpan.textContent = config.titolo; 
 btn.appendChild(numSpan); 
 btn.appendChild(nameSpan); 
-btn.addEventListener(EVT, function(){ 
-attivaPassaggio(config.id); 
+btn.setAttribute('data-picker-control','1');
+btn.addEventListener(EVT, function(){
+choosePassageCandidate(config.id);
 }); 
-choiceGrid.appendChild(btn); 
-}); 
+choiceGrid.appendChild(btn);
+});
+var elig=document.getElementById('rm-participants-confirm');if(elig)elig.addEventListener('change',function(){PASSAGE_PICKER.eligible=!!elig.checked;applyPassagePickerUi();pickerNotify();});
+var lc=document.getElementById('rm-linked-confirm');if(lc)lc.addEventListener('change',function(){PASSAGE_PICKER.linkedConfirmed=!!lc.checked;pickerNotify();});
+var ls=document.getElementById('rm-linked-passage');if(ls)ls.addEventListener('change',function(){PASSAGE_PICKER.linkedChoice=ls.value||'';pickerNotify();});
+var cp=document.getElementById('rm-confirm-passage');if(cp)cp.addEventListener(EVT,confirmPassageSelection);
+var rp=document.getElementById('rm-renounce-passage');if(rp)rp.addEventListener(EVT,renouncePassage);
+var ol=document.getElementById('rm-open-linked');if(ol)ol.addEventListener(EVT,openLinkedPassage);
+applyPassagePickerUi();
 }
+
+window.RicercaMaledizioniPicker={
+ state:function(){return pickerSnapshot();},
+ reset:function(all){resetPassagePicker(!!all);},
+ restore:function(st){restorePassagePicker(st);},
+ activate:function(id){if(passageConfigById(id)){PASSAGE_PICKER.active=id;PASSAGE_PICKER.locked=true;applyPassagePickerUi();}},
+ active:function(){return PASSAGE_PICKER.active||null;},
+ rebuild:function(id){rebuildPassage(id);applyPassagePickerUi();}
+};
 
 window.RicercaMaledizioniFlow={
  list:function(){return Object.keys(REGISTRO_PASSAGGI);},
@@ -2145,221 +2551,280 @@ var FIREBASE_CONFIG={
  appId:"1:481320219586:web:87e974d618a302adfadc5b", 
  measurementId:"G-EFHVL4H1XW" 
 }; 
-var SESSION_COLLECTION='ricerca_maledizioni'; 
-var NARRATOR_UID='TFgqfVrFLjW5SwqRFXmEi8tDhtM2'; 
-var PASSAGE_NAMES={p1:'Analisi e Tracciatura',p2:'Scavo e Recupero',p3:'Esecuzione dello Spezzamento',p4:'Esecuzione dell’Esorcismo',p5:'Affronto dell’Ombra'}; 
-var FB={app:null,auth:null,db:null,user:null}; 
-var CURRENT_SESSION=null,CURRENT_SESSION_DATA=null,SESSION_READONLY=false; 
-var SESSION_ACTIONS=[],RESTORING_SESSION=false,SAVE_TIMER=null,SAVE_IN_FLIGHT=false,PENDING_SAVE=false; 
- 
-function sq(id){return document.getElementById(id);} 
-function workspace(){return sq('maledizioni-workspace');} 
-function sessionCanEdit(data){return !!(FB.user&&data&&(data.ownerUid===FB.user.uid||FB.user.uid===NARRATOR_UID));} 
-function setStatus(id,text,kind){var n=sq(id);if(!n)return;n.textContent=text||'';n.className='session-status'+(kind?' '+kind:'');} 
-function formatTs(ts){try{var d=ts&&typeof ts.toDate==='function'?ts.toDate():null;return d?d.toLocaleString('it-IT',{dateStyle:'short',timeStyle:'short'}):'';}catch(e){return '';}} 
-function sessionIdFromHash(){var h=String(window.location.hash||'').replace(/^#/,'');if(h.indexOf('session=')!==0)return '';try{return decodeURIComponent(h.slice(8));}catch(e){return h.slice(8);}} 
-function navigateToSession(id){window.location.hash='session='+encodeURIComponent(id);window.location.reload();} 
-function navigateToDashboard(){if(window.location.hash){try{history.replaceState(null,'',window.location.pathname+window.location.search);}catch(e){window.location.hash='';}}window.location.reload();} 
-function passageIdFromButton(b){ 
- if(!b||!b.parentElement)return ''; 
- var p=b.parentElement;if(p.id!=='tabsNav'&&p.id!=='d5choiceGrid')return ''; 
- var idx=Array.prototype.indexOf.call(p.children,b);return idx>=0&&idx<5?'p'+(idx+1):''; 
-} 
-function selectedPassageId(){ 
- for(var i=SESSION_ACTIONS.length-1;i>=0;i--){if(SESSION_ACTIONS[i]&&SESSION_ACTIONS[i].passageId)return SESSION_ACTIONS[i].passageId;} 
- return CURRENT_SESSION_DATA&&CURRENT_SESSION_DATA.passaggioId?CURRENT_SESSION_DATA.passaggioId:''; 
-} 
-function primaryPgName(){ 
- var pid=selectedPassageId(),panel=pid?sq('panel-'+pid):null; 
- var inp=panel?panel.querySelector('.pg-manager .pg-row input'):null; 
- var n=inp&&inp.value?String(inp.value).trim():''; 
- if(n&&!/^PG\s*\d+$/i.test(n))return n; 
- return (CURRENT_SESSION_DATA&&(CURRENT_SESSION_DATA.initialPgName||CURRENT_SESSION_DATA.pgName))||'PG'; 
-} 
-function activeLabel(){var pid=selectedPassageId();return primaryPgName()+' — '+(pid?(PASSAGE_NAMES[pid]||'Passaggio'):'Passaggio da determinare');} 
-function updateToolbar(){ 
- if(!CURRENT_SESSION_DATA)return; 
- if(sq('current-session-title'))sq('current-session-title').textContent=activeLabel(); 
- var mine=FB.user&&CURRENT_SESSION_DATA.ownerUid===FB.user.uid,narr=FB.user&&FB.user.uid===NARRATOR_UID,parts=[]; 
- parts.push(mine?'Sessione creata da questo browser':(narr?'Gestione Narratore':'Sessione di un altro giocatore')); 
- var t=formatTs(CURRENT_SESSION_DATA.updatedAt);if(t)parts.push('ultimo salvataggio '+t); 
- if(sq('current-session-meta'))sq('current-session-meta').textContent=parts.join(' · '); 
- if(sq('readonly-banner'))sq('readonly-banner').style.display=SESSION_READONLY?'block':'none'; 
- if(sq('btn-delete-session'))sq('btn-delete-session').style.display=sessionCanEdit(CURRENT_SESSION_DATA)?'inline-block':'none'; 
-} 
-function elementPath(target){ 
- var w=workspace();if(!w||!target||!w.contains(target))return null; 
- if(target.id)return {id:target.id}; 
- var path=[],n=target; 
- while(n&&n!==w){var par=n.parentElement;if(!par)return null;var idx=Array.prototype.indexOf.call(par.children,n);if(idx<0)return null;path.unshift(idx);n=par;} 
- return n===w?{path:path}:null; 
-} 
-function resolveTarget(a){ 
- var w=workspace();if(!w)return null; 
- if(a.loc&&a.loc.id){var by=sq(a.loc.id);return by&&w.contains(by)?by:null;} 
- var n=w,arr=a.loc&&a.loc.path?a.loc.path:[]; 
- for(var i=0;i<arr.length;i++){if(!n||!n.children||!n.children[arr[i]])return null;n=n.children[arr[i]];} 
- return n===w?null:n; 
-} 
-function isCopyButton(b){ 
- if(!b)return false; 
- if(b.id==='copyD5')return true; 
+var SESSION_COLLECTION='ricerca_maledizioni';
+var NARRATOR_UID='TFgqfVrFLjW5SwqRFXmEi8tDhtM2';
+var PASSAGE_NAMES={p1:'Analisi e Tracciatura',p2:'Scavo e Recupero',p3:'Esecuzione dello Spezzamento',p4:'Esecuzione dell’Esorcismo',p5:'Affronto dell’Ombra'};
+var FB={app:null,auth:null,db:null,user:null};
+var CURRENT_SESSION=null,CURRENT_SESSION_DATA=null,SESSION_READONLY=false;
+var SESSION_ACTIONS=[],RESTORING_SESSION=false,SAVE_TIMER=null,SAVE_IN_FLIGHT=false,PENDING_SAVE=false;
+var SESSION_DELETING=false,LAST_SAVE_OK=true,CREATING_SESSION=false;
+
+function sq(id){return document.getElementById(id);}
+function workspace(){return sq('maledizioni-workspace');}
+function sessionCanEdit(data){return !!(FB.user&&data&&(data.ownerUid===FB.user.uid||FB.user.uid===NARRATOR_UID));}
+function setStatus(id,text,kind){var n=sq(id);if(!n)return;n.textContent=text||'';n.className='session-status'+(kind?' '+kind:'');}
+function formatTs(ts){try{var d=ts&&typeof ts.toDate==='function'?ts.toDate():null;return d?d.toLocaleString('it-IT',{dateStyle:'short',timeStyle:'short'}):'';}catch(e){return '';}}
+function sessionIdFromHash(){var h=String(window.location.hash||'').replace(/^#/,'');if(h.indexOf('session=')!==0)return '';try{return decodeURIComponent(h.slice(8));}catch(e){return h.slice(8);}}
+function setSessionHash(id){try{history.replaceState(null,'',window.location.pathname+window.location.search+'#session='+encodeURIComponent(id));}catch(e){window.location.hash='session='+encodeURIComponent(id);}}
+function navigateToSession(id){window.location.hash='session='+encodeURIComponent(id);window.location.reload();}
+function navigateToDashboard(){if(window.location.hash){try{history.replaceState(null,'',window.location.pathname+window.location.search);}catch(e){window.location.hash='';}}window.location.reload();}
+function validPassage(id){return !!PASSAGE_NAMES[id];}
+function selectedPassageId(){try{return window.RicercaMaledizioniPicker&&window.RicercaMaledizioniPicker.active()?window.RicercaMaledizioniPicker.active():'';}catch(e){return '';}}
+function primaryPgName(){
+ var pid=selectedPassageId(),panel=pid?sq('panel-'+pid):null;
+ var inp=panel?panel.querySelector('.pg-manager .pg-row input'):null;
+ var n=inp&&inp.value?String(inp.value).trim():'';
+ if(n&&!/^PG\s*\d+$/i.test(n))return n;
+ return (CURRENT_SESSION_DATA&&(CURRENT_SESSION_DATA.initialPgName||CURRENT_SESSION_DATA.pgName))||'PG';
+}
+function activeLabel(){var pid=selectedPassageId();return primaryPgName()+' — '+(pid?(PASSAGE_NAMES[pid]||'Passaggio'):'Passaggio da determinare');}
+function updateToolbar(){
+ if(!CURRENT_SESSION_DATA)return;
+ if(sq('current-session-title'))sq('current-session-title').textContent=activeLabel();
+ var mine=FB.user&&CURRENT_SESSION_DATA.ownerUid===FB.user.uid,narr=FB.user&&FB.user.uid===NARRATOR_UID,parts=[];
+ parts.push(mine?'Sessione creata da questo browser':(narr?'Gestione Narratore':'Sessione di un altro giocatore'));
+ var t=formatTs(CURRENT_SESSION_DATA.updatedAt);if(t)parts.push('ultimo salvataggio '+t);
+ if(sq('current-session-meta'))sq('current-session-meta').textContent=parts.join(' · ');
+ if(sq('readonly-banner'))sq('readonly-banner').style.display=SESSION_READONLY?'block':'none';
+ if(sq('btn-delete-session'))sq('btn-delete-session').style.display=sessionCanEdit(CURRENT_SESSION_DATA)?'inline-block':'none';
+}
+function elementPath(target){
+ var w=workspace();if(!w||!target||!w.contains(target))return null;
+ if(target.id)return {id:target.id};
+ var path=[],n=target;
+ while(n&&n!==w){var par=n.parentElement;if(!par)return null;var idx=Array.prototype.indexOf.call(par.children,n);if(idx<0)return null;path.unshift(idx);n=par;}
+ return n===w?{path:path}:null;
+}
+function resolveTarget(a){
+ var w=workspace();if(!w)return null;
+ if(a.loc&&a.loc.id){var by=sq(a.loc.id);return by&&w.contains(by)?by:null;}
+ var n=w,arr=a.loc&&a.loc.path?a.loc.path:[];
+ for(var i=0;i<arr.length;i++){if(!n||!n.children||!n.children[arr[i]])return null;n=n.children[arr[i]];}
+ return n===w?null:n;
+}
+function isCopyButton(b){
+ if(!b)return false;
+ if(b.id==='copyD5')return true;
  if(b.getAttribute&&b.getAttribute('data-copy-control')==='1')return true;
  var tx=String(b.textContent||'').trim().toLowerCase();
- return tx.indexOf('copia')===0||tx.indexOf('copiato')===0||tx==='errore'; 
-} 
-function actionFromEvent(e){ 
- var w=workspace(),target=e.target;if(!target||!w||!w.contains(target))return null; 
- if(target.closest&&target.closest('[data-session-control="1"]'))return null; 
- if(e.type==='click'){ 
- var b=target.closest?target.closest('button'):null;if(!b||!w.contains(b)||isCopyButton(b))return null; 
- var pid=passageIdFromButton(b); 
- var flowBtn=b.getAttribute&&b.getAttribute('data-flow-page-btn')==='1';
- if(!pid&&!b.classList.contains('add-pg')&&!b.classList.contains('remove-pg')&&!flowBtn)return null;
- return {type:'click',loc:elementPath(b),passageId:pid||''}; 
- } 
- if(['INPUT','SELECT','TEXTAREA'].indexOf(target.tagName)===-1||target.readOnly)return null; 
- if(target.tagName==='SELECT'&&e.type!=='change')return null; 
- if(target.tagName!=='SELECT'&&e.type!=='input')return null; 
- return {type:e.type,loc:elementPath(target),value:target.value,checked:!!target.checked}; 
-} 
-function sameLoc(a,b){return JSON.stringify(a||null)===JSON.stringify(b||null);} 
-function recordAction(e){ 
- if(RESTORING_SESSION||SESSION_READONLY||!CURRENT_SESSION||!sessionCanEdit(CURRENT_SESSION_DATA))return; 
- var a=actionFromEvent(e);if(!a||!a.loc)return; 
- var last=SESSION_ACTIONS.length?SESSION_ACTIONS[SESSION_ACTIONS.length-1]:null; 
- if(last&&a.type===last.type&&(a.type==='input'||a.type==='change')&&sameLoc(a.loc,last.loc))SESSION_ACTIONS[SESSION_ACTIONS.length-1]=a; 
- else SESSION_ACTIONS.push(a); 
- updateToolbar();scheduleSave(); 
-} 
-function attachRecorder(){var w=workspace();if(!w||w.getAttribute('data-session-recorder')==='1')return;w.setAttribute('data-session-recorder','1');['input','change','click'].forEach(function(ev){w.addEventListener(ev,recordAction,true);});} 
-function replayActions(actions){ 
- RESTORING_SESSION=true; 
- try{ 
- (actions||[]).forEach(function(a){ 
- var t=resolveTarget(a);if(!t){console.warn('Ricerca Maledizioni: azione di ripristino non trovata',a);return;} 
- if(a.type==='click'){if(!t.disabled&&typeof t.click==='function')t.click();} 
- else{if('value' in t)t.value=a.value==null?'':String(a.value);if('checked' in t)t.checked=!!a.checked;t.dispatchEvent(new Event(a.type,{bubbles:true}));} 
- }); 
- }finally{RESTORING_SESSION=false;} 
-} 
-function setWorkspaceReadOnly(ro){ 
- SESSION_READONLY=!!ro;var w=workspace();if(!w)return; 
- if(SESSION_READONLY){ 
- Array.prototype.forEach.call(w.querySelectorAll('input,select,textarea'),function(n){if(n.getAttribute('data-session-control')==='1')return;n.disabled=true;}); 
- Array.prototype.forEach.call(w.querySelectorAll('button'),function(n){ 
- if(n.getAttribute('data-session-control')==='1')return; 
- var nav=!!(n.closest&&n.closest('#tabsNav,#d5choiceGrid'));
- var flow=n.getAttribute&&n.getAttribute('data-flow-page-btn')==='1';
- if(nav||flow||isCopyButton(n)){n.disabled=false;return;} 
- n.disabled=true; 
- }); 
- } 
- updateToolbar(); 
-} 
-function payload(){ 
- var pid=selectedPassageId(),name=primaryPgName(); 
- return { 
- ownerUid:CURRENT_SESSION_DATA.ownerUid, 
- initialPgName:CURRENT_SESSION_DATA.initialPgName||name, 
- pgName:name, 
- tipoPassaggio:pid?(PASSAGE_NAMES[pid]||'Passaggio'):'', 
- passaggioId:pid||'', 
- updatedAt:firebase.firestore.FieldValue.serverTimestamp(), 
- toolVersion:'firebase-v1', 
- actionLog:SESSION_ACTIONS 
- }; 
-} 
-function scheduleSave(){if(!CURRENT_SESSION||SESSION_READONLY||!sessionCanEdit(CURRENT_SESSION_DATA))return;setStatus('save-status','Salvataggio automatico…','');if(SAVE_TIMER)clearTimeout(SAVE_TIMER);SAVE_TIMER=setTimeout(saveNow,850);} 
-function saveNow(){ 
- if(!CURRENT_SESSION||SESSION_READONLY||!sessionCanEdit(CURRENT_SESSION_DATA))return Promise.resolve(); 
- if(SAVE_IN_FLIGHT){PENDING_SAVE=true;return Promise.resolve();} 
- SAVE_IN_FLIGHT=true;PENDING_SAVE=false;var p=payload(); 
- return FB.db.collection(SESSION_COLLECTION).doc(CURRENT_SESSION).set(p,{merge:true}).then(function(){ 
- Object.keys(p).forEach(function(k){if(k!=='updatedAt')CURRENT_SESSION_DATA[k]=p[k];}); 
- setStatus('save-status','Ricerca salvata automaticamente &#10003;','ok');updateToolbar(); 
- }).catch(function(err){console.error(err);setStatus('save-status','Errore di salvataggio: non chiudere la pagina.','bad');}).finally(function(){SAVE_IN_FLIGHT=false;if(PENDING_SAVE){PENDING_SAVE=false;scheduleSave();}}); 
-} 
+ return tx.indexOf('copia')===0||tx.indexOf('copiato')===0||tx==='errore';
+}
+function passageIdFromButton(b){
+ if(!b||!b.parentElement)return '';
+ var p=b.parentElement;if(p.id!=='tabsNav'&&p.id!=='d5choiceGrid')return '';
+ var idx=Array.prototype.indexOf.call(p.children,b);return idx>=0&&idx<5?'p'+(idx+1):'';
+}
+function actionFromEvent(e){
+ var w=workspace(),target=e.target;if(!target||!w||!w.contains(target))return null;
+ if(target.closest&&target.closest('[data-session-control="1"],[data-picker-control="1"]'))return null;
+ if(e.type==='click'){
+  var b=target.closest?target.closest('button'):null;if(!b||!w.contains(b)||isCopyButton(b))return null;
+  var pid=passageIdFromButton(b),flowBtn=b.getAttribute&&b.getAttribute('data-flow-page-btn')==='1';
+  if(!pid&&!b.classList.contains('add-pg')&&!b.classList.contains('remove-pg')&&!b.classList.contains('bonus-add')&&!b.classList.contains('bonus-remove')&&!flowBtn)return null;
+  return {type:'click',loc:elementPath(b),passageId:pid||''};
+ }
+ if(['INPUT','SELECT','TEXTAREA'].indexOf(target.tagName)===-1||target.readOnly)return null;
+ if(target.tagName==='SELECT'&&e.type!=='change')return null;
+ if(target.tagName!=='SELECT'&&e.type!=='input')return null;
+ return {type:e.type,loc:elementPath(target),value:target.value,checked:!!target.checked};
+}
+function sameLoc(a,b){return JSON.stringify(a||null)===JSON.stringify(b||null);}
+function recordAction(e){
+ if(RESTORING_SESSION||SESSION_READONLY||SESSION_DELETING||!CURRENT_SESSION||!sessionCanEdit(CURRENT_SESSION_DATA))return;
+ var a=actionFromEvent(e);if(!a||!a.loc)return;
+ var last=SESSION_ACTIONS.length?SESSION_ACTIONS[SESSION_ACTIONS.length-1]:null;
+ if(last&&a.type===last.type&&(a.type==='input'||a.type==='change')&&sameLoc(a.loc,last.loc))SESSION_ACTIONS[SESSION_ACTIONS.length-1]=a;
+ else SESSION_ACTIONS.push(a);
+ updateToolbar();scheduleSave();
+}
+function attachRecorder(){var w=workspace();if(!w||w.getAttribute('data-session-recorder')==='1')return;w.setAttribute('data-session-recorder','1');['input','change','click'].forEach(function(ev){w.addEventListener(ev,recordAction,true);});}
+function replayActions(actions){
+ RESTORING_SESSION=true;
+ try{
+  (actions||[]).forEach(function(a){
+   if(a&&a.passageId)return; /* vecchia navigazione: viene migrata dallo stato Picker */
+   var t=resolveTarget(a);if(!t){console.warn('Ricerca Maledizioni: azione di ripristino non trovata',a);return;}
+   if(a.type==='click'){if(!t.disabled&&typeof t.click==='function')t.click();}
+   else{if('value' in t)t.value=a.value==null?'':String(a.value);if('checked' in t)t.checked=!!a.checked;t.dispatchEvent(new Event(a.type,{bubbles:true}));}
+  });
+ }finally{RESTORING_SESSION=false;}
+}
+function legacyTouchedPassage(a){
+ if(!a||!a.loc)return '';
+ var t=null;try{t=resolveTarget(a);}catch(e){}
+ var panel=t&&t.closest?t.closest('section.passaggio'):null;
+ if(panel&&/^panel-p[1-5]$/.test(String(panel.id||'')))return String(panel.id).slice(6);
+ return '';
+}
+function legacyPassageFromActions(actions,data){
+ var manual='',touched='';
+ (actions||[]).forEach(function(a){
+  if(a&&validPassage(a.passageId)){manual=a.passageId;return;}
+  var p=legacyTouchedPassage(a);if(p)touched=p;
+ });
+ if(touched)return touched; /* priorità alla scheda realmente compilata/usata */
+ if(manual)return manual;   /* altrimenti conserva l'ultimo Passaggio visitato */
+ if((actions||[]).length&&data&&validPassage(data.passaggioId))return data.passaggioId;
+ return '';
+}
+function migratePickerState(data){
+ if(data&&data.passagePicker&&['v6','v7','v8','v9'].indexOf(String(data.toolVersion||''))!==-1){window.RicercaMaledizioniPicker.restore(data.passagePicker);return;}
+ var pid=legacyPassageFromActions(SESSION_ACTIONS,data);
+ if(pid){window.RicercaMaledizioniPicker.restore({attempts:1,locked:true,linked:false,active:pid,pending:null,eligible:true,legacy:true});}
+ else{window.RicercaMaledizioniPicker.restore({attempts:0,locked:false,active:null,eligible:false,legacy:true});}
+}
+window.RicercaMaledizioniClearPassageActions=function(pid){
+ if(!validPassage(pid))return;
+ var kept=[];
+ SESSION_ACTIONS.forEach(function(a){
+  if(a&&a.passageId===pid)return;
+  var t=null;try{t=resolveTarget(a);}catch(e){}
+  var panel=t&&t.closest?t.closest('#panel-'+pid):null;
+  if(panel)return;
+  kept.push(a);
+ });
+ SESSION_ACTIONS=kept;updateToolbar();
+};
+function clearWorkspaceReadOnlyLocks(){var w=workspace();if(!w)return;Array.prototype.forEach.call(w.querySelectorAll('[data-readonly-disabled="1"]'),function(n){n.disabled=false;n.removeAttribute('data-readonly-disabled');});try{if(window.RicercaMaledizioniPicker)window.RicercaMaledizioniPicker.restore(window.RicercaMaledizioniPicker.state());}catch(e){}}
+function applyWorkspaceReadOnlyLocks(){
+ var w=workspace();if(!w||!SESSION_READONLY)return;
+ Array.prototype.forEach.call(w.querySelectorAll('input,select,textarea,button'),function(n){
+  if(n.getAttribute('data-session-control')==='1')return;
+  if(n.tagName==='BUTTON'){
+   var nav=!!(n.closest&&n.closest('#tabsNav'));
+   var flow=n.getAttribute&&n.getAttribute('data-flow-page-btn')==='1';
+   if(nav||flow||isCopyButton(n))return;
+  }
+  if(n.disabled)return;
+  n.setAttribute('data-readonly-disabled','1');n.disabled=true;
+ });
+}
+function setWorkspaceReadOnly(ro){var next=!!ro;if(!next)clearWorkspaceReadOnlyLocks();SESSION_READONLY=next;if(SESSION_READONLY)applyWorkspaceReadOnlyLocks();updateToolbar();}
+function payload(){
+ var pid=selectedPassageId(),name=primaryPgName(),picker={};try{picker=window.RicercaMaledizioniPicker?window.RicercaMaledizioniPicker.state():{};}catch(e){}
+ return {ownerUid:CURRENT_SESSION_DATA.ownerUid,initialPgName:CURRENT_SESSION_DATA.initialPgName||name,pgName:name,tipoPassaggio:pid?(PASSAGE_NAMES[pid]||'Passaggio'):'',passaggioId:pid||'',updatedAt:firebase.firestore.FieldValue.serverTimestamp(),toolVersion:'v9',passagePicker:picker,actionLog:SESSION_ACTIONS};
+}
+function scheduleSave(){
+ if(RESTORING_SESSION||SESSION_READONLY||SESSION_DELETING||!CURRENT_SESSION||!sessionCanEdit(CURRENT_SESSION_DATA))return;
+ setStatus('save-status','Salvataggio automatico…','');if(SAVE_TIMER)clearTimeout(SAVE_TIMER);
+ SAVE_TIMER=setTimeout(function(){SAVE_TIMER=null;saveNow();},850);
+}
+window.RicercaMaledizioniSessionSave=scheduleSave;
+function saveNow(){
+ if(RESTORING_SESSION||SESSION_READONLY||SESSION_DELETING||!CURRENT_SESSION||!sessionCanEdit(CURRENT_SESSION_DATA))return Promise.resolve();
+ if(SAVE_IN_FLIGHT){PENDING_SAVE=true;return Promise.resolve();}
+ SAVE_IN_FLIGHT=true;PENDING_SAVE=false;var p=payload();
+ return FB.db.collection(SESSION_COLLECTION).doc(CURRENT_SESSION).set(p,{merge:true}).then(function(){
+  LAST_SAVE_OK=true;Object.keys(p).forEach(function(k){if(k!=='updatedAt')CURRENT_SESSION_DATA[k]=p[k];});
+  try{CURRENT_SESSION_DATA.updatedAt=firebase.firestore.Timestamp.now();}catch(e){}
+  setStatus('save-status','Ricerca salvata automaticamente ✓','ok');updateToolbar();
+ }).catch(function(err){LAST_SAVE_OK=false;console.error(err);setStatus('save-status','Errore di salvataggio: non chiudere la pagina.','bad');}).finally(function(){SAVE_IN_FLIGHT=false;if(PENDING_SAVE&&!SESSION_DELETING){PENDING_SAVE=false;scheduleSave();}});
+}
+function waitForSessionSaveDrain(){return new Promise(function(resolve){function tick(){if(!SAVE_IN_FLIGHT&&!PENDING_SAVE&&!SAVE_TIMER){resolve();return;}setTimeout(tick,35);}tick();});}
 function openSessionDoc(id,data){
- CURRENT_SESSION=id;CURRENT_SESSION_DATA=data;SESSION_ACTIONS=Array.isArray(data.actionLog)?data.actionLog.slice():[];SESSION_READONLY=!sessionCanEdit(data);
+ clearWorkspaceReadOnlyLocks();var wantReadOnly=!sessionCanEdit(data);
+ CURRENT_SESSION=id;CURRENT_SESSION_DATA=data;SESSION_ACTIONS=Array.isArray(data.actionLog)?data.actionLog.slice():[];SESSION_READONLY=false;SESSION_DELETING=false;LAST_SAVE_OK=true;PENDING_SAVE=false;if(SAVE_TIMER){clearTimeout(SAVE_TIMER);SAVE_TIMER=null;}
  if(sq('maledizioni-session-home'))sq('maledizioni-session-home').style.display='none';if(workspace())workspace().style.display='block';
+ try{if(window.RicercaMaledizioniPicker)window.RicercaMaledizioniPicker.reset(true);}catch(e){}
+ migratePickerState(data||{});
  window.__RM_RESTORING__=true;replayActions(SESSION_ACTIONS);window.__RM_RESTORING__=false;
  var pid=selectedPassageId();if(pid&&window.RicercaMaledizioniFlow){try{window.RicercaMaledizioniFlow.activate(pid);}catch(e){}}
- setWorkspaceReadOnly(SESSION_READONLY);updateToolbar();
+ setWorkspaceReadOnly(wantReadOnly);updateToolbar();
  setStatus('save-status',SESSION_READONLY?'Modalità sola lettura.':'Ricerca caricata · autosalvataggio attivo',SESSION_READONLY?'':'ok');
- setTimeout(function(){if(pid&&window.RicercaMaledizioniFlow){window.RicercaMaledizioniFlow.resume(pid,SESSION_READONLY);}else{var z=sq('stepZero');if(z){try{z.scrollIntoView({behavior:'auto',block:'start'});}catch(e){}}}},120);
-} 
-function loadSession(id){ 
- setStatus('session-home-msg','Caricamento Ricerca…',''); 
- return FB.db.collection(SESSION_COLLECTION).doc(id).get().then(function(doc){if(!doc.exists)throw new Error('La Ricerca non esiste più.');openSessionDoc(doc.id,doc.data());setStatus('session-home-msg','','');}).catch(function(err){console.error(err);setStatus('session-home-msg','Impossibile aprire la Ricerca: '+err.message,'bad');if(sq('maledizioni-session-home'))sq('maledizioni-session-home').style.display='block';}); 
-} 
-function loadSessionList(){ 
- var host=sq('session-list');if(!host||!FB.db||!FB.user)return;host.innerHTML='<div class="session-status">Caricamento sessioni…</div>'; 
- FB.db.collection(SESSION_COLLECTION).get().then(function(snap){ 
- var rows=[];snap.forEach(function(doc){rows.push({id:doc.id,data:doc.data()});}); 
- rows.sort(function(a,b){var at=a.data.updatedAt&&a.data.updatedAt.seconds?a.data.updatedAt.seconds:0,bt=b.data.updatedAt&&b.data.updatedAt.seconds?b.data.updatedAt.seconds:0;return bt-at;});host.innerHTML=''; 
- if(!rows.length){host.innerHTML='<div class="session-status">Non ci sono Ricerche Maledizioni in corso. Puoi crearne una qui sopra.</div>';return;} 
- rows.forEach(function(r){ 
- var d=r.data,mine=d.ownerUid===FB.user.uid,narr=FB.user.uid===NARRATOR_UID; 
- var box=document.createElement('div');box.className='session-item';var row=document.createElement('div');row.className='session-item-row'; 
- var left=document.createElement('div');var ti=document.createElement('div');ti.className='session-title';ti.textContent=(d.pgName||d.initialPgName||'PG')+' — '+(d.tipoPassaggio||'Passaggio da determinare');left.appendChild(ti); 
- var meta=document.createElement('div');meta.className='session-meta';var dt=formatTs(d.updatedAt);meta.textContent=dt?'Aggiornata '+dt:'';left.appendChild(meta); 
- var own=document.createElement('span');own.className='session-owner'+(mine?' mine':'');own.textContent=mine?'Tua Ricerca':(narr?'Gestibile dal Narratore':'Altro giocatore');left.appendChild(own); 
- var b=document.createElement('button');b.type='button';b.className='session-btn'+((mine||narr)?'':' ghost');b.setAttribute('data-session-control','1');b.textContent=(mine||narr)?'Riprendi':'Visualizza';b.addEventListener(EVT,function(){navigateToSession(r.id);}); 
- row.appendChild(left);row.appendChild(b);box.appendChild(row);host.appendChild(box); 
- }); 
- }).catch(function(err){console.error(err);host.innerHTML='<div class="session-status bad">Non riesco a leggere le Ricerche in corso: '+String(err.message||err)+'</div>';}); 
-} 
-function createSession(){ 
- var inp=sq('new-session-pg'),name=(inp&&inp.value?inp.value:'').trim(); 
- if(!name){setStatus('session-home-msg','Inserisci prima il nome del PG principale.','bad');if(inp)inp.focus();return;} 
- if(!FB.user){setStatus('session-home-msg','Firebase non è ancora pronto. Riprova tra un momento.','bad');return;} 
- setStatus('session-home-msg','Creazione della Ricerca…',''); 
- var data={ownerUid:FB.user.uid,initialPgName:name,pgName:name,tipoPassaggio:'',passaggioId:'',createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp(),toolVersion:'firebase-v1',actionLog:[]}; 
- FB.db.collection(SESSION_COLLECTION).add(data).then(function(ref){navigateToSession(ref.id);}).catch(function(err){console.error(err);setStatus('session-home-msg','Impossibile creare la Ricerca: '+err.message,'bad');}); 
-} 
+ setTimeout(function(){if(pid&&window.RicercaMaledizioniFlow){window.RicercaMaledizioniFlow.resume(pid,SESSION_READONLY);}else{var z=sq('stepZero');if(z){try{z.scrollIntoView({behavior:'auto',block:'start'});}catch(e){}}}if(SESSION_READONLY)applyWorkspaceReadOnlyLocks();},120);
+}
+function resetFailedSessionLoad(){
+ clearWorkspaceReadOnlyLocks();CURRENT_SESSION=null;CURRENT_SESSION_DATA=null;SESSION_ACTIONS=[];SESSION_READONLY=false;SESSION_DELETING=false;LAST_SAVE_OK=true;PENDING_SAVE=false;SAVE_IN_FLIGHT=false;if(SAVE_TIMER){clearTimeout(SAVE_TIMER);SAVE_TIMER=null;}
+ try{if(window.RicercaMaledizioniPicker)window.RicercaMaledizioniPicker.reset(true);}catch(e){}
+ if(window.location.hash){try{history.replaceState(null,'',window.location.pathname+window.location.search);}catch(e){window.location.hash='';}}
+ if(workspace())workspace().style.display='none';if(sq('maledizioni-session-home'))sq('maledizioni-session-home').style.display='block';
+}
+function loadSession(id){
+ setStatus('session-home-msg','Caricamento Ricerca…','');
+ return FB.db.collection(SESSION_COLLECTION).doc(id).get().then(function(doc){if(!doc.exists)throw new Error('La Ricerca non esiste più.');openSessionDoc(doc.id,doc.data());setStatus('session-home-msg','','');}).catch(function(err){console.error(err);resetFailedSessionLoad();setStatus('session-home-msg','Impossibile aprire la Ricerca: '+err.message,'bad');loadSessionList();});
+}
+function loadSessionList(){
+ var host=sq('session-list');if(!host||!FB.db||!FB.user)return;host.innerHTML='<div class="session-status">Caricamento sessioni…</div>';
+ FB.db.collection(SESSION_COLLECTION).get().then(function(snap){
+  var rows=[];snap.forEach(function(doc){rows.push({id:doc.id,data:doc.data()});});
+  rows.sort(function(a,b){var at=a.data.updatedAt&&a.data.updatedAt.seconds?a.data.updatedAt.seconds:0,bt=b.data.updatedAt&&b.data.updatedAt.seconds?b.data.updatedAt.seconds:0;return bt-at;});host.innerHTML='';
+  if(!rows.length){host.innerHTML='<div class="session-status">Non ci sono Ricerche Maledizioni in corso. Puoi crearne una qui sopra.</div>';return;}
+  rows.forEach(function(r){
+   var d=r.data,mine=d.ownerUid===FB.user.uid,narr=FB.user.uid===NARRATOR_UID;
+   var box=document.createElement('div');box.className='session-item';var row=document.createElement('div');row.className='session-item-row';
+   var left=document.createElement('div');var ti=document.createElement('div');ti.className='session-title';ti.textContent=(d.pgName||d.initialPgName||'PG')+' — '+(d.tipoPassaggio||'Passaggio da determinare');left.appendChild(ti);
+   var meta=document.createElement('div');meta.className='session-meta';var dt=formatTs(d.updatedAt);meta.textContent=dt?'Aggiornata '+dt:'';left.appendChild(meta);
+   var own=document.createElement('span');own.className='session-owner'+(mine?' mine':'');own.textContent=mine?'Tua Ricerca':(narr?'Gestibile dal Narratore':'Altro giocatore');left.appendChild(own);
+   var b=document.createElement('button');b.type='button';b.className='session-btn'+((mine||narr)?'':' ghost');b.setAttribute('data-session-control','1');b.textContent=(mine||narr)?'Riprendi':'Visualizza';b.addEventListener(EVT,function(){navigateToSession(r.id);});
+   row.appendChild(left);row.appendChild(b);box.appendChild(row);host.appendChild(box);
+  });
+ }).catch(function(err){console.error(err);host.innerHTML='<div class="session-status bad">Non riesco a leggere le Ricerche in corso: '+String(err.message||err)+'</div>';});
+}
+function setCreatingSession(on){CREATING_SESSION=!!on;var inp=sq('new-session-pg'),btn=sq('btn-new-session');if(inp)inp.disabled=CREATING_SESSION;if(btn){btn.disabled=CREATING_SESSION;btn.textContent=CREATING_SESSION?'Creazione…':'+ Nuova Ricerca';}}
+function createSession(){
+ if(CREATING_SESSION)return;
+ var inp=sq('new-session-pg'),name=(inp&&inp.value?inp.value:'').trim();
+ if(!name){setStatus('session-home-msg','Inserisci prima il nome del PG principale.','bad');if(inp)inp.focus();return;}
+ if(!FB.user){setStatus('session-home-msg','Firebase non è ancora pronto. Riprova tra un momento.','bad');return;}
+ setCreatingSession(true);setStatus('session-home-msg','Creazione della Ricerca…','');
+ var data={ownerUid:FB.user.uid,initialPgName:name,pgName:name,tipoPassaggio:'',passaggioId:'',createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp(),toolVersion:'v9',passagePicker:{attempts:0,locked:false,linked:false,active:null,pending:null,eligible:false,linkedConfirmed:false,linkedChoice:'',legacy:false},actionLog:[]};
+ FB.db.collection(SESSION_COLLECTION).add(data).then(function(ref){
+  setCreatingSession(false);if(inp)inp.value='';var now=null;try{now=firebase.firestore.Timestamp.now();}catch(e){}
+  var localData=Object.assign({},data,{createdAt:now,updatedAt:now});setSessionHash(ref.id);
+  try{openSessionDoc(ref.id,localData);setStatus('session-home-msg','','');}catch(err){console.error(err);setStatus('session-home-msg','La Ricerca è stata creata correttamente, ma non sono riuscito ad aprirla nell’interfaccia. Aggiorna la pagina e aprila dall’elenco.','bad');}
+ },function(err){setCreatingSession(false);console.error(err);setStatus('session-home-msg','Impossibile creare la Ricerca: '+err.message,'bad');});
+}
 function positionDeleteModalAtCurrentView(ev){
  var modal=sq('delete-session-modal'),box=modal?modal.querySelector('.session-modal-box'):null;if(!modal||!box)return;
  var y=ev&&typeof ev.clientY==='number'?ev.clientY:Math.max(120,(window.innerHeight||600)/2);
  box.classList.add('rm-local-positioned');
  requestAnimationFrame(function(){var h=box.getBoundingClientRect().height||300,vh=window.innerHeight||600,min=Math.min(vh/2,20+h/2),max=Math.max(min,vh-20-h/2);var cy=Math.max(min,Math.min(max,y));box.style.top=cy+'px';box.style.transform='translate(-50%,-50%)';});
 }
-function openDeleteModal(ev){if(!CURRENT_SESSION||!sessionCanEdit(CURRENT_SESSION_DATA))return;sq('delete-session-check').checked=false;sq('btn-confirm-delete').disabled=true;sq('delete-session-msg').textContent='';var m=sq('delete-session-modal');m.classList.add('open');m.setAttribute('aria-hidden','false');positionDeleteModalAtCurrentView(ev);}
-function closeDeleteModal(){var m=sq('delete-session-modal');if(!m)return;var box=m.querySelector('.session-modal-box');if(box){box.classList.remove('rm-local-positioned');box.style.top='';box.style.transform='';}m.classList.remove('open');m.setAttribute('aria-hidden','true');} 
-function deleteCurrentSession(){ 
- if(!CURRENT_SESSION||!sessionCanEdit(CURRENT_SESSION_DATA)||!sq('delete-session-check').checked)return; 
- var id=CURRENT_SESSION;sq('btn-confirm-delete').disabled=true;sq('delete-session-msg').textContent='Eliminazione definitiva in corso…'; 
- FB.db.collection(SESSION_COLLECTION).doc(id).delete().then(function(){CURRENT_SESSION=null;CURRENT_SESSION_DATA=null;SESSION_ACTIONS=[];closeDeleteModal();try{sessionStorage.setItem('rmal_deleted_notice','1');}catch(e){}navigateToDashboard();}).catch(function(err){console.error(err);sq('delete-session-msg').textContent='Eliminazione non riuscita: '+err.message;sq('btn-confirm-delete').disabled=false;}); 
-} 
-function backToDashboard(){var done=Promise.resolve();if(CURRENT_SESSION&&sessionCanEdit(CURRENT_SESSION_DATA))done=saveNow();done.finally(function(){navigateToDashboard();});} 
-function setupControls(){ 
- attachRecorder(); 
- sq('btn-new-session').addEventListener(EVT,createSession); 
- sq('new-session-pg').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();createSession();}}); 
- sq('btn-refresh-sessions').addEventListener(EVT,loadSessionList); 
- sq('btn-back-sessions').addEventListener(EVT,backToDashboard); 
- sq('btn-delete-session').addEventListener(EVT,openDeleteModal); 
- sq('btn-cancel-delete').addEventListener(EVT,closeDeleteModal); 
- sq('delete-session-check').addEventListener('change',function(){sq('btn-confirm-delete').disabled=!sq('delete-session-check').checked;}); 
- sq('btn-confirm-delete').addEventListener(EVT,deleteCurrentSession); 
- sq('delete-session-modal').addEventListener(EVT,function(e){if(e.target===sq('delete-session-modal'))closeDeleteModal();}); 
- document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden'&&CURRENT_SESSION&&!SESSION_READONLY)saveNow();}); 
- window.addEventListener('pagehide',function(){if(CURRENT_SESSION&&!SESSION_READONLY)saveNow();}); 
-} 
-function setupFirebase(){ 
- setupControls();if(workspace())workspace().style.display='none';if(sq('maledizioni-session-home'))sq('maledizioni-session-home').style.display='block';var st=sq('firebase-auth-status'); 
- try{ 
- if(typeof firebase==='undefined')throw new Error('SDK Firebase non caricato'); 
- if(!firebase.apps.length)firebase.initializeApp(FIREBASE_CONFIG);FB.app=firebase.app();FB.auth=firebase.auth();FB.db=firebase.firestore(); 
- FB.auth.onAuthStateChanged(function(user){ 
- if(user){ 
- FB.user=user;if(st){st.textContent=user.uid===NARRATOR_UID?'Firebase connesso · modalità Narratore':'Firebase connesso · sessione anonima attiva';st.className='session-status ok';} 
- var sid=sessionIdFromHash();if(sid)loadSession(sid);else{try{if(sessionStorage.getItem('rmal_deleted_notice')==='1'){sessionStorage.removeItem('rmal_deleted_notice');setStatus('session-home-msg','Ricerca eliminata definitivamente. Per giocarla di nuovo dovrà essere ricreata da zero.','ok');}}catch(e){}loadSessionList();}return; 
- } 
- FB.auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(function(){return FB.auth.signInAnonymously();}).catch(function(err){console.error(err);if(st){st.textContent='Errore autenticazione Firebase: '+err.message;st.className='session-status bad';}}); 
- }); 
- }catch(err){console.error(err);if(st){st.textContent='Firebase non disponibile: '+err.message;st.className='session-status bad';}} 
-} 
+function openDeleteModal(ev){if(SESSION_DELETING||!CURRENT_SESSION||!sessionCanEdit(CURRENT_SESSION_DATA))return;sq('delete-session-check').checked=false;sq('btn-confirm-delete').disabled=true;sq('delete-session-msg').textContent='';var m=sq('delete-session-modal');m.classList.add('open');m.setAttribute('aria-hidden','false');positionDeleteModalAtCurrentView(ev);}
+function closeDeleteModal(){if(SESSION_DELETING)return;var m=sq('delete-session-modal');if(!m)return;var box=m.querySelector('.session-modal-box');if(box){box.classList.remove('rm-local-positioned');box.style.top='';box.style.transform='';}m.classList.remove('open');m.setAttribute('aria-hidden','true');}
+function deleteCurrentSession(){
+ if(SESSION_DELETING||!CURRENT_SESSION||!sessionCanEdit(CURRENT_SESSION_DATA)||!sq('delete-session-check').checked)return;
+ SESSION_DELETING=true;var id=CURRENT_SESSION;if(SAVE_TIMER){clearTimeout(SAVE_TIMER);SAVE_TIMER=null;}PENDING_SAVE=false;
+ var confirm=sq('btn-confirm-delete'),cancel=sq('btn-cancel-delete');if(confirm)confirm.disabled=true;if(cancel)cancel.disabled=true;sq('delete-session-msg').textContent='Eliminazione definitiva in corso…';
+ waitForSessionSaveDrain().then(function(){return FB.db.collection(SESSION_COLLECTION).doc(id).delete();}).then(function(){
+  CURRENT_SESSION=null;CURRENT_SESSION_DATA=null;SESSION_ACTIONS=[];SESSION_DELETING=false;var m=sq('delete-session-modal');if(m){m.classList.remove('open');m.setAttribute('aria-hidden','true');}try{sessionStorage.setItem('rmal_deleted_notice','1');}catch(e){}navigateToDashboard();
+ }).catch(function(err){console.error(err);SESSION_DELETING=false;if(confirm)confirm.disabled=false;if(cancel)cancel.disabled=false;sq('delete-session-msg').textContent='Eliminazione non riuscita: '+err.message;LAST_SAVE_OK=false;scheduleSave();});
+}
+function backToDashboard(){
+ if(SESSION_DELETING)return;
+ if(!CURRENT_SESSION||!sessionCanEdit(CURRENT_SESSION_DATA)){navigateToDashboard();return;}
+ if(SAVE_TIMER){clearTimeout(SAVE_TIMER);SAVE_TIMER=null;}
+ saveNow().then(function(){return waitForSessionSaveDrain();}).then(function(){if(LAST_SAVE_OK)navigateToDashboard();else setStatus('save-status','Ultimo salvataggio non riuscito: sei rimasto nella Ricerca. Riprova quando la connessione è disponibile.','bad');});
+}
+function setupControls(){
+ attachRecorder();
+ sq('btn-new-session').addEventListener(EVT,createSession);
+ sq('new-session-pg').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();createSession();}});
+ sq('btn-refresh-sessions').addEventListener(EVT,loadSessionList);
+ sq('btn-back-sessions').addEventListener(EVT,backToDashboard);
+ sq('btn-delete-session').addEventListener(EVT,openDeleteModal);
+ sq('btn-cancel-delete').addEventListener(EVT,closeDeleteModal);
+ sq('delete-session-check').addEventListener('change',function(){sq('btn-confirm-delete').disabled=SESSION_DELETING||!sq('delete-session-check').checked;});
+ sq('btn-confirm-delete').addEventListener(EVT,deleteCurrentSession);
+ sq('delete-session-modal').addEventListener(EVT,function(e){if(e.target===sq('delete-session-modal'))closeDeleteModal();});
+ var w=workspace();if(w)w.addEventListener(EVT,function(){if(SESSION_READONLY)setTimeout(applyWorkspaceReadOnlyLocks,0);},false);
+ document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden'&&CURRENT_SESSION&&!SESSION_READONLY&&!SESSION_DELETING)saveNow();});
+ window.addEventListener('pagehide',function(){if(CURRENT_SESSION&&!SESSION_READONLY&&!SESSION_DELETING)saveNow();});
+}
+function setupFirebase(){
+ setupControls();if(workspace())workspace().style.display='none';if(sq('maledizioni-session-home'))sq('maledizioni-session-home').style.display='block';var st=sq('firebase-auth-status');
+ try{
+  if(typeof firebase==='undefined')throw new Error('SDK Firebase non caricato');
+  if(!firebase.apps.length)firebase.initializeApp(FIREBASE_CONFIG);FB.app=firebase.app();FB.auth=firebase.auth();FB.db=firebase.firestore();
+  FB.auth.onAuthStateChanged(function(user){
+   if(user){
+    FB.user=user;if(st){st.textContent=user.uid===NARRATOR_UID?'Firebase connesso · modalità Narratore':'Firebase connesso · sessione anonima attiva';st.className='session-status ok';}
+    var sid=sessionIdFromHash();if(sid)loadSession(sid);else{try{if(sessionStorage.getItem('rmal_deleted_notice')==='1'){sessionStorage.removeItem('rmal_deleted_notice');setStatus('session-home-msg','Ricerca eliminata definitivamente. Per giocarla di nuovo dovrà essere ricreata da zero.','ok');}}catch(e){}loadSessionList();}return;
+   }
+   FB.auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(function(){return FB.auth.signInAnonymously();}).catch(function(err){console.error(err);if(st){st.textContent='Errore autenticazione Firebase: '+err.message;st.className='session-status bad';}});
+  });
+ }catch(err){console.error(err);if(st){st.textContent='Firebase non disponibile: '+err.message;st.className='session-status bad';}}
+}
 document.addEventListener('DOMContentLoaded',setupFirebase); 
 })(); 
 </script> 
