@@ -1,3 +1,4 @@
+<!-- Revisione v5: quote numerici semplificati — i dadi che restituiscono direttamente il proprio valore non elencano inutilmente tutte le facce -->
 <!-- Revisione v2 standard completo: BBCode esteso, copia stabile, popup locale, navigazione Configurazione/Riepilogo/Fasi/Esito, ripresa intelligente e controlli di coerenza -->
 <!-- Revisione Firebase: sessioni multiple, autosalvataggio, ripresa, sola lettura e cancellazione definitiva protetta --> 
 <div id="ricerca-maledizioni" class="foglio" style="width:100% !important;max-width:none !important;margin:0 !important;padding:0 !important;background:#160E09 !important;color:#F7EADC !important;box-sizing:border-box !important;"> 
@@ -760,7 +761,7 @@ if(/^Tipo di Passaggio \(Ricerca Maledizioni\)$/i.test(label)){
    risposte = thresholdAnswers(soglia, faces);
  }else{
    domanda = 'Qual è l’esito del tiro «' + label + '»?';
-   risposte = '1-' + faces + '. Inserisci il risultato nel tool per applicare l’esito previsto.';
+   risposte = 'Il risultato del dado corrisponde direttamente al valore da inserire nel tool.';
  }
 }
 return forumDiceBlock(domanda, risposte, raw);
