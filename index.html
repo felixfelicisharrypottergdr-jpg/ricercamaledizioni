@@ -1,0 +1,2379 @@
+<!-- Revisione v2 standard completo: BBCode esteso, copia stabile, popup locale, navigazione Configurazione/Riepilogo/Fasi/Esito, ripresa intelligente e controlli di coerenza -->
+<!-- Revisione Firebase: sessioni multiple, autosalvataggio, ripresa, sola lettura e cancellazione definitiva protetta --> 
+<div id="ricerca-maledizioni" class="foglio" style="width:100% !important;max-width:none !important;margin:0 !important;padding:0 !important;background:#160E09 !important;color:#F7EADC !important;box-sizing:border-box !important;"> 
+<style>@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css'); 
+@font-face {font-family: 'magic'; 
+ src: url('https://dl.dropboxusercontent.com/scl/fi/nbzmrri4qyvc3tzx96911/HarryBeastDisplay-Regular.woff2?rlkey=he290voe32k33gowug23c1osc&st=nj9fgly1') format('woff2'); 
+ font-weight: normal; 
+ font-style: normal; 
+ font-display: swap} 
+#ricerca-maledizioni {--bg: #160E09; 
+--bg2: #21150F; 
+--panel: #2C1D15; 
+--panel2: #3A281D; 
+--line: #694C38; 
+--ink: #F7EADC; 
+--ink-muted: #D6C0AA; 
+--gold: #B77D4D; 
+--gold-soft: #E8C5A2; 
+--ok: #C4D8AA; 
+--ok-bg: #28301F; 
+--fail: #EFB09B; 
+--fail-bg: #3B211A; 
+--serif:"Iowan Old Style", "Palatino Linotype", Georgia, serif; 
+--sans:"Avenir Next", Segoe UI, Helvetica, Arial, sans-serif} 
+#ricerca-maledizioni, #ricerca-maledizioni * {box-sizing:border-box} 
+#ricerca-maledizioni {margin: 0; 
+background: 
+radial-gradient(circle at 15% 0%, #2B1B12 0%, transparent 45%), 
+radial-gradient(circle at 85% 10%, #352217 0%, transparent 40%), 
+var(--bg); 
+color:var(--ink); 
+font-family:var(--sans); 
+line-height: 1.5; 
+padding-bottom: 80px} 
+#ricerca-maledizioni header.top {padding: 48px 20px 32px; 
+text-align:center; 
+border-bottom: 1px solid var(--line); 
+background:linear-gradient(180deg, #26170F, transparent)} 
+#ricerca-maledizioni header.top h1 {font-family:var(--serif); 
+font-size: 2.6em; 
+letter-spacing: 0.03em; 
+margin: 0 0 8px; 
+color:var(--gold-soft); 
+text-shadow: 0 0 24px rgba(183, 125, 77, 0.28)} 
+#ricerca-maledizioni header.top p {color:var(--ink-muted); 
+max-width: 640px; 
+margin: 0 auto; 
+font-size: 0.98em} 
+#ricerca-maledizioni header.top .seal {display:inline-flex; 
+align-items:center; 
+justify-content:center; 
+width: 68px; 
+height: 68px; 
+margin: 0 auto 18px; 
+border: 1px solid var(--gold-soft); 
+border-radius: 50%; 
+background:var(--bg2); 
+color:var(--gold-soft); 
+font-size: 30px; 
+line-height: 1; 
+box-shadow: 0 0 0 4px rgba(232, 197, 162, .10), 0 0 18px rgba(183, 125, 77, .16)} 
+#ricerca-maledizioni header.top .seal i {color:inherit; line-height: 1} 
+#ricerca-maledizioni header.top .eyebrow {color:var(--gold-soft); line-height: 1.15; text-shadow: 0 0 24px rgba(183, 125, 77, .28)} 
+#ricerca-maledizioni header.top .subtitle {margin-top: 8px} 
+#ricerca-maledizioni .rune {display:inline-block; 
+color:var(--gold); 
+margin: 0 10px; 
+opacity: 0.7} 
+#ricerca-maledizioni main {max-width: 900px; margin: 0 auto; padding: 0 18px} 
+#ricerca-maledizioni section.intro-step {margin-top: 32px; 
+background:var(--panel); 
+border: 1px solid var(--line); 
+border-radius: 10px; 
+padding: 24px 26px} 
+#ricerca-maledizioni .step-eyebrow {text-transform:uppercase; 
+letter-spacing: 0.14em; 
+font-size: 0.72em; 
+color:var(--gold); 
+margin-bottom: 6px} 
+#ricerca-maledizioni h2.step-title {font-family:var(--serif); 
+font-size: 1.5em; 
+margin: 0 0 10px; 
+color:var(--ink)} 
+#ricerca-maledizioni .muted {color:var(--ink-muted)} 
+#ricerca-maledizioni .d5-choice-grid {display:grid; 
+grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); 
+gap: 10px; 
+margin-top: 14px} 
+#ricerca-maledizioni .d5-choice-grid button {display:flex; 
+align-items:center; 
+gap: 10px; 
+background:var(--bg2); 
+border: 1px solid var(--line); 
+color:var(--ink); 
+padding: 12px 14px; 
+border-radius: 8px; 
+font-family:var(--sans); 
+font-size: 0.9em; 
+cursor:pointer; 
+text-align:left; 
+transition:all .15s ease} 
+#ricerca-maledizioni .d5-choice-grid button:hover {border-color:var(--gold); 
+background:var(--panel2)} 
+#ricerca-maledizioni .d5-choice-grid .num {font-family:var(--serif); 
+color:var(--gold-soft); 
+font-size: 1.3em; 
+line-height: 1; 
+min-width: 22px} 
+#ricerca-maledizioni table.d5map {width: 100%; 
+border-collapse:collapse; 
+margin-top: 16px; 
+font-size: 0.94em} 
+#ricerca-maledizioni table.d5map td, #ricerca-maledizioni table.d5map th {border: 1px solid var(--line); 
+padding: 8px 10px; 
+text-align:left} 
+#ricerca-maledizioni table.d5map th {color:var(--gold-soft); background:var(--panel2)} 
+#ricerca-maledizioni nav.tabs {display:flex; 
+flex-wrap:wrap; 
+gap: 8px; 
+margin: 28px 0 18px; 
+position:sticky; 
+top: 0; 
+background:var(--bg); 
+padding: 12px 0; 
+z-index: 5; 
+border-bottom: 1px solid var(--line)} 
+#ricerca-maledizioni nav.tabs button {flex: 1 1 150px; 
+background:var(--panel); 
+border: 1px solid var(--line); 
+color:var(--ink-muted); 
+padding: 10px 12px; 
+border-radius: 8px; 
+font-family:var(--sans); 
+font-size: 0.86em; 
+cursor:pointer; 
+transition:all .15s ease} 
+#ricerca-maledizioni nav.tabs button.active {background:var(--panel2); 
+color:var(--gold-soft); 
+border-color:var(--gold)} 
+#ricerca-maledizioni section.passaggio {display:none} 
+#ricerca-maledizioni section.passaggio.active {display:block} 
+#ricerca-maledizioni .p-intro {background:var(--panel); 
+border: 1px solid var(--line); 
+border-left: 3px solid var(--gold); 
+border-radius: 8px; 
+padding: 18px 22px; 
+margin-bottom: 22px; 
+font-size: 0.95em; 
+color:var(--ink-muted)} 
+#ricerca-maledizioni .pg-manager {background:var(--panel); 
+border: 1px solid var(--line); 
+border-radius: 10px; 
+padding: 16px 20px; 
+margin-bottom: 24px} 
+#ricerca-maledizioni .pg-manager h3 {font-family:var(--serif); 
+color:var(--gold-soft); 
+margin: 0 0 10px; 
+font-size: 1.1em} 
+#ricerca-maledizioni .pg-row {display:flex; 
+align-items:center; 
+gap: 10px; 
+margin-bottom: 8px} 
+#ricerca-maledizioni .pg-row input {background:var(--panel); 
+border: 1px solid var(--line); 
+color:var(--ink); 
+padding: 6px 8px; 
+border-radius: 5px; 
+width: 100%; 
+font-size: 0.9em} 
+#ricerca-maledizioni .stat-field select {background:var(--panel); 
+border: 1px solid var(--line); 
+color:var(--ink); 
+padding: 6px 8px; 
+border-radius: 5px; 
+font-size: 0.85em} 
+#ricerca-maledizioni .breakdown {font-size: 0.84em; 
+color:var(--ink-muted); 
+margin: 8px 0; 
+padding: 8px 10px; 
+background:var(--panel); 
+border-radius: 6px; 
+border: 1px dashed var(--line)} 
+#ricerca-maledizioni .breakdown b {color:var(--gold-soft)} 
+#ricerca-maledizioni .dice-row {display:flex; 
+align-items:center; 
+gap: 8px; 
+margin-top: 10px; 
+flex-wrap:wrap} 
+#ricerca-maledizioni .dice-tag {flex: 1 1 260px; 
+background: #120B08; 
+border: 1px solid var(--gold); 
+color:var(--gold-soft); 
+padding: 9px 10px; 
+border-radius: 6px; 
+font-family:monospace; 
+font-size: 0.82em} 
+#ricerca-maledizioni .roll-input {width: 80px; 
+background:var(--panel); 
+border: 1px solid var(--line); 
+color:var(--ink); 
+padding: 8px 8px; 
+border-radius: 6px; 
+text-align:center} 
+#ricerca-maledizioni .roll-label {font-size: 0.78em; color:var(--ink-muted)} 
+#ricerca-maledizioni .result-tag {font-size: 0.8em; 
+font-weight: 600; 
+padding: 4px 10px; 
+border-radius: 20px} 
+#ricerca-maledizioni .result-tag.ok {background:var(--ok-bg); color:var(--ok)} 
+#ricerca-maledizioni .result-tag.fail {background:var(--fail-bg); color:var(--fail)} 
+#ricerca-maledizioni .result-tag.pending {background:var(--panel2); color:var(--ink-muted)} 
+#ricerca-maledizioni .note-line {font-size: 0.82em; 
+margin-top: 6px; 
+color:var(--ink-muted); 
+font-style:italic} 
+#ricerca-maledizioni .roll-twice-wrap {display:flex; gap: 8px; align-items:center} 
+#ricerca-maledizioni .effetto-block {background:var(--panel2); 
+border: 1px solid var(--gold); 
+border-radius: 10px; 
+padding: 18px 20px; 
+margin-top: 6px} 
+#ricerca-maledizioni .effetto-block h4 {font-family:var(--serif); 
+color:var(--gold-soft); 
+margin: 0 0 8px} 
+#ricerca-maledizioni ul.effetto-list {margin: 8px 0 0; padding-left: 20px; font-size: 0.88em; color:var(--ink-muted)} 
+#ricerca-maledizioni ul.effetto-list li {margin-bottom: 4px} 
+#ricerca-maledizioni .banner {padding: 12px 16px; 
+border-radius: 8px; 
+font-size: 0.9em; 
+margin-top: 10px} 
+#ricerca-maledizioni .banner.warn {background:var(--fail-bg); color:var(--fail); border: 1px solid var(--fail)} 
+#ricerca-maledizioni .banner.calm {background:var(--ok-bg); color:var(--ok); border: 1px solid var(--ok)} 
+#ricerca-maledizioni footer {text-align:center; 
+color:var(--ink-muted); 
+font-size: 0.8em; 
+margin-top: 40px; 
+padding: 20px} 
+@media(max-width: 600px) {#ricerca-maledizioni header.top h1 {font-size: 2em} #ricerca-maledizioni header.top .eyebrow {font-size: 32px !important} 
+#ricerca-maledizioni .stat-field {min-width: 100px}} 
+#ricerca-maledizioni {width: 100% !important; 
+ max-width:none !important; 
+ margin: 0 !important; 
+ padding: 0 0 40px 0 !important; 
+ box-sizing:border-box !important; 
+ background: #160E09 !important; 
+ color: #F7EADC !important; 
+ overflow:visible !important} 
+ 
+#ricerca-maledizioni main {width: 100% !important; 
+ max-width:none !important; 
+ margin: 0 !important; 
+ padding: 0 20px !important; 
+ box-sizing:border-box !important} 
+ 
+#ricerca-maledizioni main, 
+#ricerca-maledizioni section, 
+#ricerca-maledizioni header, 
+#ricerca-maledizioni footer, 
+#ricerca-maledizioni div, 
+#ricerca-maledizioni span, 
+#ricerca-maledizioni p, 
+#ricerca-maledizioni li, 
+#ricerca-maledizioni td, 
+#ricerca-maledizioni th, 
+#ricerca-maledizioni label {color: #F7EADC} 
+ 
+#ricerca-maledizioni .muted, 
+#ricerca-maledizioni .p-intro, 
+#ricerca-maledizioni .fase-desc, 
+#ricerca-maledizioni .roll-label, 
+#ricerca-maledizioni .note-line, 
+#ricerca-maledizioni .breakdown, 
+#ricerca-maledizioni .stat-field label, 
+#ricerca-maledizioni ul.effetto-list, 
+#ricerca-maledizioni footer {color: #D6C0AA !important} 
+ 
+#ricerca-maledizioni h1, 
+#ricerca-maledizioni h2, 
+#ricerca-maledizioni h3, 
+#ricerca-maledizioni h4, 
+#ricerca-maledizioni .pg-card-name, 
+#ricerca-maledizioni .d5-choice-grid .num {color: #E8C5A2 !important} 
+ 
+#ricerca-maledizioni .pg-row input, 
+#ricerca-maledizioni .stat-field input, 
+#ricerca-maledizioni .stat-field select, 
+#ricerca-maledizioni .roll-input, 
+#ricerca-maledizioni .dice-tag {background: #160E09 !important; 
+ border-color: #765640 !important; 
+ color: #F7EADC !important} 
+ 
+#ricerca-maledizioni .stat-field select option {background: #160E09 !important; 
+ color: #F7EADC !important} 
+ 
+#ricerca-maledizioni .d5-choice-grid {grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)) !important} 
+ 
+#ricerca-maledizioni .stat-field {min-width: 130px !important; 
+ flex: 1 1 150px !important} 
+ 
+#ricerca-maledizioni .dice-tag {min-width: 0 !important; 
+ max-width: 100% !important} 
+ 
+#ricerca-maledizioni #d5choicegrid, 
+#ricerca-maledizioni #tabsnav, 
+#ricerca-maledizioni #panelsroot {width: 100% !important; 
+ max-width:none !important; 
+ visibility:visible !important} 
+ 
+@media(max-width: 700px) {#ricerca-maledizioni main {padding: 0 10px !important} 
+ #ricerca-maledizioni .d5-choice-grid {grid-template-columns: 1fr !important}} 
+ 
+/*========================================================= 
+ layout più arioso e leggibile========================================================= */ 
+#ricerca-maledizioni main {width: 100% !important; 
+ max-width: 1120px !important; 
+ margin: 0 auto !important; 
+ padding: 0 24px !important} 
+ 
+#ricerca-maledizioni section.intro-step, 
+#ricerca-maledizioni .p-intro, 
+#ricerca-maledizioni .pg-manager, 
+#ricerca-maledizioni .fase-block {box-shadow: 0 1px 0 rgba(232, 197, 162, .05)} 
+ 
+#ricerca-maledizioni .p-intro {padding: 22px 24px !important; 
+ margin-bottom: 26px !important; 
+ line-height: 1.7 !important; 
+ font-size: 16px !important} 
+ 
+#ricerca-maledizioni .pg-manager {padding: 22px 24px !important; 
+ margin-bottom: 30px !important} 
+ 
+#ricerca-maledizioni .pg-manager h3 {font-size: 1.35em !important; 
+ margin: 0 0 16px !important} 
+ 
+#ricerca-maledizioni .pg-row {gap: 14px !important; 
+ margin-bottom: 14px !important} 
+ 
+#ricerca-maledizioni .pg-row input {min-height: 44px !important; 
+ padding: 10px 12px !important; 
+ font-size: 16px !important} 
+ 
+#ricerca-maledizioni .fase-block {background:var(--panel) !important; 
+ border: 1px solid var(--line) !important; 
+ border-radius: 12px !important; 
+ padding: 22px 24px !important; 
+ margin: 0 0 26px 0 !important} 
+ 
+#ricerca-maledizioni .fase-header {display:flex !important; 
+ align-items:center !important; 
+ justify-content:space-between !important; 
+ gap: 14px !important; 
+ margin-bottom: 12px !important; 
+ padding-bottom: 10px !important; 
+ border-bottom: 1px solid rgba(232, 197, 162, .12) !important} 
+ 
+#ricerca-maledizioni .fase-header h3 {margin: 0 !important; 
+ font-family:var(--serif) !important; 
+ font-size: 1.42em !important; 
+ color: #F3D7BA !important} 
+ 
+#ricerca-maledizioni .dado-badge {display:inline-flex !important; 
+ align-items:center !important; 
+ justify-content:center !important; 
+ min-height: 34px !important; 
+ padding: 6px 12px !important; 
+ border-radius: 999px !important; 
+ background: #3A281D !important; 
+ border: 1px solid #8A6247 !important; 
+ color: #F1D1AF !important; 
+ font-family:var(--serif) !important; 
+ font-size: 15px !important; 
+ white-space:nowrap !important} 
+ 
+#ricerca-maledizioni .fase-desc {margin: 0 0 18px 0 !important; 
+ font-size: 17px !important; 
+ line-height: 1.7 !important; 
+ color: #E4CEBA !important} 
+ 
+#ricerca-maledizioni .pg-card {background: #21150F !important; 
+ border: 1px solid #6E4F3B !important; 
+ border-radius: 10px !important; 
+ padding: 18px 18px 16px 18px !important; 
+ margin: 16px 0 20px 0 !important} 
+ 
+#ricerca-maledizioni .pg-card.excluded {opacity:.72 !important} 
+ 
+#ricerca-maledizioni .pg-card-name {margin: 0 0 14px 0 !important; 
+ padding: 0 0 10px 0 !important; 
+ border-bottom: 1px dashed rgba(232, 197, 162, .18) !important; 
+ font-family:var(--serif) !important; 
+ font-size: 1.22em !important; 
+ color: #F7EADC !important} 
+ 
+#ricerca-maledizioni .stat-grid {display:grid !important; 
+ grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)) !important; 
+ gap: 16px 18px !important; 
+ align-items:end !important; 
+ margin: 8px 0 6px 0 !important} 
+ 
+#ricerca-maledizioni .stat-field {min-width: 0 !important} 
+ 
+#ricerca-maledizioni .stat-field label {display:block !important; 
+ margin: 0 0 7px 0 !important; 
+ font-family:var(--serif) !important; 
+ font-size: 14px !important; 
+ line-height: 1.35 !important; 
+ color: #DCC2A8 !important} 
+ 
+#ricerca-maledizioni .stat-field input, 
+#ricerca-maledizioni .stat-field select {width: 100% !important; 
+ min-height: 48px !important; 
+ padding: 11px 14px !important; 
+ border-radius: 8px !important; 
+ font-size: 17px !important; 
+ line-height: 1.2 !important} 
+ 
+#ricerca-maledizioni .breakdown {margin: 14px 0 10px 0 !important; 
+ padding: 13px 15px !important; 
+ border-radius: 8px !important; 
+ font-size: 15px !important; 
+ line-height: 1.6 !important; 
+ background: #332217 !important; 
+ border: 1px solid #654732 !important} 
+ 
+#ricerca-maledizioni .note-line {margin-top: 10px !important; 
+ font-size: 15px !important; 
+ line-height: 1.6 !important} 
+ 
+#ricerca-maledizioni .dice-row {gap: 12px !important; 
+ margin-top: 14px !important; 
+ align-items:center !important; 
+ flex-wrap:wrap !important} 
+ 
+#ricerca-maledizioni .dice-tag {flex: 1 1 420px !important; 
+ min-height: 46px !important; 
+ padding: 11px 14px !important; 
+ border-radius: 8px !important; 
+ font-family:consolas, "Courier New", monospace !important; 
+ font-size: 16px !important; 
+ line-height: 1.25 !important} 
+ 
+#ricerca-maledizioni button.small {min-height: 46px !important; 
+ padding: 0 16px !important; 
+ border-radius: 8px !important; 
+ font-size: 15px !important; 
+ font-family:var(--sans) !important; 
+ white-space:nowrap !important} 
+ 
+#ricerca-maledizioni .roll-label {font-size: 15px !important; 
+ line-height: 1.35 !important; 
+ color: #DCC2A8 !important} 
+ 
+#ricerca-maledizioni .roll-input {width: 100px !important; 
+ min-height: 46px !important; 
+ padding: 10px 12px !important; 
+ border-radius: 8px !important; 
+ font-size: 19px !important; 
+ font-family:consolas, "Courier New", monospace !important} 
+ 
+#ricerca-maledizioni .roll-twice-wrap {gap: 12px !important; 
+ flex-wrap:wrap !important} 
+ 
+#ricerca-maledizioni .result-tag {display:inline-flex !important; 
+ align-items:center !important; 
+ justify-content:center !important; 
+ min-height: 42px !important; 
+ padding: 8px 16px !important; 
+ border-radius: 999px !important; 
+ font-size: 15px !important; 
+ font-weight: 700 !important} 
+ 
+#ricerca-maledizioni .banner {margin-top: 12px !important; 
+ padding: 13px 16px !important; 
+ font-size: 15px !important; 
+ line-height: 1.55 !important} 
+ 
+#ricerca-maledizioni ul.effetto-list {margin-top: 10px !important; 
+ font-size: 15px !important; 
+ line-height: 1.65 !important} 
+ 
+#ricerca-maledizioni footer {margin-top: 50px !important; 
+ padding: 28px 20px !important; 
+ font-size: 14px !important} 
+ 
+@media(max-width: 760px) {#ricerca-maledizioni main {padding: 0 14px !important} 
+ #ricerca-maledizioni .stat-grid {grid-template-columns: 1fr !important; 
+ gap: 14px !important} 
+ #ricerca-maledizioni .fase-block, 
+ #ricerca-maledizioni .pg-manager, 
+ #ricerca-maledizioni .p-intro, 
+ #ricerca-maledizioni section.intro-step {padding: 18px 16px !important} 
+ #ricerca-maledizioni .fase-header {align-items:flex-start !important; 
+ flex-direction:column !important} 
+ #ricerca-maledizioni .roll-input {width: 88px !important}} 
+#ricerca-maledizioni button:disabled {opacity:.45 !important; cursor:not-allowed !important} 
+ 
+/*================================================================ 
+ sessioni firebase — ricerca maledizioni================================================================ */ 
+#ricerca-maledizioni .session-home, 
+#ricerca-maledizioni .session-toolbar-card {width: 100%; max-width: 1120px; margin: 28px auto 0; padding: 0 24px} 
+#ricerca-maledizioni .session-card, 
+#ricerca-maledizioni .session-toolbar-inner {background:var(--panel); border: 1px solid var(--line); border-radius: 12px; 
+ box-shadow: 0 1px 0 rgba(232, 197, 162, .05); overflow:hidden} 
+#ricerca-maledizioni .session-card-head {padding: 18px 22px 14px; border-bottom: 1px solid rgba(232, 197, 162, .14); 
+ background:linear-gradient(180deg, rgba(183, 125, 77, .10), transparent)} 
+#ricerca-maledizioni .session-card-head h2 {margin: 0; font-family:'magic', var(--serif); font-size: 1.45rem; color:var(--gold-soft) !important} 
+#ricerca-maledizioni .session-card-body {padding: 20px 22px 22px} 
+#ricerca-maledizioni .session-card-body p {margin:.2em 0 1em; color:var(--ink-muted) !important; line-height: 1.65} 
+#ricerca-maledizioni .session-warning, 
+#ricerca-maledizioni .readonly-banner {margin: 14px 0; padding: 13px 15px; border: 1px solid #8A6247; border-left: 4px solid var(--gold); 
+ border-radius: 8px; background: #332217; color:var(--ink-muted) !important; font-size: 14px; line-height: 1.6} 
+#ricerca-maledizioni .readonly-banner {border-left-color: #E8C5A2; background: #2C1D15} 
+#ricerca-maledizioni .session-warning b, 
+#ricerca-maledizioni .readonly-banner b {color:var(--gold-soft) !important} 
+#ricerca-maledizioni .session-new-row, 
+#ricerca-maledizioni .session-actions, 
+#ricerca-maledizioni .session-topbar, 
+#ricerca-maledizioni .session-item-row {display:flex; gap: 10px; align-items:center; flex-wrap:wrap} 
+#ricerca-maledizioni .session-new-row {margin-top: 16px; align-items:stretch} 
+#ricerca-maledizioni .session-new-row input {flex: 1 1 280px; min-width: 0; min-height: 46px; padding: 10px 12px; border: 1px solid #765640; 
+ border-radius: 8px; background: #160E09; color: #F7EADC; font-family:var(--sans); font-size: 16px} 
+#ricerca-maledizioni .session-btn, 
+#ricerca-maledizioni .session-danger-btn {min-height: 44px; padding: 9px 15px; border-radius: 8px; font-family:var(--sans); font-size: 14px; 
+ font-weight: 700; cursor:pointer; transition:all .15s ease} 
+#ricerca-maledizioni .session-btn {border: 1px solid var(--gold); background:var(--panel2); color:var(--gold-soft)} 
+#ricerca-maledizioni .session-btn:hover {background: #4A3224; border-color:var(--gold-soft)} 
+#ricerca-maledizioni .session-btn.reserved {background:transparent; border-color:var(--line); color:var(--ink-muted)} 
+#ricerca-maledizioni .session-btn.reserved:hover {border-color:var(--gold); color:var(--gold-soft)} 
+#ricerca-maledizioni .session-danger-btn {border: 1px solid #B96E5A; background: #3B211A; color: #F3B6A3} 
+#ricerca-maledizioni .session-danger-btn:hover {background: #4A281F; border-color: #EFB09B; color: #FFD2C4} 
+#ricerca-maledizioni .session-danger-btn:disabled {opacity:.45; cursor:not-allowed} 
+#ricerca-maledizioni .session-status {margin-top: 10px; color:var(--ink-muted) !important; font-size: 13px; line-height: 1.5} 
+#ricerca-maledizioni .session-status.ok {color:var(--ok) !important} 
+#ricerca-maledizioni .session-status.bad {color:var(--fail) !important} 
+#ricerca-maledizioni .session-list {display:flex; flex-direction:column; gap: 10px; margin-top: 18px} 
+#ricerca-maledizioni .session-item {padding: 14px 15px; background:var(--bg2); border: 1px solid var(--line); border-radius: 9px} 
+#ricerca-maledizioni .session-item-row {justify-content:space-between; align-items:center} 
+#ricerca-maledizioni .session-title {font-family:'magic', var(--serif); font-size: 1.1rem; color:var(--gold-soft) !important} 
+#ricerca-maledizioni .session-meta {margin-top: 3px; color:var(--ink-muted) !important; font-size: 12px} 
+#ricerca-maledizioni .session-owner {display:inline-flex; margin-top: 7px; padding: 3px 8px; border: 1px solid var(--line); border-radius: 999px; 
+ color:var(--ink-muted) !important; font-size: 11px} 
+#ricerca-maledizioni .session-owner.mine {border-color: #6F875D; color:var(--ok) !important} 
+#ricerca-maledizioni .session-toolbar-card {margin-top: 22px; margin-bottom: 0} 
+#ricerca-maledizioni .session-toolbar-inner {padding: 16px 18px} 
+#ricerca-maledizioni .session-topbar {justify-content:space-between; align-items:flex-start} 
+#ricerca-maledizioni .session-actions {justify-content:flex-end} 
+#ricerca-maledizioni .session-modal {position:fixed; inset: 0; z-index: 9; display:none; align-items:center; justify-content:center; 
+ padding: 20px; background:rgba(8, 5, 3, .82)} 
+#ricerca-maledizioni .session-modal.open {display:flex} 
+#ricerca-maledizioni .session-modal-box {width:min(620px, 100%); max-height: 90vh; overflow:auto; padding: 24px; background: #21150F; 
+ border: 1px solid #8A6247; border-radius: 12px; box-shadow: 0 24px 70px rgba(0, 0, 0, .55)} 
+#ricerca-maledizioni .session-modal-box h3 {margin: 0 0 14px; font-family:'magic', var(--serif); font-size: 1.55rem; color: #EFB09B !important} 
+#ricerca-maledizioni .session-modal-box p {color:var(--ink-muted) !important; line-height: 1.65} 
+#ricerca-maledizioni .delete-confirm-line {display:flex; align-items:flex-start; gap: 10px; margin: 18px 0; padding: 13px 14px; border: 1px solid #8A6247; 
+ border-radius: 8px; background: #3B211A} 
+#ricerca-maledizioni .delete-confirm-line input {margin-top: 4px; transform:scale(1.12)} 
+#ricerca-maledizioni .delete-confirm-line span {color: #F2C1B1 !important; font-size: 14px; line-height: 1.55} 
+@media(max-width: 760px) {#ricerca-maledizioni .session-home, #ricerca-maledizioni .session-toolbar-card {padding: 0 14px} 
+ #ricerca-maledizioni .session-card-body {padding: 18px 16px 20px} 
+ #ricerca-maledizioni .session-card-head {padding: 16px} 
+ #ricerca-maledizioni .session-actions, #ricerca-maledizioni .session-new-row {width: 100%} 
+ #ricerca-maledizioni .session-actions .session-btn, #ricerca-maledizioni .session-actions .session-danger-btn, 
+ #ricerca-maledizioni .session-new-row .session-btn {width: 100%} 
+ #ricerca-maledizioni .session-item-row {align-items:stretch} 
+ #ricerca-maledizioni .session-item-row>* {width: 100%}}
+/* ================================================================
+   STANDARD RICERCHE v2 — navigazione progressiva, riepilogo, copia stabile
+================================================================ */
+#ricerca-maledizioni section.passaggio.active{display:flex !important;flex-direction:column !important;}
+#ricerca-maledizioni .flow-page-nav{order:-20;display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px;padding:12px 0;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:6;background:var(--bg);}
+#ricerca-maledizioni .flow-page-btn{flex:1 1 130px;min-height:44px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink-muted);font-family:var(--sans);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s ease;}
+#ricerca-maledizioni .flow-page-btn:hover:not(:disabled){background:var(--panel2);border-color:var(--gold);color:var(--gold-soft);}
+#ricerca-maledizioni .flow-page-btn.active{background:var(--panel2);border-color:var(--gold);color:var(--gold-soft);}
+#ricerca-maledizioni .flow-page-btn:disabled{opacity:.42;cursor:not-allowed;}
+#ricerca-maledizioni [data-flow-part]{order:0;}
+#ricerca-maledizioni .flow-summary{order:1;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:22px 24px;margin:0 0 26px;}
+#ricerca-maledizioni .flow-summary h3{margin:0 0 14px;font-family:'magic',var(--serif);font-size:1.45rem;color:var(--gold-soft) !important;}
+#ricerca-maledizioni .flow-summary-section{margin-top:16px;padding-top:14px;border-top:1px solid rgba(232,197,162,.14);}
+#ricerca-maledizioni .flow-summary-section:first-of-type{margin-top:0;padding-top:0;border-top:0;}
+#ricerca-maledizioni .flow-summary p,#ricerca-maledizioni .flow-summary li{color:var(--ink-muted) !important;line-height:1.65;}
+#ricerca-maledizioni .flow-summary b{color:var(--gold-soft) !important;}
+#ricerca-maledizioni .flow-summary ul{margin:8px 0 0;padding-left:20px;}
+#ricerca-maledizioni .flow-action-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;}
+#ricerca-maledizioni .flow-action-row button{min-height:44px;}
+#ricerca-maledizioni .flow-hidden{display:none !important;}
+#ricerca-maledizioni .flow-next-wrap{margin-top:18px;padding-top:14px;border-top:1px dashed rgba(232,197,162,.18);display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+#ricerca-maledizioni .flow-next-note{font-size:13px;color:var(--ink-muted) !important;}
+#ricerca-maledizioni .flow-difficulty{margin-top:14px;padding:12px 14px;border:1px solid rgba(183,125,77,.45);border-left:4px solid var(--gold);border-radius:8px;background:#332217;}
+#ricerca-maledizioni .flow-difficulty b{color:var(--gold-soft) !important;}
+#ricerca-maledizioni .session-modal-box.rm-local-positioned{position:absolute !important;left:50% !important;margin:0 !important;}
+@media(max-width:760px){#ricerca-maledizioni .flow-page-btn{flex:1 1 100%;}#ricerca-maledizioni .flow-summary{padding:18px 16px;}}
+</style> 
+ 
+<section id="maledizioni-session-home" class="session-home"> 
+ <div class="session-card"> 
+ <div class="session-card-head"><h2>Ricerche Maledizioni in corso</h2></div> 
+ <div class="session-card-body"> 
+ <p>Crea una sessione per la tua Ricerca Maledizioni oppure riaprine una già iniziata. I dati vengono salvati automaticamente mentre compili la Ricerca.</p> 
+ <div class="session-warning"><b>Le sessioni in corso sono personali.</b> Puoi visualizzare quelle degli altri giocatori, ma non modificarle o concluderle. Solo chi ha creato la sessione e il Narratore possono intervenire sui suoi dati.</div> 
+ <div id="firebase-auth-status" class="session-status">Connessione a Firebase…</div> 
+ <div class="session-new-row"> 
+ <input id="new-session-pg" type="text" maxlength="80" placeholder="Nome del PG principale (es. Coral)"> 
+ <button class="session-btn" id="btn-new-session" type="button" data-session-control="1">+ Nuova Ricerca</button> 
+ <button class="session-btn ghost" id="btn-refresh-sessions" type="button" data-session-control="1">Aggiorna elenco</button> 
+ </div> 
+ <div id="session-home-msg" class="session-status"></div> 
+ <div id="session-list" class="session-list"></div> 
+ </div> 
+ </div> 
+</section> 
+ 
+<div id="maledizioni-workspace" style="display:none"> 
+ <div class="session-toolbar-card"> 
+ <div class="session-toolbar-inner"> 
+ <div class="session-topbar"> 
+ <div> 
+ <div id="current-session-title" class="session-title">Ricerca Maledizioni in corso</div> 
+ <div id="current-session-meta" class="session-meta"></div> 
+ <div id="save-status" class="session-status"></div> 
+ </div> 
+ <div class="session-actions"> 
+ <button class="session-btn ghost" id="btn-back-sessions" type="button" data-session-control="1">&#8592; Torna alle Ricerche</button> 
+ <button class="session-danger-btn" id="btn-delete-session" type="button" data-session-control="1">Concludi ed elimina Ricerca</button> 
+ </div> 
+ </div> 
+ <div id="readonly-banner" class="readonly-banner" style="display:none">Stai visualizzando la Ricerca Maledizioni di un altro giocatore. Puoi consultarla, cambiare scheda e copiare i dadi, ma solo chi l'ha creata o il Narratore può modificarla o eliminarla.</div> 
+ </div> 
+ </div> 
+ 
+<header class="top"> 
+ <div class="seal" style="font-size:30px"><i class="fa-solid fa-scroll"></i></div> 
+ <div class="eyebrow" style="font-size:40px; font-family:magic">• Ricerca Maledizioni •</div> 
+<p class="subtitle">Per PG Spezzaincantesimi e Acumen</p> 
+</header> 
+ 
+<main> 
+ 
+<section class="intro-step" id="stepZero"> 
+<div class="step-eyebrow">Per iniziare</div> 
+<h2 class="step-title">Quale Passaggio dobbiamo affrontare?</h2> 
+<p class="muted">Puoi scegliere liberamente il Passaggio da affrontare, oppure lasciare che sia il dado a deciderlo: tira il dado qui sotto e consulta la tabella per sapere quale scheda aprire. Ricorda: puoi rinunciare a un Passaggio assegnato e tentarne un altro fino a un massimo di 3 volte per role, ma solo se ogni tentativo viene interpretato ONGame.</p> 
+<div class="banner calm"><b>Regole generali — </b>servono almeno 2 PG Spezzaincantesimi e/o Acumen. Tutte le divisioni previste dalle formule sono arrotondate per difetto. Quando una Fase lo consente, i bonus di una Conoscenza, una Pozione e degli eventuali Oggetti/Borsa possono sommarsi; resta il limite di una sola Conoscenza e una sola Pozione per post.</div> 
+<div class="note-line"><b>Continuità — </b>ogni PG può seguire una sola Ricerca Maledizione per role. Se almeno un PG ottiene un successo alla Fase III, una Ricerca collegata può proseguire in una nuova role senza dover tirare 1d5 per scegliere il Passaggio successivo.</div> 
+ 
+<div class="dice-row"> 
+<input class="dice-tag" id="d5tag" type="text" readonly value="[dice=1d5]Tipo di Passaggio (Ricerca Maledizioni)[/dice]"> 
+<button class="small" id="copyD5" data-copy-control="1">Copia</button> 
+</div> 
+ 
+<p class="step-eyebrow" style="margin-top:20px;">Dopo il tiro</p> 
+<p class="muted" style="margin-top:0;">Seleziona il numero e il nome del Passaggio corrispondente al risultato ottenuto: la scheda si aprirà automaticamente qui sotto.</p> 
+<div class="d5-choice-grid" id="d5choiceGrid"></div> 
+</section> 
+ 
+<nav class="tabs" id="tabsNav"></nav> 
+ 
+<div id="panelsRoot"></div> 
+ 
+</main> 
+ 
+<footer>Strumento non ufficiale per l'automazione dei calcoli della Ricerca Maledizioni. Verifica sempre i tiri sul forum.</footer> 
+ 
+</div><!-- /#maledizioni workspace --> 
+ 
+<div class="session-modal" id="delete-session-modal" aria-hidden="true"> 
+ <div class="session-modal-box" role="dialog" aria-modal="true" aria-labelledby="delete-session-title"> 
+ <h3 id="delete-session-title">Attenzione: eliminazione definitiva</h3> 
+ <p>Concludendo questa Ricerca, <b>tutti i dati salvati verranno cancellati definitivamente.</b></p> 
+ <p><b>La Ricerca non potrà essere recuperata.</b> Se vorrai giocarla nuovamente, dovrai creare una nuova sessione e reinserire da zero i PG, i Parametri, i bonus e tutti i risultati ottenuti.</p> 
+ <label class="delete-confirm-line"> 
+ <input type="checkbox" id="delete-session-check" data-session-control="1"> 
+ <span><b>Ho capito che questa Ricerca verrà cancellata definitivamente e che, se mi servirà ancora, dovrò rifarla da zero.</b></span> 
+ </label> 
+ <div class="session-actions"> 
+ <button class="session-btn ghost" id="btn-cancel-delete" type="button" data-session-control="1">Annulla</button> 
+ <button class="session-danger-btn" id="btn-confirm-delete" type="button" data-session-control="1" disabled>Elimina definitivamente la Ricerca</button> 
+ </div> 
+ <div id="delete-session-msg" class="session-status bad"></div> 
+ </div> 
+</div> 
+ 
+ 
+<script type="text/javascript"> 
+(function(){ 
+"use strict"; 
+ 
+/* evento usato per i pulsanti, costruito per concatenazione */ 
+var EVT = 'cli' + 'ck'; 
+ 
+/* ---------- utilita generiche ---------- */ 
+ 
+function el(tag, cls, html){ 
+var e = document.createElement(tag); 
+if(cls){ e.className = cls; } 
+if(html !== undefined){ e.innerHTML = html; } 
+return e; 
+} 
+ 
+function thresholdAnswers(threshold, faces){
+threshold = Math.floor(Number(threshold));
+faces = Math.floor(Number(faces));
+if(!isFinite(threshold) || !isFinite(faces) || faces < 1){ return ''; }
+if(threshold < 1){ return '1-' + faces + '. Fallimento'; }
+if(threshold >= faces){ return '1-' + faces + '. Successo'; }
+return '1-' + threshold + '. Successo\n' + (threshold + 1) + '-' + faces + '. Fallimento';
+}
+
+function forumDiceBlock(domanda, risposte, dado){
+var out = '<b>' + domanda + '</b>';
+if(risposte){ out += '\n[quote]' + risposte + '[/quote]'; }
+out += '\n\n' + dado;
+return out;
+}
+
+function forumDiceCopy(raw){
+raw = String(raw || '');
+var m = raw.match(/^\[dice=1d(\d+)\]([\s\S]*?)\[\/dice\]$/i);
+if(!m){ return raw; }
+var faces = parseInt(m[1], 10);
+var label = m[2];
+var domanda = '';
+var risposte = '';
+
+if(/^Tipo di Passaggio \(Ricerca Maledizioni\)$/i.test(label)){
+ domanda = 'Quale Passaggio della Ricerca Maledizioni viene affrontato?';
+ risposte = '1. Analisi e Tracciatura\n2. Scavo e Recupero\n3. Esecuzione dello Spezzamento\n4. Esecuzione dell’Esorcismo\n5. Affronto dell’Ombra';
+}else{
+ var act = label.match(/^Attivazione Effetto Negativo Involontario\s*[–-]\s*(.+?)\s*\(si attiva con 1-(\d+)\)$/i);
+ var eff = label.match(/^Determinazione Effetto Negativo Involontario\s*[–-]\s*(.+)$/i);
+ var ris = label.match(/^Effetto di Risonanza Maledetta\s*[–-]\s*(.+)$/i);
+ var cor = label.match(/^Effetto di Corruzione Mentale\s*[–-]\s*(.+)$/i);
+ var thr = label.match(/^(.+?)\s*[–-]\s*(.+?)\s*\(Riesce se 1-(-?\d+(?:\.\d+)?)\s*\(([\s\S]*?)\)\)$/i);
+ if(act){
+   domanda = 'Si attiva l’Effetto Negativo Involontario per ' + act[1] + '?';
+   risposte = thresholdAnswers(parseInt(act[2],10), faces).replace(/Successo/g,'Effetto attivato').replace(/Fallimento/g,'Nessun effetto');
+ }else if(eff){
+   domanda = 'Quale Effetto Negativo Involontario colpisce ' + eff[1] + '?';
+   risposte = '1. -5 Fatica\n2. -2 a Resistenza, Fatica e Destrezza per 5 post\n3. -5 Acume per 5 post\n4. Impossibilità di usare magie per 3 post\n5. -5 Volontà per 5 post';
+ }else if(ris){
+   domanda = 'Quale Effetto di Risonanza Maledetta colpisce ' + ris[1] + '?';
+   risposte = '1. Filo psichico con l’oggetto: -5 Volontà per 5 post\n2. Onda di energia: -5 Fatica e -2 Resistenza per 3 post\n3. Impronta maledetta: -3 a tutti i Parametri Magici per 5 post\n4. Sintomo minore narrativo per 3 post';
+ }else if(cor){
+   domanda = 'Quale Effetto di Corruzione Mentale colpisce ' + cor[1] + '?';
+   risposte = '1-2. Visioni ossessive: -5 Volontà per 5 post\n3-4. Disorientamento: -5 Percezione e -5 Destrezza per 5 post\n5. Legame residuo: -0,5 Prestigio';
+ }else if(thr){
+   var prova = thr[1].trim();
+   var pg = thr[2].trim();
+   var soglia = Math.floor(Number(thr[3]));
+   domanda = pg + ' supera la prova «' + prova + '»?';
+   risposte = thresholdAnswers(soglia, faces);
+ }else{
+   domanda = 'Qual è l’esito del tiro «' + label + '»?';
+   risposte = '1-' + faces + '. Inserisci il risultato nel tool per applicare l’esito previsto.';
+ }
+}
+return forumDiceBlock(domanda, risposte, raw);
+}
+
+function restoreLocalScroll(x,y){
+try{ window.scrollTo(x,y); }catch(e){}
+try{ requestAnimationFrame(function(){ try{window.scrollTo(x,y);}catch(e){} }); }catch(e){}
+setTimeout(function(){ try{window.scrollTo(x,y);}catch(e){} },0);
+}
+
+function copyText(text, btn){
+var sx = window.scrollX || window.pageXOffset || 0;
+var sy = window.scrollY || window.pageYOffset || 0;
+var payload = forumDiceCopy(text);
+var done = false;
+function flash(ok){
+ if(done){ return; } done = true;
+ restoreLocalScroll(sx,sy);
+ if(btn){
+  var old = btn.textContent;
+  btn.textContent = ok ? 'Copiato' : 'Errore';
+  setTimeout(function(){ btn.textContent = old; restoreLocalScroll(sx,sy); },1400);
+ }
+}
+function fallback(){
+ var ta = document.createElement('textarea');
+ ta.value = payload;
+ ta.setAttribute('aria-hidden','true');
+ ta.style.position = 'fixed';
+ ta.style.top = '0'; ta.style.left = '0';
+ ta.style.width = '1px'; ta.style.height = '1px';
+ ta.style.opacity = '0'; ta.style.pointerEvents = 'none';
+ document.body.appendChild(ta);
+ var ok = true;
+ try{ ta.select(); ta.setSelectionRange(0, ta.value.length); ok = document.execCommand('copy') !== false; }catch(err){ ok = false; }
+ document.body.removeChild(ta);
+ flash(ok);
+}
+try{
+ if(navigator.clipboard && navigator.clipboard.writeText){
+  navigator.clipboard.writeText(payload).then(function(){flash(true);}).catch(fallback);
+ }else{ fallback(); }
+}catch(err){ fallback(); }
+restoreLocalScroll(sx,sy);
+}
+ 
+function buildDiceTag(nomeDado, faces, termini, somma){ 
+var parts = []; 
+for(var i=0;i<termini.length;i++){ 
+if(termini[i].v !== 0 || termini[i].sempreMostra){ 
+parts.push(termini[i].v + ' ' + termini[i].t); 
+} 
+} 
+var formula = parts.join(' + '); 
+if(formula === ''){ formula = '0'; } 
+var testo = 'Riesce se 1-' + somma + ' (' + formula + ' = ' + somma + ')'; 
+return '[dice=1d' + faces + ']' + nomeDado + ' (' + testo + ')[/dice]'; 
+} 
+ 
+/* ---------- funzioni di riporto (carry) fra Fasi ---------- */ 
+ 
+function resultPending(r){ 
+if(!r){ return true; } 
+if(r.escluso){ return false; } 
+return r.successo !== true && r.successo !== false; 
+} 
+ 
+function carryIndiv5(prev){ 
+if(!prev){ return {bonus:0, pending:true, label:'Completa la Fase precedente prima di effettuare questo tiro.'}; } 
+if(prev.escluso){ return {bonus:0}; } 
+if(prev.successo === true){ return {bonus:5, label:'Bonus per il successo nella Fase precedente'}; } 
+if(prev.successo === false){ return {bonus:0}; } 
+return {bonus:0, pending:true, label:'Completa la Fase precedente prima di effettuare questo tiro.'}; 
+} 
+ 
+function carryIndiv5m5(prev){ 
+if(!prev){ return {bonus:0, pending:true, label:'Completa la Fase precedente prima di effettuare questo tiro.'}; } 
+if(prev.escluso){ return {bonus:0}; } 
+if(prev.successo === true){ return {bonus:5, label:'Bonus per il successo nella Fase precedente'}; } 
+if(prev.successo === false){ return {bonus:-5, label:'Malus per il fallimento nella Fase precedente'}; } 
+return {bonus:0, pending:true, label:'Completa la Fase precedente prima di effettuare questo tiro.'}; 
+} 
+ 
+function carryIndiv5AllFail(prev, altriesitifase){ 
+if(!prev){ return {bonus:0, pending:true, label:'Completa la Fase precedente per tutti i PG prima di effettuare questo tiro.'}; } 
+if(prev.escluso){ return {bonus:0}; } 
+if(prev.successo === true){ return {bonus:5, label:'Bonus per il successo nella Fase precedente'}; } 
+if(prev.successo !== false){ return {bonus:0, pending:true, label:'Completa la Fase precedente per tutti i PG prima di effettuare questo tiro.'}; } 
+var tuttiFalliti = true; 
+for(var i=0;i<altriesitifase.length;i++){ 
+var r = altriesitifase[i]; 
+if(!r || resultPending(r)){ return {bonus:0, pending:true, label:'Completa la Fase precedente per tutti i PG prima di effettuare questo tiro.'}; } 
+if(r.successo === true){ tuttiFalliti = false; } 
+} 
+if(tuttiFalliti){ return {bonus:-5, label:'Malus: tutti i PG hanno fallito la Fase precedente'}; } 
+return {bonus:0}; 
+} 
+ 
+function carryRollTwiceAllFail(prev, altriesitifase){ 
+if(!prev){ return {bonus:0, pending:true, label:'Completa la Fase precedente per tutti i PG prima di effettuare questo tiro.'}; } 
+if(prev.escluso){ return {bonus:0}; } 
+if(prev.successo === true){ return {bonus:5, label:'Bonus per il successo nella Fase precedente'}; } 
+if(prev.successo !== false){ return {bonus:0, pending:true, label:'Completa la Fase precedente per tutti i PG prima di effettuare questo tiro.'}; } 
+var tuttiFalliti = true; 
+for(var i=0;i<altriesitifase.length;i++){ 
+var r = altriesitifase[i]; 
+if(!r || resultPending(r)){ return {bonus:0, pending:true, label:'Completa la Fase precedente per tutti i PG prima di effettuare questo tiro.'}; } 
+if(r.successo === true){ tuttiFalliti = false; } 
+} 
+if(tuttiFalliti){ return {bonus:0, rollTwice:true, label:'Tutti i PG hanno fallito la Fase precedente: tira il dado due volte e tieni il risultato più alto'}; } 
+return {bonus:0}; 
+} 
+ 
+function carryExclude(prev){ 
+if(!prev){ return {bonus:0, pending:true, label:'Completa la Fase precedente prima di effettuare questo tiro.'}; } 
+if(prev.escluso){ return {bonus:0, excludeMe:true}; } 
+if(prev.successo === true){ return {bonus:5, label:'Bonus per il successo nella Fase precedente'}; } 
+if(prev.successo === false){ return {bonus:0, excludeMe:true, label:'Il PG resta intrappolato in un’illusione e non può agire in questa Fase'}; } 
+return {bonus:0, pending:true, label:'Completa la Fase precedente prima di effettuare questo tiro.'}; 
+} 
+ 
+/* ---------- motore generico di un Passaggio ---------- */ 
+ 
+function creaPassaggio(config){ 
+var state = { 
+pgs: [ {nome:'PG 1'}, {nome:'PG 2'} ], 
+vals: [ [{}], [{}] ], /* vals[pgIndex][faseIndex] = {campo:valore} */ 
+bonusC: [], 
+bonusP: [], 
+extra: [], 
+rolls: [], 
+rolls2: [], 
+risultati: [], 
+special: {},
+flowPage:'config',
+summaryVisited:false
+}; 
+/* inizializza matrici per PG e per fase */ 
+function ensureMatrices(){ 
+var npg = state.pgs.length; 
+var nfasi = config.fasi.length; 
+for(var t=0;t<npg;t++){ 
+if(!state.vals[t]){ state.vals[t] = []; } 
+if(!state.bonusC[t]){ state.bonusC[t] = []; } 
+if(!state.bonusP[t]){ state.bonusP[t] = []; } 
+if(!state.extra[t]){ state.extra[t] = []; } 
+if(!state.rolls[t]){ state.rolls[t] = []; } 
+if(!state.rolls2[t]){ state.rolls2[t] = []; } 
+if(!state.risultati[t]){ state.risultati[t] = []; } 
+for(var f=0; f<nfasi; f++){ 
+if(!state.vals[t][f]){ state.vals[t][f] = {}; } 
+if(state.bonusC[t][f] === undefined){ state.bonusC[t][f] = 0; } 
+if(state.bonusP[t][f] === undefined){ state.bonusP[t][f] = 0; } 
+if(state.extra[t][f] === undefined){ state.extra[t][f] = 0; } 
+if(state.rolls[t][f] === undefined){ state.rolls[t][f] = ''; } 
+if(state.rolls2[t][f] === undefined){ state.rolls2[t][f] = ''; } 
+} 
+} 
+} 
+ 
+var panel = el('section','passaggio'); 
+panel.id = 'panel-' + config.id; 
+ 
+function rerenderFocus(focusKey){ 
+render(); 
+if(!focusKey){ return; } 
+var target = panel.querySelector('[data-focus-key=\"' + focusKey + '\"]'); 
+if(target && !target.disabled){
+try{ target.focus({preventScroll:true}); }catch(e){ try{target.focus();}catch(_e){} }
+} 
+} 
+ 
+function render(){ 
+ensureMatrices(); 
+panel.innerHTML = ''; 
+ 
+var introBox = el('div','p-intro', config.intro);
+introBox.setAttribute('data-flow-part','config');
+panel.appendChild(introBox); 
+ 
+/* --- gestione PG --- */ 
+var mgr = el('div','pg-manager'); 
+var mgrTitle = el('h3', null, 'Personaggi partecipanti'); 
+mgr.appendChild(mgrTitle); 
+var mgrHint = el('p','muted','Questo Passaggio deve coinvolgere almeno 2 PG Spezzaincantesimi e/o Acumen: aggiungi una riga per ciascun PG che partecipa.'); 
+mgrHint.style.fontSize = '0.85em'; 
+mgrHint.style.marginTop = '0'; 
+mgr.appendChild(mgrHint); 
+ 
+state.pgs.forEach(function(pg, idx){ 
+var row = el('div','pg-row'); 
+var input = el('input'); 
+input.type = 'text';
+input.value = pg.nome;
+input.setAttribute('data-required-flow','1'); 
+input.addEventListener('input', function(){ 
+state.pgs[idx].nome = input.value;
+syncNameLabels();
+applyFlowView(false); 
+}); 
+row.appendChild(input); 
+if(state.pgs.length > 2){ 
+var rm = el('button','small remove-pg','Rimuovi'); 
+rm.addEventListener(EVT, function(){ 
+state.pgs.splice(idx,1); 
+state.vals.splice(idx,1); 
+state.bonusC.splice(idx,1); 
+state.bonusP.splice(idx,1); 
+state.extra.splice(idx,1); 
+state.rolls.splice(idx,1); 
+state.rolls2.splice(idx,1); 
+state.risultati.splice(idx,1); 
+state.special = {}; 
+render(); 
+}); 
+row.appendChild(rm); 
+} 
+mgr.appendChild(row); 
+}); 
+ 
+var addBtn = el('button','small add-pg','+ Aggiungi PG'); 
+addBtn.addEventListener(EVT, function(){ 
+state.pgs.push({nome:'PG ' + (state.pgs.length+1)}); 
+render(); 
+}); 
+mgr.appendChild(addBtn);
+mgr.setAttribute('data-flow-part','config');
+var toSummary = el('button','small','Vai al riepilogo');
+toSummary.id = 'flow-' + config.id + '-to-summary';
+toSummary.type = 'button';
+toSummary.setAttribute('data-flow-page-btn','1');
+toSummary.addEventListener(EVT,function(){ gotoFlowPage('summary',true); });
+var cfgNext = el('div','flow-next-wrap');
+cfgNext.appendChild(toSummary);
+cfgNext.appendChild(el('span','flow-next-note','Il riepilogo si sblocca quando sono presenti almeno i due partecipanti richiesti.'));
+mgr.appendChild(cfgNext);
+panel.appendChild(mgr); 
+ 
+function syncNameLabels(){ 
+var labels = panel.querySelectorAll('[data-name-for]'); 
+labels.forEach(function(lb){ 
+var idx = parseInt(lb.getAttribute('data-name-for'),10); 
+if(state.pgs[idx]){ lb.textContent = state.pgs[idx].nome; } 
+}); 
+} 
+ 
+/* --- Fasi --- */
+state.risultati = [];
+config.fasi.forEach(function(fase, faseIdx){
+ var block = renderFase(fase, faseIdx);
+ panel.appendChild(block);
+});
+
+var outcomeBlock = null;
+if(typeof config.postFasi === 'function'){
+ state.rerender = render;
+ state.rerenderFocus = rerenderFocus;
+ outcomeBlock = config.postFasi(state);
+}
+if(!outcomeBlock){
+ outcomeBlock = el('div','effetto-block');
+ outcomeBlock.appendChild(el('h4',null,'Esito finale'));
+ var f3done = phaseComplete(2);
+ outcomeBlock.appendChild(el('p','muted', f3done ? 'Le tre Fasi sono concluse. Consulta gli esiti individuali della Fase III e le relative conseguenze indicate nel Passaggio.' : 'Completa la Fase III per visualizzare l’esito conclusivo del Passaggio.'));
+}
+outcomeBlock.setAttribute('data-flow-part','outcome');
+panel.appendChild(outcomeBlock);
+
+buildFlowUI();
+applyFlowView(false);
+}
+
+function configReady(){
+ if(state.pgs.length < 2){ return false; }
+ for(var i=0;i<state.pgs.length;i++){var n=String(state.pgs[i].nome||'').trim();if(!n||/^PG\s*\d+$/i.test(n)){return false;}}
+ return true;
+}
+function phaseComplete(idx){
+ var rr = state.risultati[idx];
+ if(!rr || rr.length < state.pgs.length){ return false; }
+ for(var i=0;i<state.pgs.length;i++){
+  var r=rr[i];
+  if(!r || r.risultatoImpossibile || r.bloccato || resultPending(r)){ return false; }
+ }
+ return true;
+}
+function phaseHasData(idx){
+ for(var i=0;i<state.pgs.length;i++){
+  var vv=state.vals[i]&&state.vals[i][idx]?state.vals[i][idx]:{};
+  for(var k in vv){ if(vv[k]!==null && vv[k]!==undefined && vv[k]!=='' && isFinite(Number(vv[k]))){ return true; } }
+  if(state.rolls[i]&&state.rolls[i][idx]!==''&&state.rolls[i][idx]!==undefined){ return true; }
+  if(state.rolls2[i]&&state.rolls2[i][idx]!==''&&state.rolls2[i][idx]!==undefined){ return true; }
+  if(state.bonusC[i]&&state.bonusC[i][idx]){ return true; }
+  if(state.bonusP[i]&&state.bonusP[i][idx]){ return true; }
+  if(state.extra[i]&&state.extra[i][idx]){ return true; }
+ }
+ return false;
+}
+function pageUnlocked(page){
+ if(page==='config'){ return true; }
+ if(page==='summary'){ return configReady(); }
+ if(page==='phase1'){ return configReady() && (state.summaryVisited || phaseHasData(0) || phaseComplete(0)); }
+ if(page==='phase2'){ return phaseComplete(0); }
+ if(page==='phase3'){ return phaseComplete(1); }
+ if(page==='outcome'){ return phaseComplete(2); }
+ return false;
+}
+function baselinePhaseEstimate(idx){
+ var fase=config.fasi[idx], probs=[];
+ for(var i=0;i<state.pgs.length;i++){
+  var v=state.vals[i]&&state.vals[i][idx]?state.vals[i][idx]:{};
+  var ready=true;
+  fase.campi.forEach(function(c){var x=v[c.key];if(typeof x!=='number'||!isFinite(x)||x<0){ready=false;}});
+  if(!ready){ return null; }
+  var terms=fase.formula(v), total=0;
+  terms.forEach(function(tt){total+=(tt.v||0);});
+  var bc=fase.bonusConoscenza?fase.bonusConoscenza[state.bonusC[i][idx]]:0;
+  var bp=fase.bonusPozione?fase.bonusPozione[state.bonusP[i][idx]]:0;
+  var be=state.extra[i][idx]||0;
+  total+=bc+bp+(isFinite(be)?be:0);
+  if(total<0)total=0;if(total>fase.dado)total=fase.dado;
+  probs.push(total/fase.dado);
+ }
+ if(!probs.length){return null;}
+ var avg=probs.reduce(function(a,b){return a+b;},0)/probs.length;
+ return {prob:avg,label:avg>=0.65?'favorevole':(avg>=0.40?'equilibrata':'impegnativa')};
+}
+function summaryData(){
+ var phaseEst=config.fasi.map(function(_,i){return baselinePhaseEstimate(i);});
+ var all=phaseEst.every(function(x){return !!x;});
+ var overall=null;
+ if(all){
+  var av=phaseEst.reduce(function(s,x){return s+x.prob;},0)/phaseEst.length;
+  overall={prob:av,label:av>=0.65?'Facile':(av>=0.40?'Media':'Difficile')};
+ }
+ return {phaseEst:phaseEst,overall:overall};
+}
+function phasePlainName(fase){ return String(fase.nome||'').replace(/^Fase\s+[IVX]+:\s*/i,''); }
+function summaryHtml(){
+ var sd=summaryData();
+ var h='<h3>Situazione iniziale — '+config.titolo+'</h3>';
+ h+='<div class="flow-summary-section"><p><b>Passaggio:</b> '+config.titolo+'</p><p><b>Partecipanti:</b> '+state.pgs.map(function(p){return p.nome;}).join(' · ')+'</p></div>';
+ h+='<div class="flow-summary-section"><b>Parametri e struttura delle Fasi</b><ul>';
+ config.fasi.forEach(function(f,i){
+  var pars=f.campi.map(function(c){return c.label;}).join(', ');
+  h+='<li><b>Fase '+(i+1)+':</b> '+phasePlainName(f)+' — '+pars+' — 1d'+f.dado+'</li>';
+ });
+ h+='</ul><p>I bonus facoltativi di Conoscenze, Pozioni e Borsa vengono considerati soltanto quando sono realmente selezionati; i bonus/malus derivanti dagli esiti delle Fasi precedenti non vengono anticipati.</p></div>';
+ var any=sd.phaseEst.some(function(x){return !!x;});
+ if(any){
+  h+='<div class="flow-summary-section"><b>Impatto previsto sulle Fasi</b><ul>';
+  sd.phaseEst.forEach(function(x,i){h+='<li>Fase '+(i+1)+': '+(x?x.label:'non ancora stimabile')+'</li>';});
+  h+='</ul></div>';
+ }
+ if(sd.overall){
+  h+='<div class="flow-difficulty"><b>Difficoltà complessiva stimata del Passaggio:</b> '+sd.overall.label+'<br><span class="muted">Stima di base calcolata sulle soglie attualmente inserite nelle tre Fasi, senza presumere bonus o malus che dipendono da esiti futuri.</span></div>';
+ }
+ return h;
+}
+function summaryForumText(){
+ var sd=summaryData(), out='[spoiler=Situazione iniziale della Ricerca Maledizioni]\n';
+ out+='<b>Passaggio:</b> '+config.titolo+'\n';
+ out+='<b>Partecipanti:</b> '+state.pgs.map(function(p){return p.nome;}).join(' · ')+'\n\n';
+ out+='<b>Parametri e struttura delle Fasi</b>\n';
+ config.fasi.forEach(function(f,i){out+='• Fase '+(i+1)+': '+phasePlainName(f)+' — '+f.campi.map(function(c){return c.label;}).join(', ')+' — 1d'+f.dado+'\n';});
+ var any=sd.phaseEst.some(function(x){return !!x;});
+ if(any){
+  out+='\n<b>Impatto previsto sulle Fasi</b>\n';
+  sd.phaseEst.forEach(function(x,i){out+='• Fase '+(i+1)+': '+(x?x.label:'non ancora stimabile')+'\n';});
+ }
+ if(sd.overall){out+='\n<b>Difficoltà complessiva stimata del Passaggio:</b> '+sd.overall.label+'\nStima di base sulle soglie attualmente inserite, senza presumere bonus o malus derivanti da esiti futuri.\n';}
+ out+='[/spoiler]';
+ return out;
+}
+function refreshSummary(){
+ var box=panel.querySelector('.flow-summary-content');if(box){box.innerHTML=summaryHtml();}
+}
+function buildFlowUI(){
+ var nav=el('div','flow-page-nav');nav.setAttribute('data-flow-ui','1');
+ var pages=[['config','Configurazione'],['summary','Riepilogo'],['phase1','Fase I'],['phase2','Fase II'],['phase3','Fase III'],['outcome','Esito']];
+ pages.forEach(function(p){
+  var b=el('button','flow-page-btn',p[1]);b.type='button';b.id='flow-'+config.id+'-'+p[0];b.setAttribute('data-flow-page-btn','1');b.setAttribute('data-flow-page',p[0]);
+  b.addEventListener(EVT,function(){gotoFlowPage(p[0],true);});nav.appendChild(b);
+ });
+ panel.appendChild(nav);
+ var sum=el('div','flow-summary');sum.setAttribute('data-flow-part','summary');
+ var content=el('div','flow-summary-content');content.innerHTML=summaryHtml();sum.appendChild(content);
+ var ar=el('div','flow-action-row');
+ var cp=el('button','small','Copia riepilogo per il post');cp.type='button';cp.id='flow-'+config.id+'-copy-summary';cp.setAttribute('data-copy-control','1');cp.addEventListener(EVT,function(ev){if(ev&&ev.preventDefault)ev.preventDefault();copyText(summaryForumText(),cp);});ar.appendChild(cp);
+ var go=el('button','small','Vai alla Fase I');go.type='button';go.id='flow-'+config.id+'-start-phase1';go.setAttribute('data-flow-page-btn','1');go.addEventListener(EVT,function(){state.summaryVisited=true;gotoFlowPage('phase1',true);});ar.appendChild(go);
+ sum.appendChild(ar);panel.appendChild(sum);
+}
+function applyFlowView(scroll){
+ var page=state.flowPage||'config';
+ if(!pageUnlocked(page)){
+  if(page==='summary'&&!configReady())page='config';
+  else if(page==='phase1'&&!pageUnlocked('phase1'))page=configReady()?'summary':'config';
+  else if(page==='phase2'&&!pageUnlocked('phase2'))page='phase1';
+  else if(page==='phase3'&&!pageUnlocked('phase3'))page='phase2';
+  else if(page==='outcome'&&!pageUnlocked('outcome'))page='phase3';
+  state.flowPage=page;
+ }
+ Array.prototype.forEach.call(panel.querySelectorAll('[data-flow-part]'),function(n){n.classList.add('flow-hidden');});
+ Array.prototype.forEach.call(panel.querySelectorAll('[data-flow-part="'+page+'"]'),function(n){n.classList.remove('flow-hidden');});
+ Array.prototype.forEach.call(panel.querySelectorAll('.flow-page-btn'),function(b){var p=b.getAttribute('data-flow-page');b.disabled=!pageUnlocked(p);b.classList.toggle('active',p===page);});
+ var cfgBtn=panel.querySelector('#flow-'+config.id+'-to-summary');if(cfgBtn)cfgBtn.disabled=!configReady();
+ for(var i=0;i<config.fasi.length;i++){var nb=panel.querySelector('#flow-'+config.id+'-next-'+(i+1));if(nb)nb.disabled=!(i===0?phaseComplete(0):(i===1?phaseComplete(1):phaseComplete(2)));}
+ var start=panel.querySelector('#flow-'+config.id+'-start-phase1');if(start)start.disabled=!configReady();
+ refreshSummary();
+ if(scroll){
+  var target=panel.querySelector('[data-flow-part="'+page+'"]')||panel;
+  try{target.scrollIntoView({behavior:'smooth',block:'start'});}catch(e){}
+ }
+}
+function gotoFlowPage(page,scroll){
+ if(page==='summary'&&configReady()){state.summaryVisited=true;}
+ if(page==='phase1'&&configReady()){state.summaryVisited=true;}
+ if(!pageUnlocked(page)){return;}
+ state.flowPage=page;applyFlowView(scroll!==false);
+}
+function firstIncompleteIn(part){
+ var host=panel.querySelector('[data-flow-part="'+part+'"]');if(!host)return null;
+ var fields=host.querySelectorAll('input[data-required-flow="1"]');
+ for(var i=0;i<fields.length;i++){
+  var n=fields[i];if(n.disabled||n.offsetParent===null)continue;
+  var txt=String(n.value||'').trim();
+  if(txt===''||(part==='config'&&/^PG\s*\d+$/i.test(txt)))return n;
+  if(n.type==='number'){var v=Number(n.value),min=n.min!==''?Number(n.min):null,max=n.max!==''?Number(n.max):null;if(!isFinite(v)||(min!==null&&isFinite(min)&&v<min)||(max!==null&&isFinite(max)&&v>max))return n;}
+ }
+ return null;
+}
+function resumeFlow(readonly){
+ if(phaseHasData(0)||phaseComplete(0)){state.summaryVisited=true;}
+ var page='config',target=null;
+ if(readonly){
+  if(phaseComplete(2)){page='outcome';}
+  else if(phaseHasData(2)||phaseComplete(1)){page='phase3';}
+  else if(phaseHasData(1)||phaseComplete(0)){page='phase2';}
+  else if(phaseHasData(0)||state.summaryVisited){page='phase1';}
+  else if(configReady()){page='summary';}
+ }else if(!configReady()){
+  page='config';target=firstIncompleteIn('config');
+ }else if(!state.summaryVisited&&!phaseHasData(0)){
+  page='summary';
+ }else if(!phaseComplete(0)){
+  page='phase1';target=firstIncompleteIn('phase1');
+ }else if(!phaseComplete(1)){
+  page='phase2';target=firstIncompleteIn('phase2');
+ }else if(!phaseComplete(2)){
+  page='phase3';target=firstIncompleteIn('phase3');
+ }else{
+  page='outcome';target=firstIncompleteIn('outcome');
+ }
+ state.flowPage=page;applyFlowView(false);
+ if(!target){target=panel.querySelector('[data-flow-part="'+page+'"]')||panel;}
+ setTimeout(function(){
+  try{target.scrollIntoView({behavior:'auto',block:'center'});}catch(e){}
+  if(!readonly && target && /^(INPUT|TEXTAREA)$/i.test(target.tagName||'') && !target.disabled){try{target.focus();}catch(e){}}
+ },80);
+ return {page:page,target:target};
+}
+ 
+function renderFase(fase, faseIdx){
+var block = el('div','fase-block');
+block.setAttribute('data-flow-part','phase' + (faseIdx+1));
+block.setAttribute('data-flow-phase-index',String(faseIdx)); 
+var head = el('div','fase-header'); 
+head.appendChild(el('h3', null, fase.nome)); 
+head.appendChild(el('span','dado-badge','1d' + fase.dado)); 
+block.appendChild(head); 
+block.appendChild(el('div','fase-desc', fase.descrizione)); 
+ 
+state.pgs.forEach(function(pg, pgIdx){ 
+var prevResult = faseIdx > 0 ? state.risultati[faseIdx-1][pgIdx] : null; 
+var altriEsitiPrec = []; 
+if(faseIdx > 0){ 
+state.pgs.forEach(function(_, j){ 
+if(j !== pgIdx){ altriEsitiPrec.push(state.risultati[faseIdx-1][j]); } 
+}); 
+} 
+var carryInfo = fase.carry ? fase.carry(prevResult, altriEsitiPrec) : {bonus:0}; 
+ 
+var card = el('div','pg-card'); 
+var escluso = Boolean(carryInfo.excludeMe); 
+if(escluso){ card.className += ' excluded'; } 
+ 
+var nameLine = el('div','pg-card-name'); 
+var nameSpan = document.createElement('span'); 
+nameSpan.setAttribute('data-name-for', pgIdx); 
+nameSpan.textContent = pg.nome; 
+nameLine.appendChild(nameSpan); 
+card.appendChild(nameLine); 
+ 
+if(escluso){ 
+card.appendChild(el('div','banner warn', carryInfo.label || 'Il PG non può agire in questa Fase.')); 
+state.risultati[faseIdx] = state.risultati[faseIdx] || []; 
+state.risultati[faseIdx][pgIdx] = {escluso:true, successo:false}; 
+card.appendChild(block.contains ? document.createTextNode('') : document.createTextNode('')); 
+appendCardToBlock(block, card); 
+return; 
+} 
+ 
+/* campi statistica */ 
+var grid = el('div','stat-grid'); 
+fase.campi.forEach(function(campo){ 
+var wrap = el('div','stat-field'); 
+var lb = el('label', null, campo.label); 
+wrap.appendChild(lb); 
+var inp = document.createElement('input'); 
+inp.type = 'number';
+inp.setAttribute('data-required-flow','1');
+var storedVal = state.vals[pgIdx][faseIdx][campo.key]; 
+inp.value = (storedVal !== undefined && storedVal !== null) ? storedVal : ''; 
+inp.placeholder = 'Inserisci valore'; 
+inp.min = '0'; 
+inp.step = 'any'; 
+var statFocusKey = 'stat-' + faseIdx + '-' + pgIdx + '-' + campo.key; 
+inp.setAttribute('data-focus-key', statFocusKey); 
+inp.addEventListener('input', function(){ 
+state.vals[pgIdx][faseIdx][campo.key] = inp.value === '' ? null : parseFloat(inp.value); 
+rerenderFocus(statFocusKey); 
+}); 
+wrap.appendChild(inp); 
+grid.appendChild(wrap); 
+}); 
+ 
+/* bonus conoscenza / pozione se previsti */ 
+if(fase.bonusConoscenza){ 
+var wrapC = el('div','stat-field'); 
+wrapC.appendChild(el('label', null, 'Conoscenza usata')); 
+var selC = document.createElement('select');
+selC.setAttribute('data-optional-flow','1'); 
+var optsC = ['Nessuna','Scolastica ( +' + fase.bonusConoscenza[1] + ' )','Extra ( +' + fase.bonusConoscenza[2] + ' )','Avanzata ( +' + fase.bonusConoscenza[3] + ' )']; 
+optsC.forEach(function(txt, i){ 
+var o = document.createElement('option'); 
+o.value = i; o.textContent = txt; 
+if(state.bonusC[pgIdx][faseIdx] === i){ o.selected = true; } 
+selC.appendChild(o); 
+}); 
+selC.addEventListener('change', function(){ 
+state.bonusC[pgIdx][faseIdx] = parseInt(selC.value,10); 
+render(); 
+}); 
+wrapC.appendChild(selC); 
+grid.appendChild(wrapC); 
+} 
+if(fase.bonusPozione){ 
+var wrapP = el('div','stat-field'); 
+wrapP.appendChild(el('label', null, 'Pozione usata')); 
+var selP = document.createElement('select');
+selP.setAttribute('data-optional-flow','1'); 
+var optsP = ['Nessuna','Standard ( +' + fase.bonusPozione[1] + ' )','Oltre Ogni Previsione ( +' + fase.bonusPozione[2] + ' )','Eccezionale ( +' + fase.bonusPozione[3] + ' )']; 
+optsP.forEach(function(txt, i){ 
+var o = document.createElement('option'); 
+o.value = i; o.textContent = txt; 
+if(state.bonusP[pgIdx][faseIdx] === i){ o.selected = true; } 
+selP.appendChild(o); 
+}); 
+selP.addEventListener('change', function(){ 
+state.bonusP[pgIdx][faseIdx] = parseInt(selP.value,10); 
+render(); 
+}); 
+wrapP.appendChild(selP); 
+grid.appendChild(wrapP); 
+} 
+ 
+var wrapE = el('div','stat-field'); 
+wrapE.appendChild(el('label', null, 'Altro bonus (Borsa / Prezzario)')); 
+var inpE = document.createElement('input'); 
+inpE.type = 'number';
+inpE.setAttribute('data-optional-flow','1');
+inpE.value = state.extra[pgIdx][faseIdx] || ''; 
+inpE.placeholder = '0 (facoltativo)'; 
+inpE.step = 'any'; 
+var extraFocusKey = 'extra-' + faseIdx + '-' + pgIdx; 
+inpE.setAttribute('data-focus-key', extraFocusKey); 
+inpE.addEventListener('input', function(){ 
+state.extra[pgIdx][faseIdx] = inpE.value === '' ? 0 : parseFloat(inpE.value); 
+rerenderFocus(extraFocusKey); 
+}); 
+wrapE.appendChild(inpE); 
+grid.appendChild(wrapE); 
+ 
+card.appendChild(grid); 
+ 
+/* calcolo totale */ 
+var datiValidi = true; 
+var datiMancanti = []; 
+fase.campi.forEach(function(campo){ 
+var vv = state.vals[pgIdx][faseIdx][campo.key]; 
+if(typeof vv !== 'number' || !isFinite(vv) || vv < 0){ datiValidi = false; datiMancanti.push(campo.label); } 
+}); 
+ 
+var termini = []; 
+if(datiValidi){ termini = fase.formula(state.vals[pgIdx][faseIdx]); } 
+var bC = fase.bonusConoscenza ? fase.bonusConoscenza[state.bonusC[pgIdx][faseIdx]] : 0; 
+var bP = fase.bonusPozione ? fase.bonusPozione[state.bonusP[pgIdx][faseIdx]] : 0; 
+var bE = state.extra[pgIdx][faseIdx] || 0; 
+if(typeof bE !== 'number' || !isFinite(bE)){ bE = 0; } 
+var nomiC = ['','Conoscenza Scolastica','Conoscenza Extra','Conoscenza Avanzata']; 
+var nomiP = ['','Pozione Standard','Pozione Oltre Ogni Previsione','Pozione Eccezionale']; 
+if(datiValidi){ 
+if(bC){ termini.push({t:nomiC[state.bonusC[pgIdx][faseIdx]], v:bC}); } 
+if(bP){ termini.push({t:nomiP[state.bonusP[pgIdx][faseIdx]], v:bP}); } 
+if(bE){ termini.push({t:'Bonus extra', v:bE}); } 
+if(carryInfo.bonus){ termini.push({t:carryInfo.label, v:carryInfo.bonus}); } 
+} 
+ 
+var somma = 0; 
+if(datiValidi){ termini.forEach(function(tt){ somma += (tt.v || 0); }); } 
+if(somma < 0){ somma = 0; } 
+ 
+var bd = el('div','breakdown'); 
+if(!datiValidi){ 
+bd.innerHTML = '<b>Completa i Parametri richiesti.</b> Mancano o non sono validi: ' + datiMancanti.join(', ') + '. Lo 0 è valido soltanto se inserito esplicitamente.'; 
+} else if(carryInfo.pending){ 
+bd.innerHTML = '<b>Fase in attesa.</b> ' + (carryInfo.label || 'Completa la Fase precedente prima di procedere.'); 
+} else { 
+var bdParts = []; 
+termini.forEach(function(tt){ bdParts.push(tt.v + ' ' + tt.t); }); 
+bd.innerHTML = 'Possibilità totali: <b>' + somma + '</b> su 1d' + fase.dado + ' (' + bdParts.join(' + ') + ')'; 
+} 
+card.appendChild(bd); 
+ 
+if(carryInfo.rollTwice && !carryInfo.pending){ 
+card.appendChild(el('div','note-line', carryInfo.label)); 
+} 
+ 
+var diceRow = el('div','dice-row'); 
+var diceTag = document.createElement('input'); 
+diceTag.className = 'dice-tag'; 
+diceTag.type = 'text'; 
+diceTag.readOnly = true; 
+var nomeDado = fase.nome.replace(/^Fase [IVX]+:\s*/,'') + ' – ' + pg.nome; 
+var faseBloccata = !datiValidi || Boolean(carryInfo.pending); 
+if(faseBloccata){ 
+diceTag.value = !datiValidi ? 'Completa i Parametri richiesti prima di copiare il dado.' : (carryInfo.label || 'Completa la Fase precedente prima di copiare il dado.'); 
+} else { 
+diceTag.value = buildDiceTag(nomeDado, fase.dado, termini, somma); 
+} 
+diceRow.appendChild(diceTag); 
+var copyBtn = el('button','small','Copia');
+copyBtn.setAttribute('data-copy-control','1');
+copyBtn.disabled = faseBloccata; 
+copyBtn.addEventListener(EVT, function(){ if(!copyBtn.disabled){ copyText(diceTag.value, copyBtn); } }); 
+diceRow.appendChild(copyBtn); 
+card.appendChild(diceRow); 
+ 
+var rollRow = el('div','dice-row'); 
+rollRow.appendChild(el('span','roll-label','Risultato ottenuto:')); 
+var rollInp = document.createElement('input'); 
+rollInp.className = 'roll-input'; 
+rollInp.type = 'number';
+rollInp.setAttribute('data-required-flow','1');
+rollInp.min = '1'; rollInp.max = String(fase.dado); rollInp.step = '1'; 
+rollInp.value = state.rolls[pgIdx][faseIdx]; 
+rollInp.disabled = faseBloccata; 
+var rollFocusKey = 'roll-' + faseIdx + '-' + pgIdx + '-1'; 
+rollInp.setAttribute('data-focus-key', rollFocusKey); 
+rollInp.addEventListener('input', function(){ 
+state.rolls[pgIdx][faseIdx] = rollInp.value; 
+rerenderFocus(rollFocusKey); 
+}); 
+rollRow.appendChild(rollInp); 
+ 
+var roll2Inp = null; 
+if(carryInfo.rollTwice && !carryInfo.pending){ 
+rollRow.appendChild(el('span','roll-label','2° tiro:')); 
+roll2Inp = document.createElement('input'); 
+roll2Inp.className = 'roll-input'; 
+roll2Inp.type = 'number';
+roll2Inp.setAttribute('data-required-flow','1');
+roll2Inp.min = '1'; roll2Inp.max = String(fase.dado); roll2Inp.step = '1'; 
+roll2Inp.value = state.rolls2[pgIdx][faseIdx]; 
+roll2Inp.disabled = faseBloccata; 
+var roll2FocusKey = 'roll-' + faseIdx + '-' + pgIdx + '-2'; 
+roll2Inp.setAttribute('data-focus-key', roll2FocusKey); 
+roll2Inp.addEventListener('input', function(){ 
+state.rolls2[pgIdx][faseIdx] = roll2Inp.value; 
+rerenderFocus(roll2FocusKey); 
+}); 
+rollRow.appendChild(roll2Inp); 
+} 
+ 
+var esito = null; 
+var risultatoImpossibile = false; 
+if(!faseBloccata){ 
+var rollVal = state.rolls[pgIdx][faseIdx]; 
+if(rollVal !== '' && rollVal !== undefined){ 
+var num = Number(rollVal); 
+if(!isFinite(num) || Math.floor(num) !== num || num < 1 || num > fase.dado){ 
+risultatoImpossibile = true; 
+} else if(carryInfo.rollTwice){ 
+var rv2 = state.rolls2[pgIdx][faseIdx]; 
+if(rv2 !== '' && rv2 !== undefined){ 
+var num2 = Number(rv2); 
+if(!isFinite(num2) || Math.floor(num2) !== num2 || num2 < 1 || num2 > fase.dado){ 
+risultatoImpossibile = true; 
+} else { 
+var peggiore = Math.max(num, num2); 
+esito = peggiore <= somma; 
+} 
+} 
+} else { 
+esito = num <= somma; 
+} 
+} 
+} 
+ 
+var tag = el('span','result-tag pending','In attesa'); 
+if(faseBloccata){ tag.textContent = 'Bloccato'; } 
+else if(risultatoImpossibile){ tag.className = 'result-tag fail'; tag.textContent = 'Risultato impossibile'; } 
+else if(carryInfo.rollTwice && state.rolls[pgIdx][faseIdx] !== '' && state.rolls2[pgIdx][faseIdx] === ''){ tag.textContent = 'Inserisci il 2° tiro'; } 
+else if(esito === true){ tag.className = 'result-tag ok'; tag.textContent = 'Successo'; } 
+else if(esito === false){ tag.className = 'result-tag fail'; tag.textContent = 'Fallimento'; } 
+rollRow.appendChild(tag); 
+card.appendChild(rollRow); 
+ 
+if(fase.notaSuccesso && esito === true){ card.appendChild(el('div','note-line', fase.notaSuccesso)); } 
+if(fase.notaFallimento && esito === false){ card.appendChild(el('div','note-line', fase.notaFallimento)); } 
+ 
+state.risultati[faseIdx] = state.risultati[faseIdx] || []; 
+state.risultati[faseIdx][pgIdx] = { 
+successo: esito, 
+escluso:false, 
+roll: state.rolls[pgIdx][faseIdx], 
+totale: datiValidi ? somma : null, 
+bloccato:faseBloccata, 
+risultatoImpossibile:risultatoImpossibile 
+}; 
+ 
+appendCardToBlock(block, card);
+});
+
+var nextWrap = el('div','flow-next-wrap');
+var nextPage = faseIdx < config.fasi.length-1 ? ('phase' + (faseIdx+2)) : 'outcome';
+var nextText = faseIdx < config.fasi.length-1 ? ('Procedi alla Fase ' + (faseIdx+2===2?'II':'III')) : 'Vai all’esito';
+var nextBtn = el('button','small',nextText);
+nextBtn.id = 'flow-' + config.id + '-next-' + (faseIdx+1);
+nextBtn.type = 'button';
+nextBtn.setAttribute('data-flow-page-btn','1');
+nextBtn.addEventListener(EVT,function(){ gotoFlowPage(nextPage,true); });
+nextWrap.appendChild(nextBtn);
+nextWrap.appendChild(el('span','flow-next-note','Il passaggio successivo si sblocca quando tutti i risultati necessari di questa Fase sono validi.'));
+block.appendChild(nextWrap);
+
+return block;
+} 
+ 
+function appendCardToBlock(block, card){ 
+block.appendChild(card); 
+} 
+ 
+render(); 
+ 
+var tabBtn = el('button', null, config.numero + '. ' + config.titolo); 
+tabBtn.addEventListener(EVT, function(){ 
+attivaPassaggio(config.id); 
+}); 
+ 
+return {tabBtn:tabBtn,panel:panel,id:config.id,flow:{apply:applyFlowView,goto:gotoFlowPage,resume:resumeFlow,configReady:configReady,phaseComplete:phaseComplete,phaseHasData:phaseHasData,summaryForumText:summaryForumText}};
+} 
+ 
+ 
+/* ---------- formule condivise ---------- */ 
+ 
+function formulaMentePiuSapienza5(mLabel, sLabel, mKey){ 
+return function(v){ 
+var s5 = Math.floor((v.sapienza || 0) / 5); 
+var key = mKey || 'mente'; 
+return [ 
+{t:mLabel, v:(v[key] || 0)}, 
+{t:sLabel + ' (diviso 5, arrotondato per difetto)', v:s5} 
+]; 
+}; 
+} 
+ 
+/* ---------- rendering di una tabella "effetto negativo" a soglia ---------- */ 
+ 
+function effettoATabella(titolo, faseLabel, faceD, righe, testoIntro){ 
+var box = el('div','effetto-block'); 
+box.appendChild(el('h4', null, titolo)); 
+if(testoIntro){ box.appendChild(el('p','muted', testoIntro)); } 
+var ul = el('ul','effetto-list'); 
+righe.forEach(function(r){ ul.appendChild(el('li', null, r)); }); 
+box.appendChild(ul); 
+return box; 
+} 
+ 
+/* ========================================================= 
+PASSAGGIO 1 - ANALISI E TRACCIATURA 
+========================================================= */ 
+ 
+var P1 = { 
+id:'p1', numero:1, titolo:'Analisi e Tracciatura', 
+intro:'Il PG si trova davanti a un fenomeno oscuro: un oggetto che si comporta in modo anomalo, un luogo carico di presenze, o una persona tormentata da energie sconosciute. Prima di agire occorre capire con che tipo di maledizione si ha a che fare. In questo Passaggio gli incantesimi o le Conoscenze utilizzati riescono sempre al 100%; si può usare al massimo una Conoscenza e una Pozione per post, oltre agli eventuali Oggetti/Borsa previsti. I bonus applicabili possono sommarsi.', 
+fasi:[ 
+{ 
+nome:'Fase I: Ispezione Esoterica', dado:40, 
+descrizione:'Il PG osserva il soggetto (persona, luogo, oggetto), esegue incantesimi di rilevazione, ascolta gli echi, prende nota dei sintomi e registra il comportamento delle energie.', 
+campi:[{key:'mente',label:'Acume o Percezione'},{key:'sapienza',label:'Sapienza Arcaica o Divinatoria'}], 
+formula:formulaMentePiuSapienza5('Acume o Percezione','Sapienza Arcaica o Divinatoria'), 
+bonusConoscenza:[0,3,5,10], bonusPozione:[0,3,5,10], 
+carry:null, 
+notaSuccesso:'Percepisce con precisione la presenza e gli effetti latenti: ottiene un bonus alla Fase successiva.', 
+notaFallimento:'Percepisce segnali fuorvianti o pericolosi. Si passa comunque alla Fase II.' 
+}, 
+{ 
+nome:'Fase II: Comparazione con Archivi', dado:40, 
+descrizione:'Il PG consulta fonti di sapere magico per confrontare i sintomi osservati: rune, cronache, leggende familiari, flagelli noti.', 
+campi:[{key:'mente',label:'Acume o Percezione'},{key:'sapienza',label:'Sapienza Arcaica o Divinatoria'}], 
+formula:formulaMentePiuSapienza5('Acume o Percezione','Sapienza Arcaica o Divinatoria'), 
+bonusConoscenza:[0,1,3,5], bonusPozione:[0,1,3,5], 
+carry:carryIndiv5, 
+notaSuccesso:'Riconduce i sintomi a una categoria precisa (Malocchio, Vincolo, Flagello...): ottiene un bonus alla Fase III.', 
+notaFallimento:'Interpreta male i simboli raccolti.' 
+}, 
+{ 
+nome:'Fase III: Formulazione del Verdetto', dado:40, 
+descrizione:'Il PG unisce intuizione e sapere per dare un nome alla maledizione. Questa fase conclude l’analisi e prepara il Passaggio successivo (esorcismo, purificazione, sigillatura...).', 
+campi:[{key:'mente',label:'Acume o Percezione'},{key:'sapienza',label:'Sapienza Arcaica o Divinatoria'}], 
+formula:formulaMentePiuSapienza5('Acume o Percezione','Sapienza Arcaica o Divinatoria'), 
+bonusConoscenza:[0,1,3,5], bonusPozione:[0,1,3,5], 
+carry:carryIndiv5, 
+notaSuccesso:'La Fase III riesce. La diagnosi è precisa e il Passaggio è completato solo se questo PG ha avuto successo anche nelle Fasi I e II.', 
+notaFallimento:'La Fase III fallisce: la diagnosi risulta errata e il PG non riscuote Prestigio dalla Missione "Lo Spezzaincantesimi".' 
+} 
+], 
+postFasi:function(state){ 
+var box = el('div','effetto-block'); 
+box.appendChild(el('h4', null, 'Esito finale ed Effetto Negativo Involontario')); 
+box.appendChild(el('p','muted','Il Passaggio è completato individualmente solo dal PG che ha avuto successo in tutte e tre le Fasi. Se un PG ha fallito almeno una Fase, la sua diagnosi è errata e non può riscuotere il Prestigio. L’eventuale effetto negativo usa un primo 1d5 per l’attivazione e, se si attiva, un secondo 1d5 per determinarne il tipo.')); 
+ 
+if(!state.special.p1Activation){ state.special.p1Activation = []; } 
+if(!state.special.p1Effect){ state.special.p1Effect = []; } 
+ 
+state.pgs.forEach(function(pg, idx){ 
+var f1 = state.risultati[0] ? state.risultati[0][idx] : null; 
+var f2 = state.risultati[1] ? state.risultati[1][idx] : null; 
+var f3 = state.risultati[2] ? state.risultati[2][idx] : null; 
+var riga = el('div','pg-card'); 
+riga.appendChild(el('div','pg-card-name', pg.nome)); 
+ 
+var completo = f1 && f2 && f3 && !resultPending(f1) && !resultPending(f2) && !resultPending(f3) && !f1.risultatoImpossibile && !f2.risultatoImpossibile && !f3.risultatoImpossibile; 
+if(!completo){ 
+riga.appendChild(el('div','note-line','Completa con risultati validi tutte e tre le Fasi per determinare l’esito finale e l’eventuale Effetto Negativo Involontario.')); 
+box.appendChild(riga); 
+return; 
+} 
+ 
+var allSuccess = f1.successo === true && f2.successo === true && f3.successo === true; 
+if(allSuccess){ 
+riga.appendChild(el('div','banner calm','Successo completo: il PG formula una diagnosi precisa, rivela un punto debole unico e può riscuotere il Prestigio previsto. Nessun Effetto Negativo Involontario.')); 
+box.appendChild(riga); 
+return; 
+} 
+ 
+riga.appendChild(el('div','banner warn','Diagnosi errata: il PG ha fallito almeno una Fase e non può riscuotere il Prestigio della Missione.')); 
+var fails = []; 
+if(f1.successo === false){ fails.push(1); } 
+if(f2.successo === false){ fails.push(2); } 
+if(f3.successo === false){ fails.push(3); } 
+var soglia = null; 
+if(fails.length === 1){ soglia = fails[0] === 1 ? 1 : 2; } 
+else if(fails.length === 2){ soglia = fails.indexOf(3) >= 0 ? 4 : 3; } 
+ 
+var automatico = fails.length === 3; 
+if(automatico){ 
+riga.appendChild(el('div','note-line','Tutte e tre le Fasi sono fallite: l’Effetto Negativo Involontario si attiva automaticamente. Tira soltanto il secondo 1d5 per determinarne il tipo.')); 
+} else { 
+riga.appendChild(el('div','note-line','Verifica di attivazione: l’Effetto Negativo Involontario si attiva con 1-' + soglia + ' su 1d5.')); 
+var aRow = el('div','dice-row'); 
+var aTag = document.createElement('input'); 
+aTag.className='dice-tag'; aTag.type='text'; aTag.readOnly=true; 
+aTag.value='[dice=1d5]Attivazione Effetto Negativo Involontario – ' + pg.nome + ' (si attiva con 1-' + soglia + ')[/dice]'; 
+aRow.appendChild(aTag); 
+var aCopy=el('button','small','Copia'); aCopy.setAttribute('data-copy-control','1'); aCopy.addEventListener(EVT,function(){copyText(aTag.value,aCopy);}); aRow.appendChild(aCopy); 
+aRow.appendChild(el('span','roll-label','Risultato:')); 
+var aInp=document.createElement('input'); aInp.className='roll-input'; aInp.type='number'; aInp.setAttribute('data-required-flow','1'); aInp.min='1'; aInp.max='5'; aInp.step='1'; aInp.value=state.special.p1Activation[idx] || ''; 
+var aFocusKey='p1-activation-' + idx; aInp.setAttribute('data-focus-key',aFocusKey); 
+aInp.addEventListener('input',function(){ state.special.p1Activation[idx]=aInp.value; if(state.rerenderFocus){state.rerenderFocus(aFocusKey);} else if(state.rerender){state.rerender();} }); aRow.appendChild(aInp); 
+var av=Number(state.special.p1Activation[idx]); 
+if(state.special.p1Activation[idx] !== undefined && state.special.p1Activation[idx] !== '' && (!isFinite(av) || Math.floor(av)!==av || av<1 || av>5)){ aRow.appendChild(el('span','result-tag fail','Risultato impossibile')); } 
+else if(state.special.p1Activation[idx] === '' || state.special.p1Activation[idx] === undefined){ aRow.appendChild(el('span','result-tag pending','In attesa')); } 
+else if(av<=soglia){ aRow.appendChild(el('span','result-tag fail','Effetto attivato')); } 
+else { aRow.appendChild(el('span','result-tag ok','Nessun effetto')); } 
+riga.appendChild(aRow); 
+} 
+ 
+var attivato = automatico; 
+if(!automatico){ 
+var aa=Number(state.special.p1Activation[idx]); 
+attivato = state.special.p1Activation[idx] !== undefined && state.special.p1Activation[idx] !== '' && isFinite(aa) && Math.floor(aa)===aa && aa>=1 && aa<=5 && aa<=soglia; 
+} 
+if(attivato){ 
+var eRow=el('div','dice-row'); 
+var eTag=document.createElement('input'); eTag.className='dice-tag'; eTag.type='text'; eTag.readOnly=true; 
+eTag.value='[dice=1d5]Determinazione Effetto Negativo Involontario – ' + pg.nome + '[/dice]'; eRow.appendChild(eTag); 
+var eCopy=el('button','small','Copia'); eCopy.setAttribute('data-copy-control','1'); eCopy.addEventListener(EVT,function(){copyText(eTag.value,eCopy);}); eRow.appendChild(eCopy); 
+eRow.appendChild(el('span','roll-label','Effetto:')); 
+var eInp=document.createElement('input'); eInp.className='roll-input'; eInp.type='number'; eInp.setAttribute('data-required-flow','1'); eInp.min='1'; eInp.max='5'; eInp.step='1'; eInp.value=state.special.p1Effect[idx] || ''; 
+var eFocusKey='p1-effect-' + idx; eInp.setAttribute('data-focus-key',eFocusKey); 
+eInp.addEventListener('input',function(){ state.special.p1Effect[idx]=eInp.value; if(state.rerenderFocus){state.rerenderFocus(eFocusKey);} else if(state.rerender){state.rerender();} }); eRow.appendChild(eInp); 
+var ev=Number(state.special.p1Effect[idx]); 
+var eStatus=el('span','result-tag pending','In attesa'); 
+if(state.special.p1Effect[idx] !== undefined && state.special.p1Effect[idx] !== '' && (!isFinite(ev)||Math.floor(ev)!==ev||ev<1||ev>5)){ eStatus.className='result-tag fail';eStatus.textContent='Risultato impossibile'; } 
+else if(state.special.p1Effect[idx] !== undefined && state.special.p1Effect[idx] !== ''){ eStatus.className='result-tag ok';eStatus.textContent='Effetto ' + ev; } 
+eRow.appendChild(eStatus); riga.appendChild(eRow); 
+var ul=el('ul','effetto-list'); 
+ul.appendChild(el('li',null,'1. L’energia oscura tenta di sopraffare il PG: -5 Fatica')); 
+ul.appendChild(el('li',null,'2. Il corpo del PG è attraversato da fitte: -2 a Resistenza, Fatica e Destrezza per 5 post')); 
+ul.appendChild(el('li',null,'3. La maledizione invade i pensieri: -5 Acume per 5 post')); 
+ul.appendChild(el('li',null,'4. Le energie sono turbate: il PG non può usare magie per 3 post')); 
+ul.appendChild(el('li',null,'5. L’angoscia prende il sopravvento: -5 Volontà per 5 post')); 
+riga.appendChild(ul); 
+} 
+box.appendChild(riga); 
+}); 
+return box; 
+} 
+ 
+}; 
+ 
+ 
+/* ---------- carry di gruppo per il Passaggio 2 (Fase II -> Fase III) ---------- */ 
+ 
+function carryGroupP2(prev, altri){ 
+if(!prev){ return {bonus:0, pending:true, label:'Completa la Fase II per tutti i PG prima di procedere alla Fase III.'}; } 
+var tutti = altri.slice(); 
+tutti.push(prev); 
+var anyFail = false; 
+var allSucceed = true; 
+for(var i=0;i<tutti.length;i++){ 
+var r = tutti[i]; 
+if(!r || resultPending(r)){ return {bonus:0, pending:true, label:'Completa la Fase II per tutti i PG prima di procedere alla Fase III.'}; } 
+if(r.successo === false){ anyFail = true; } 
+if(r.successo !== true){ allSucceed = false; } 
+} 
+if(allSucceed){ return {bonus:5, label:'Bonus di gruppo: tutti i PG hanno avuto successo nella Fase II'}; } 
+if(anyFail){ return {bonus:-5, label:'Malus di gruppo: almeno un PG ha fallito la Fase II e il reperto è stato parzialmente danneggiato'}; } 
+return {bonus:0}; 
+} 
+ 
+/* ========================================================= 
+PASSAGGIO 2 - SCAVO E RECUPERO 
+========================================================= */ 
+ 
+var P2 = { 
+id:'p2', numero:2, titolo:'Scavo e Recupero', 
+intro:'Un oggetto maledetto è stato sepolto, occultato o inglobato in un luogo dimenticato. Recuperarlo è necessario per comprendere la maledizione o spezzarne l’influsso, ma espone a energie pericolose e rischi ambientali. In questo Passaggio gli incantesimi o le Conoscenze utilizzati riescono sempre al 100%; si può usare al massimo una Conoscenza e una Pozione per post, oltre agli eventuali Oggetti/Borsa previsti. I bonus applicabili possono sommarsi.', 
+fasi:[ 
+{ 
+nome:'Fase I: Localizzazione del Sito', dado:40, 
+descrizione:'Il PG analizza il terreno, segue tracce magiche, consulta memorie residuali o documenti per individuare l’esatto punto in cui si trova l’oggetto.', 
+campi:[{key:'mente',label:'Acume o Percezione'},{key:'sapienza',label:'Sapienza Arcaica o Divinatoria'}], 
+formula:formulaMentePiuSapienza5('Acume o Percezione','Sapienza Arcaica o Divinatoria'), 
+bonusConoscenza:[0,1,3,5], bonusPozione:[0,1,3,5], 
+carry:null, 
+notaSuccesso:'Individua con precisione il punto esatto e percepisce anche eventuali trappole nascoste: ottiene un bonus alla Fase successiva.', 
+notaFallimento:'Non individua le trappole nascoste e ne subisce gli effetti: il PG perde -5 Fatica.' 
+}, 
+{ 
+nome:'Fase II: Estrazione del Fulcro', dado:50, 
+descrizione:'Il PG rimuove fisicamente l’oggetto maledetto da pietra, terra o struttura magica, evitando che venga danneggiato o che si sprigionino effetti nocivi.', 
+campi:[{key:'mente',label:'Acume o Percezione'},{key:'fatica',label:'Fatica attuale (dopo eventuali perdite precedenti)'}], 
+formula:function(v){ return [{t:'Acume o Percezione', v:(v.mente||0)},{t:'Fatica attuale', v:(v.fatica||0)}]; }, 
+bonusConoscenza:[0,1,3,5], bonusPozione:[0,1,3,5], 
+carry:carryIndiv5, 
+notaSuccesso:'Se tutti i PG riescono, l’oggetto viene rimosso senza conseguenze e vengono preservati eventuali indizi.', 
+notaFallimento:'Se anche un solo PG fallisce, il recupero viene compromesso e l’oggetto risulta parzialmente distrutto: tutti i PG subiscono un malus alla Fase III.' 
+}, 
+{ 
+nome:'Fase III: Contenimento dell’Influsso', dado:40, 
+descrizione:'Una volta recuperato, l’oggetto può innescare reazioni magiche o tentare un legame psichico con chi lo maneggia. Il PG deve contenerlo fisicamente e spiritualmente.', 
+campi:[{key:'volonta',label:'Volontà'},{key:'sapienza',label:'Sapienza Arcaica o Mentale'}], 
+formula:formulaMentePiuSapienza5('Volontà','Sapienza Arcaica o Mentale','volonta'), 
+bonusConoscenza:[0,3,5,10], bonusPozione:[0,3,5,10], 
+carry:carryGroupP2, 
+notaSuccesso:'Il PG contiene perfettamente l’aura maledetta: il Passaggio è completato con successo.', 
+notaFallimento:'L’oggetto sprigiona un impulso che colpisce il PG: si attiva un Effetto di Risonanza Maledetta e il PG non riscuote Prestigio dalla Missione "Lo Spezzaincantesimi".' 
+} 
+], 
+postFasi:function(state){ 
+var box = el('div','effetto-block'); 
+box.appendChild(el('h4', null, 'Conseguenze e Risonanza Maledetta')); 
+var qualcheEffetto = false; 
+state.pgs.forEach(function(pg, idx){ 
+var f3 = state.risultati[2] ? state.risultati[2][idx] : null; 
+if(!f3){ return; } 
+if(f3.successo !== false){ return; } 
+qualcheEffetto = true; 
+var riga = el('div','pg-card'); 
+riga.appendChild(el('div','pg-card-name', pg.nome)); 
+riga.appendChild(el('div','note-line','L’oggetto sprigiona un impulso che colpisce ' + pg.nome + '. Se altri PG hanno avuto successo in questa Fase, l’effetto si considera attivato prima nella narrazione.')); 
+var dRow = el('div','dice-row'); 
+var dTag = document.createElement('input'); 
+dTag.className = 'dice-tag'; dTag.type = 'text'; dTag.readOnly = true; 
+dTag.value = '[dice=1d4]Effetto di Risonanza Maledetta – ' + pg.nome + '[/dice]'; 
+dRow.appendChild(dTag); 
+var cBtn = el('button','small','Copia');
+cBtn.setAttribute('data-copy-control','1');
+cBtn.addEventListener(EVT, function(){ copyText(dTag.value, cBtn); }); 
+dRow.appendChild(cBtn); 
+riga.appendChild(dRow); 
+var ul = el('ul','effetto-list'); 
+ul.appendChild(el('li', null, '1. L’oggetto crea un filo psichico col PG: per 5 post sente sussurri, prova attrazione verso l’oggetto e ha -5 Volontà')); 
+ul.appendChild(el('li', null, '2. Un’ondata di energia magica investe il PG: -5 Fatica e -2 Resistenza per 3 post')); 
+ul.appendChild(el('li', null, '3. L’oggetto lascia un’impronta sulla pelle o sull’anima del PG: per 5 post -3 in tutti i Parametri Magici')); 
+ul.appendChild(el('li', null, '4. Una parte dell’essenza maledetta penetra nel PG: manifesta un sintomo minore (mani tremanti, occhi anneriti, voce distorta) per tre post, solo narrativo')); 
+riga.appendChild(ul); 
+box.appendChild(riga); 
+}); 
+if(!qualcheEffetto){ 
+box.appendChild(el('p','muted','Nessun PG ha fallito la Fase III: nessuna Risonanza Maledetta da gestire.')); 
+} 
+return box; 
+} 
+}; 
+ 
+ 
+/* ========================================================= 
+PASSAGGIO 3 - ESECUZIONE DELLO SPEZZAMENTO (Maledizioni Minori) 
+========================================================= */ 
+ 
+var P3 = { 
+id:'p3', numero:3, titolo:'Esecuzione dello Spezzamento', 
+intro:'Il PG applica materialmente e magicamente la tecnica di Spezzamento scelta per combattere una Maledizione Minore (Scherno, Malocchio, Piaga). È il momento in cui la maledizione viene affrontata direttamente. Incantesimi e Conoscenze utilizzati riescono sempre al 100%; si può usare al massimo una Conoscenza e una Pozione per post, oltre agli eventuali Oggetti/Borsa previsti, e i bonus applicabili possono sommarsi.', 
+fasi:[ 
+{ 
+nome:'Fase I: Attivazione del Rituale', dado:60, 
+descrizione:'Il PG avvia la procedura rituale prevista dalla tecnica selezionata: accendere la candela, posizionare i catalizzatori, recitare le parole chiave.', 
+campi:[{key:'acume',label:'Acume'},{key:'sapienza',label:'Sapienza Arcaica'},{key:'livello',label:'Livello Spezzaincantesimi'}], 
+formula:function(v){ return [{t:'Acume', v:(v.acume||0)},{t:'Sapienza Arcaica', v:(v.sapienza||0)},{t:'Livello Spezzaincantesimi', v:(v.livello||0)}]; }, 
+bonusConoscenza:[0,1,3,5], bonusPozione:[0,1,3,5], 
+carry:null, 
+notaSuccesso:'Il rituale parte senza intoppi: ottiene un bonus alla Fase successiva.', 
+notaFallimento:'Se tutti i PG falliscono, il rituale parte in modo instabile e la Fase successiva subisce un malus di gruppo.' 
+}, 
+{ 
+nome:'Fase II: Rottura del Legame Magico', dado:35, 
+descrizione:'Il PG convoglia la propria energia nel rituale e la indirizza contro la maledizione, colpendo i punti che ne mantengono il potere.', 
+campi:[{key:'acume',label:'Acume'}], 
+formula:function(v){ return [{t:'Acume', v:(v.acume||0)}]; }, 
+bonusConoscenza:[0,1,3,5], bonusPozione:[0,1,3,5], 
+carry:carryIndiv5AllFail, 
+notaSuccesso:'Il legame magico si indebolisce: ottiene un bonus alla Fase successiva.', 
+notaFallimento:'La maledizione oppone resistenza.' 
+}, 
+{ 
+nome:'Fase III: Dissoluzione e Sigillatura', dado:40, 
+descrizione:'Il PG compie il gesto finale per spezzare la maledizione e disperdere l’energia residua, liberando l’oggetto, la persona o il luogo.', 
+campi:[{key:'acume',label:'Acume'},{key:'sapienza',label:'Sapienza Arcaica'}], 
+formula:formulaMentePiuSapienza5('Acume','Sapienza Arcaica','acume'), 
+bonusConoscenza:[0,1,3,5], bonusPozione:[0,1,3,5], 
+carry:carryRollTwiceAllFail, 
+notaSuccesso:'La maledizione si dissolve. Il PG perde -3 Fatica.', 
+notaFallimento:'Il PG subisce -3 Fatica, -3 Resistenza, -3 Destrezza e -10 Salute, con sintomi quali Pallore, Nausea, Salivazione Eccessiva e Debolezza Muscolare. Il malus si applica anche se il PG possiede Spezzamento o 25 Sapienza Arcaica.' 
+} 
+], 
+postFasi:function(state){ 
+var tuttiFallitiF3 = true; 
+var qualcunoHaTirato = false; 
+state.pgs.forEach(function(pg, idx){ 
+var f3 = state.risultati[2] ? state.risultati[2][idx] : null; 
+if(f3){ 
+if(f3.successo !== null){ if(f3.successo !== undefined){ qualcunoHaTirato = true; } } 
+if(f3.successo !== false){ tuttiFallitiF3 = false; } 
+} 
+}); 
+if(qualcunoHaTirato){ 
+if(tuttiFallitiF3){ 
+var box = el('div','banner warn','Tutti i PG hanno fallito la Fase III: il rito non viene portato a termine e il Passaggio non consente di ottenere Prestigio dalla Missione "Lo Spezzaincantesimi".'); 
+return box; 
+} 
+} 
+return null; 
+} 
+}; 
+ 
+/* ========================================================= 
+PASSAGGIO 4 - ESECUZIONE DELL'ESORCISMO (Maledizioni Maggiori) 
+========================================================= */ 
+ 
+var P4 = { 
+id:'p4', numero:4, titolo:'Esecuzione dell’Esorcismo', 
+intro:'Il PG applica materialmente e magicamente la tecnica di Esorcismo scelta per rimuovere una Maledizione Maggiore (Flagello o Maleficio) da oggetti, luoghi o persone. È il momento in cui si affronta direttamente l’essenza oscura che alimenta il maleficio. Incantesimi e Conoscenze utilizzati riescono sempre al 100%; si può usare al massimo una Conoscenza e una Pozione per post, oltre agli eventuali Oggetti/Borsa previsti, e i bonus applicabili possono sommarsi.', 
+fasi:[ 
+{ 
+nome:'Fase I: Attivazione del Rituale', dado:60, 
+descrizione:'Il PG avvia la procedura rituale prevista dalla tecnica selezionata: preparare i catalizzatori, tracciare il cerchio, accendere le candele, posizionare cristalli o catene.', 
+campi:[{key:'acume',label:'Acume'},{key:'sapienza',label:'Sapienza Arcaica'},{key:'livello',label:'Livello Esorcista'}], 
+formula:function(v){ return [{t:'Acume', v:(v.acume||0)},{t:'Sapienza Arcaica', v:(v.sapienza||0)},{t:'Livello Esorcista', v:(v.livello||0)}]; }, 
+bonusConoscenza:[0,1,3,5], bonusPozione:[0,1,3,5], 
+carry:null, 
+notaSuccesso:'Il rituale parte senza intoppi, l’energia oscura reagisce come previsto: ottiene un bonus alla Fase successiva.', 
+notaFallimento:'Se tutti i PG falliscono, il rituale parte in modo instabile e la Fase successiva subisce un malus di gruppo.' 
+}, 
+{ 
+nome:'Fase II: Confronto con l’Essenza Oscura', dado:35, 
+descrizione:'Il PG affronta direttamente l’energia del Flagello o del Maleficio, incanalando il potere della tecnica scelta per indebolirne la presa.', 
+campi:[{key:'acume',label:'Acume'}], 
+formula:function(v){ return [{t:'Acume', v:(v.acume||0)}]; }, 
+bonusConoscenza:[0,1,3,5], bonusPozione:[0,1,3,5], 
+carry:carryIndiv5AllFail, 
+notaSuccesso:'L’essenza oscura viene destabilizzata e perde coesione: ottiene un bonus alla Fase successiva.', 
+notaFallimento:'L’entità resiste.' 
+}, 
+{ 
+nome:'Fase III: Dissoluzione e Sigillatura', dado:40, 
+descrizione:'Il PG completa il gesto finale della tecnica scelta, isolando e disperdendo l’energia malevola, liberando definitivamente l’oggetto, il luogo o la persona.', 
+campi:[{key:'acume',label:'Acume'},{key:'sapienza',label:'Sapienza Arcaica'}], 
+formula:formulaMentePiuSapienza5('Acume','Sapienza Arcaica','acume'), 
+bonusConoscenza:[0,1,3,5], bonusPozione:[0,1,3,5], 
+carry:carryRollTwiceAllFail, 
+notaSuccesso:'L’energia oscura viene dissipata: l’oggetto, il luogo o la persona è purificato. Il PG perde -5 Fatica.', 
+notaFallimento:'Il PG subisce -5 Fatica, -5 Destrezza, -5 Resistenza e -20 Salute, con sintomi quali Affaticamento, Pallore, Bassa Pressione, Confusione, Mal di cranio e Vertigini. Il PG che fallisce non ottiene Prestigio dalla Missione.' 
+} 
+], 
+postFasi:function(state){ 
+var tuttiFallitiF3 = true; 
+var qualcunoHaTirato = false; 
+state.pgs.forEach(function(pg, idx){ 
+var f3 = state.risultati[2] ? state.risultati[2][idx] : null; 
+if(f3){ 
+if(f3.successo !== null){ if(f3.successo !== undefined){ qualcunoHaTirato = true; } } 
+if(f3.successo !== false){ tuttiFallitiF3 = false; } 
+} 
+}); 
+if(qualcunoHaTirato){ 
+if(tuttiFallitiF3){ 
+return el('div','banner warn','Tutti i PG hanno fallito la Fase III: l’esorcismo non viene portato a termine e nessun PG riscuote Prestigio dalla Missione "Lo Spezzaincantesimi".'); 
+} 
+} 
+return null; 
+} 
+}; 
+ 
+/* ========================================================= 
+PASSAGGIO 5 - AFFRONTO DELL'OMBRA 
+========================================================= */ 
+ 
+var P5 = { 
+id:'p5', numero:5, titolo:'Affronto dell’Ombra', 
+intro:'Quando la maledizione si manifesta in forma cosciente (fantasma, proiezione mentale, memoria vivente) i PG devono resistere ai tentativi di corruzione, smascherare le illusioni e dissolverla definitivamente. In questo Passaggio gli incantesimi o le Conoscenze utilizzati riescono sempre al 100%; si può usare al massimo una Conoscenza e una Pozione per post, oltre agli eventuali Oggetti/Borsa previsti. I bonus applicabili possono sommarsi.', 
+fasi:[ 
+{ 
+nome:'Fase I: Resistere all’Influsso', dado:40, 
+descrizione:'Il PG affronta il primo contatto mentale o emotivo con l’Ombra, proteggendo lucidità e forza di volontà.', 
+campi:[{key:'volonta',label:'Volontà'},{key:'sapienza',label:'Sapienza Mentale o Arcaica'}], 
+formula:formulaMentePiuSapienza5('Volontà','Sapienza Mentale o Arcaica','volonta'), 
+bonusConoscenza:[0,1,3,5], bonusPozione:[0,1,3,5], 
+carry:null, 
+notaSuccesso:'L’Ombra non riesce a insinuarsi nella mente: ottiene un bonus alla Fase successiva.', 
+notaFallimento:'L’Ombra instilla dubbi e confusione: subisce un malus alla Fase successiva.' 
+}, 
+{ 
+nome:'Fase II: Smantellare le Illusioni', dado:50, 
+descrizione:'Il PG riconosce e infrange le illusioni o i falsi ricordi generati dall’Ombra.', 
+campi:[{key:'mente',label:'Acume o Percezione'},{key:'sapienza',label:'Sapienza Mentale o Arcaica'}], 
+formula:formulaMentePiuSapienza5('Acume o Percezione','Sapienza Mentale o Arcaica'), 
+bonusConoscenza:[0,1,3,5], bonusPozione:[0,1,3,5], 
+carry:carryIndiv5m5, 
+notaSuccesso:'Le illusioni si dissolvono e l’Ombra rivela la propria forma: ottiene un bonus alla Fase successiva.', 
+notaFallimento:'Il PG resta intrappolato in un’illusione e non potrà agire nella Fase successiva. Se tutti i PG falliscono, l’Ombra vince e il Passaggio non può essere completato.' 
+}, 
+{ 
+nome:'Fase III: Confronto e Dissoluzione', dado:60, 
+descrizione:'Il PG affronta direttamente l’Ombra nella sua forma autentica per annientarla definitivamente.', 
+campi:[{key:'mentevolonta',label:'Acume o Volontà'},{key:'sapienza',label:'Sapienza Arcaica o Mentale'}], 
+formula:function(v){ 
+var s5 = Math.floor((v.sapienza||0)/5); 
+return [{t:'Acume o Volontà', v:(v.mentevolonta||0)},{t:'Sapienza Arcaica o Mentale (diviso 5)', v:s5}]; 
+}, 
+bonusConoscenza:[0,1,3,5], bonusPozione:[0,1,3,5], 
+carry:carryExclude, 
+notaSuccesso:'L’Ombra si dissolve e l’area è liberata dalla sua presenza.', 
+notaFallimento:'Se tutti i PG che hanno potuto agire falliscono, l’Ombra scatena un Effetto di Corruzione Mentale.' 
+} 
+], 
+postFasi:function(state){ 
+var box = el('div','effetto-block'); 
+box.appendChild(el('h4', null, 'Esito del Confronto')); 
+ 
+var tuttiEsclusi = true; 
+var qualcunoAttivo = false; 
+var qualcunoSuccesso = false; 
+var qualcunoTentatoF3 = false; 
+var tuttiFallitiTraTentativi = true; 
+ 
+state.pgs.forEach(function(pg, idx){ 
+var f2 = state.risultati[1] ? state.risultati[1][idx] : null; 
+var f3 = state.risultati[2] ? state.risultati[2][idx] : null; 
+var escluso = false; 
+if(f3){ if(f3.escluso){ escluso = true; } } 
+if(!escluso){ tuttiEsclusi = false; } 
+if(f3){ 
+if(!f3.escluso){ 
+qualcunoAttivo = true; 
+if(f3.successo === true){ qualcunoSuccesso = true; } 
+if(f3.successo !== null){ 
+if(f3.successo !== undefined){ 
+qualcunoTentatoF3 = true; 
+if(f3.successo !== false){ tuttiFallitiTraTentativi = false; } 
+} 
+} 
+} 
+} 
+}); 
+ 
+if(tuttiEsclusi){ 
+box.appendChild(el('div','banner warn','Tutti i PG sono rimasti intrappolati nelle illusioni della Fase II: l’Ombra vince, il Passaggio non può essere completato e nessun PG riscuote Prestigio dalla Missione.')); 
+return box; 
+} 
+ 
+if(qualcunoSuccesso){ 
+box.appendChild(el('div','banner calm','Almeno un PG ha avuto successo nella Fase III: l’Ombra si dissolve e il Passaggio è completato con successo.')); 
+return box; 
+} 
+ 
+if(qualcunoTentatoF3){ 
+if(tuttiFallitiTraTentativi){ 
+box.appendChild(el('p','muted','Tutti i PG che hanno potuto agire hanno fallito la Fase III. Nessun PG riscuote Prestigio dalla Missione "Lo Spezzaincantesimi". Ogni PG che ha partecipato alla Fase III tira separatamente il proprio 1d5 di Corruzione Mentale.')); 
+state.pgs.forEach(function(pg, idx){ 
+var f3 = state.risultati[2] ? state.risultati[2][idx] : null; 
+if(!f3){ return; } 
+if(f3.escluso){ return; } 
+if(f3.successo !== false){ return; } 
+var riga = el('div','pg-card'); 
+riga.appendChild(el('div','pg-card-name', pg.nome)); 
+var dRow = el('div','dice-row'); 
+var dTag = document.createElement('input'); 
+dTag.className = 'dice-tag'; dTag.type = 'text'; dTag.readOnly = true; 
+dTag.value = '[dice=1d5]Effetto di Corruzione Mentale – ' + pg.nome + '[/dice]'; 
+dRow.appendChild(dTag); 
+var cBtn = el('button','small','Copia');
+cBtn.setAttribute('data-copy-control','1');
+cBtn.addEventListener(EVT, function(){ copyText(dTag.value, cBtn); }); 
+dRow.appendChild(cBtn); 
+riga.appendChild(dRow); 
+var ul = el('ul','effetto-list'); 
+ul.appendChild(el('li', null, '1-2. Visioni ossessive: -5 Volontà per 5 post')); 
+ul.appendChild(el('li', null, '3-4. Disorientamento: -5 Percezione e -5 Destrezza per 5 post')); 
+ul.appendChild(el('li', null, '5. Legame residuo, l’Ombra tornerà: -0,5 Prestigio')); 
+riga.appendChild(ul); 
+box.appendChild(riga); 
+}); 
+} 
+} 
+return box; 
+} 
+}; 
+ 
+var TUTTI_I_PASSAGGI = [P1, P2, P3, P4, P5]; 
+ 
+ 
+/* ---------- avvio ---------- */ 
+ 
+var REGISTRO_PASSAGGI = {}; 
+ 
+function attivaPassaggio(id){
+Object.keys(REGISTRO_PASSAGGI).forEach(function(k){
+ var voce=REGISTRO_PASSAGGI[k];voce.tabBtn.classList.remove('active');voce.panel.classList.remove('active');
+});
+var scelto=REGISTRO_PASSAGGI[id];if(!scelto){return;}
+scelto.tabBtn.classList.add('active');scelto.panel.classList.add('active');
+if(scelto.flow){scelto.flow.apply(false);}
+if(!window.__RM_RESTORING__){try{scelto.panel.scrollIntoView({behavior:'smooth',block:'start'});}catch(e){}}
+}
+ 
+function init(){
+var rootCopy=document.getElementById('ricerca-maledizioni');
+if(rootCopy&&!rootCopy.getAttribute('data-copy-mousedown')){rootCopy.setAttribute('data-copy-mousedown','1');rootCopy.addEventListener('mousedown',function(ev){var b=ev.target&&ev.target.closest?ev.target.closest('button'):null;if(b&&rootCopy.contains(b)&&(b.getAttribute('data-copy-control')==='1'||/^copia/i.test(String(b.textContent||'').trim()))){ev.preventDefault();}},true);}
+var tabsNav = document.getElementById('tabsNav'); 
+var panelsRoot = document.getElementById('panelsRoot'); 
+ 
+TUTTI_I_PASSAGGI.forEach(function(config, idx){ 
+var built = creaPassaggio(config); 
+REGISTRO_PASSAGGI[config.id] = built; 
+tabsNav.appendChild(built.tabBtn); 
+panelsRoot.appendChild(built.panel); 
+}); 
+ 
+/* step 0: 1d5 */ 
+var copyD5 = document.getElementById('copyD5'); 
+copyD5.addEventListener(EVT, function(){ 
+var tag = document.getElementById('d5tag'); 
+copyText(tag.value, copyD5); 
+}); 
+ 
+var choiceGrid = document.getElementById('d5choiceGrid'); 
+TUTTI_I_PASSAGGI.forEach(function(config){ 
+var btn = el('button', null, ''); 
+var numSpan = el('span','num', String(config.numero)); 
+var nameSpan = document.createElement('span'); 
+nameSpan.textContent = config.titolo; 
+btn.appendChild(numSpan); 
+btn.appendChild(nameSpan); 
+btn.addEventListener(EVT, function(){ 
+attivaPassaggio(config.id); 
+}); 
+choiceGrid.appendChild(btn); 
+}); 
+}
+
+window.RicercaMaledizioniFlow={
+ list:function(){return Object.keys(REGISTRO_PASSAGGI);},
+ formatCopy:forumDiceCopy,
+ activate:function(id){attivaPassaggio(id);},
+ resume:function(id,readonly){
+  var tries=0;
+  function run(){
+   var rec=REGISTRO_PASSAGGI[id];
+   if(rec&&rec.flow){window.__RM_RESTORING__=true;attivaPassaggio(id);window.__RM_RESTORING__=false;return rec.flow.resume(!!readonly);}
+   if(tries++<30){setTimeout(run,50);}return null;
+  }
+  return run();
+ },
+ get:function(id){return REGISTRO_PASSAGGI[id]||null;}
+};
+
+var AVVIO_OK = false; 
+var AVVIO_N = 0; 
+ 
+function avviaRicerca(){ 
+ if(AVVIO_OK){ return; } 
+ 
+ var a = document.getElementById('tabsNav'); 
+ var b = document.getElementById('panelsRoot'); 
+ var c = document.getElementById('d5choiceGrid'); 
+ var d = document.getElementById('copyD5'); 
+ 
+ var pronto = false; 
+ if(a){ 
+ if(b){ 
+ if(c){ 
+ if(d){ 
+ pronto = true; 
+ } 
+ } 
+ } 
+ } 
+ 
+ if(pronto){ 
+ try{ 
+ init(); 
+ AVVIO_OK = true; 
+ }catch(err){ 
+ AVVIO_N = AVVIO_N + 1; 
+ if(AVVIO_N < 50){ 
+ setTimeout(avviaRicerca,100); 
+ } 
+ } 
+ }else{ 
+ AVVIO_N = AVVIO_N + 1; 
+ if(AVVIO_N < 50){ 
+ setTimeout(avviaRicerca,100); 
+ } 
+ } 
+} 
+ 
+avviaRicerca(); 
+ 
+})(); 
+</script> 
+ 
+ 
+<script type="text/javascript"></script> 
+<script type="text/javascript"></script> 
+<script type="text/javascript"></script> 
+<script type="text/javascript"> 
+(function(){ 
+'use strict'; 
+var EVT='cli'+'ck'; 
+var FIREBASE_CONFIG={ 
+ apiKey:"AIzaSyCvd56bSEL02s2OY2PSk7uyFX-CYRB4Vz0", 
+ authDomain:"conteggi-eee1b.firebaseapp.com", 
+ projectId:"conteggi-eee1b", 
+ storageBucket:"conteggi-eee1b.firebasestorage.app", 
+ messagingSenderId:"481320219586", 
+ appId:"1:481320219586:web:87e974d618a302adfadc5b", 
+ measurementId:"G-EFHVL4H1XW" 
+}; 
+var SESSION_COLLECTION='ricerca_maledizioni'; 
+var NARRATOR_UID='TFgqfVrFLjW5SwqRFXmEi8tDhtM2'; 
+var PASSAGE_NAMES={p1:'Analisi e Tracciatura',p2:'Scavo e Recupero',p3:'Esecuzione dello Spezzamento',p4:'Esecuzione dell’Esorcismo',p5:'Affronto dell’Ombra'}; 
+var FB={app:null,auth:null,db:null,user:null}; 
+var CURRENT_SESSION=null,CURRENT_SESSION_DATA=null,SESSION_READONLY=false; 
+var SESSION_ACTIONS=[],RESTORING_SESSION=false,SAVE_TIMER=null,SAVE_IN_FLIGHT=false,PENDING_SAVE=false; 
+ 
+function sq(id){return document.getElementById(id);} 
+function workspace(){return sq('maledizioni-workspace');} 
+function sessionCanEdit(data){return !!(FB.user&&data&&(data.ownerUid===FB.user.uid||FB.user.uid===NARRATOR_UID));} 
+function setStatus(id,text,kind){var n=sq(id);if(!n)return;n.textContent=text||'';n.className='session-status'+(kind?' '+kind:'');} 
+function formatTs(ts){try{var d=ts&&typeof ts.toDate==='function'?ts.toDate():null;return d?d.toLocaleString('it-IT',{dateStyle:'short',timeStyle:'short'}):'';}catch(e){return '';}} 
+function sessionIdFromHash(){var h=String(window.location.hash||'').replace(/^#/,'');if(h.indexOf('session=')!==0)return '';try{return decodeURIComponent(h.slice(8));}catch(e){return h.slice(8);}} 
+function navigateToSession(id){window.location.hash='session='+encodeURIComponent(id);window.location.reload();} 
+function navigateToDashboard(){if(window.location.hash){try{history.replaceState(null,'',window.location.pathname+window.location.search);}catch(e){window.location.hash='';}}window.location.reload();} 
+function passageIdFromButton(b){ 
+ if(!b||!b.parentElement)return ''; 
+ var p=b.parentElement;if(p.id!=='tabsNav'&&p.id!=='d5choiceGrid')return ''; 
+ var idx=Array.prototype.indexOf.call(p.children,b);return idx>=0&&idx<5?'p'+(idx+1):''; 
+} 
+function selectedPassageId(){ 
+ for(var i=SESSION_ACTIONS.length-1;i>=0;i--){if(SESSION_ACTIONS[i]&&SESSION_ACTIONS[i].passageId)return SESSION_ACTIONS[i].passageId;} 
+ return CURRENT_SESSION_DATA&&CURRENT_SESSION_DATA.passaggioId?CURRENT_SESSION_DATA.passaggioId:''; 
+} 
+function primaryPgName(){ 
+ var pid=selectedPassageId(),panel=pid?sq('panel-'+pid):null; 
+ var inp=panel?panel.querySelector('.pg-manager .pg-row input'):null; 
+ var n=inp&&inp.value?String(inp.value).trim():''; 
+ if(n&&!/^PG\s*\d+$/i.test(n))return n; 
+ return (CURRENT_SESSION_DATA&&(CURRENT_SESSION_DATA.initialPgName||CURRENT_SESSION_DATA.pgName))||'PG'; 
+} 
+function activeLabel(){var pid=selectedPassageId();return primaryPgName()+' — '+(pid?(PASSAGE_NAMES[pid]||'Passaggio'):'Passaggio da determinare');} 
+function updateToolbar(){ 
+ if(!CURRENT_SESSION_DATA)return; 
+ if(sq('current-session-title'))sq('current-session-title').textContent=activeLabel(); 
+ var mine=FB.user&&CURRENT_SESSION_DATA.ownerUid===FB.user.uid,narr=FB.user&&FB.user.uid===NARRATOR_UID,parts=[]; 
+ parts.push(mine?'Sessione creata da questo browser':(narr?'Gestione Narratore':'Sessione di un altro giocatore')); 
+ var t=formatTs(CURRENT_SESSION_DATA.updatedAt);if(t)parts.push('ultimo salvataggio '+t); 
+ if(sq('current-session-meta'))sq('current-session-meta').textContent=parts.join(' · '); 
+ if(sq('readonly-banner'))sq('readonly-banner').style.display=SESSION_READONLY?'block':'none'; 
+ if(sq('btn-delete-session'))sq('btn-delete-session').style.display=sessionCanEdit(CURRENT_SESSION_DATA)?'inline-block':'none'; 
+} 
+function elementPath(target){ 
+ var w=workspace();if(!w||!target||!w.contains(target))return null; 
+ if(target.id)return {id:target.id}; 
+ var path=[],n=target; 
+ while(n&&n!==w){var par=n.parentElement;if(!par)return null;var idx=Array.prototype.indexOf.call(par.children,n);if(idx<0)return null;path.unshift(idx);n=par;} 
+ return n===w?{path:path}:null; 
+} 
+function resolveTarget(a){ 
+ var w=workspace();if(!w)return null; 
+ if(a.loc&&a.loc.id){var by=sq(a.loc.id);return by&&w.contains(by)?by:null;} 
+ var n=w,arr=a.loc&&a.loc.path?a.loc.path:[]; 
+ for(var i=0;i<arr.length;i++){if(!n||!n.children||!n.children[arr[i]])return null;n=n.children[arr[i]];} 
+ return n===w?null:n; 
+} 
+function isCopyButton(b){ 
+ if(!b)return false; 
+ if(b.id==='copyD5')return true; 
+ if(b.getAttribute&&b.getAttribute('data-copy-control')==='1')return true;
+ var tx=String(b.textContent||'').trim().toLowerCase();
+ return tx.indexOf('copia')===0||tx.indexOf('copiato')===0||tx==='errore'; 
+} 
+function actionFromEvent(e){ 
+ var w=workspace(),target=e.target;if(!target||!w||!w.contains(target))return null; 
+ if(target.closest&&target.closest('[data-session-control="1"]'))return null; 
+ if(e.type==='click'){ 
+ var b=target.closest?target.closest('button'):null;if(!b||!w.contains(b)||isCopyButton(b))return null; 
+ var pid=passageIdFromButton(b); 
+ var flowBtn=b.getAttribute&&b.getAttribute('data-flow-page-btn')==='1';
+ if(!pid&&!b.classList.contains('add-pg')&&!b.classList.contains('remove-pg')&&!flowBtn)return null;
+ return {type:'click',loc:elementPath(b),passageId:pid||''}; 
+ } 
+ if(['INPUT','SELECT','TEXTAREA'].indexOf(target.tagName)===-1||target.readOnly)return null; 
+ if(target.tagName==='SELECT'&&e.type!=='change')return null; 
+ if(target.tagName!=='SELECT'&&e.type!=='input')return null; 
+ return {type:e.type,loc:elementPath(target),value:target.value,checked:!!target.checked}; 
+} 
+function sameLoc(a,b){return JSON.stringify(a||null)===JSON.stringify(b||null);} 
+function recordAction(e){ 
+ if(RESTORING_SESSION||SESSION_READONLY||!CURRENT_SESSION||!sessionCanEdit(CURRENT_SESSION_DATA))return; 
+ var a=actionFromEvent(e);if(!a||!a.loc)return; 
+ var last=SESSION_ACTIONS.length?SESSION_ACTIONS[SESSION_ACTIONS.length-1]:null; 
+ if(last&&a.type===last.type&&(a.type==='input'||a.type==='change')&&sameLoc(a.loc,last.loc))SESSION_ACTIONS[SESSION_ACTIONS.length-1]=a; 
+ else SESSION_ACTIONS.push(a); 
+ updateToolbar();scheduleSave(); 
+} 
+function attachRecorder(){var w=workspace();if(!w||w.getAttribute('data-session-recorder')==='1')return;w.setAttribute('data-session-recorder','1');['input','change','click'].forEach(function(ev){w.addEventListener(ev,recordAction,true);});} 
+function replayActions(actions){ 
+ RESTORING_SESSION=true; 
+ try{ 
+ (actions||[]).forEach(function(a){ 
+ var t=resolveTarget(a);if(!t){console.warn('Ricerca Maledizioni: azione di ripristino non trovata',a);return;} 
+ if(a.type==='click'){if(!t.disabled&&typeof t.click==='function')t.click();} 
+ else{if('value' in t)t.value=a.value==null?'':String(a.value);if('checked' in t)t.checked=!!a.checked;t.dispatchEvent(new Event(a.type,{bubbles:true}));} 
+ }); 
+ }finally{RESTORING_SESSION=false;} 
+} 
+function setWorkspaceReadOnly(ro){ 
+ SESSION_READONLY=!!ro;var w=workspace();if(!w)return; 
+ if(SESSION_READONLY){ 
+ Array.prototype.forEach.call(w.querySelectorAll('input,select,textarea'),function(n){if(n.getAttribute('data-session-control')==='1')return;n.disabled=true;}); 
+ Array.prototype.forEach.call(w.querySelectorAll('button'),function(n){ 
+ if(n.getAttribute('data-session-control')==='1')return; 
+ var nav=!!(n.closest&&n.closest('#tabsNav,#d5choiceGrid'));
+ var flow=n.getAttribute&&n.getAttribute('data-flow-page-btn')==='1';
+ if(nav||flow||isCopyButton(n)){n.disabled=false;return;} 
+ n.disabled=true; 
+ }); 
+ } 
+ updateToolbar(); 
+} 
+function payload(){ 
+ var pid=selectedPassageId(),name=primaryPgName(); 
+ return { 
+ ownerUid:CURRENT_SESSION_DATA.ownerUid, 
+ initialPgName:CURRENT_SESSION_DATA.initialPgName||name, 
+ pgName:name, 
+ tipoPassaggio:pid?(PASSAGE_NAMES[pid]||'Passaggio'):'', 
+ passaggioId:pid||'', 
+ updatedAt:firebase.firestore.FieldValue.serverTimestamp(), 
+ toolVersion:'firebase-v1', 
+ actionLog:SESSION_ACTIONS 
+ }; 
+} 
+function scheduleSave(){if(!CURRENT_SESSION||SESSION_READONLY||!sessionCanEdit(CURRENT_SESSION_DATA))return;setStatus('save-status','Salvataggio automatico…','');if(SAVE_TIMER)clearTimeout(SAVE_TIMER);SAVE_TIMER=setTimeout(saveNow,850);} 
+function saveNow(){ 
+ if(!CURRENT_SESSION||SESSION_READONLY||!sessionCanEdit(CURRENT_SESSION_DATA))return Promise.resolve(); 
+ if(SAVE_IN_FLIGHT){PENDING_SAVE=true;return Promise.resolve();} 
+ SAVE_IN_FLIGHT=true;PENDING_SAVE=false;var p=payload(); 
+ return FB.db.collection(SESSION_COLLECTION).doc(CURRENT_SESSION).set(p,{merge:true}).then(function(){ 
+ Object.keys(p).forEach(function(k){if(k!=='updatedAt')CURRENT_SESSION_DATA[k]=p[k];}); 
+ setStatus('save-status','Ricerca salvata automaticamente &#10003;','ok');updateToolbar(); 
+ }).catch(function(err){console.error(err);setStatus('save-status','Errore di salvataggio: non chiudere la pagina.','bad');}).finally(function(){SAVE_IN_FLIGHT=false;if(PENDING_SAVE){PENDING_SAVE=false;scheduleSave();}}); 
+} 
+function openSessionDoc(id,data){
+ CURRENT_SESSION=id;CURRENT_SESSION_DATA=data;SESSION_ACTIONS=Array.isArray(data.actionLog)?data.actionLog.slice():[];SESSION_READONLY=!sessionCanEdit(data);
+ if(sq('maledizioni-session-home'))sq('maledizioni-session-home').style.display='none';if(workspace())workspace().style.display='block';
+ window.__RM_RESTORING__=true;replayActions(SESSION_ACTIONS);window.__RM_RESTORING__=false;
+ var pid=selectedPassageId();if(pid&&window.RicercaMaledizioniFlow){try{window.RicercaMaledizioniFlow.activate(pid);}catch(e){}}
+ setWorkspaceReadOnly(SESSION_READONLY);updateToolbar();
+ setStatus('save-status',SESSION_READONLY?'Modalità sola lettura.':'Ricerca caricata · autosalvataggio attivo',SESSION_READONLY?'':'ok');
+ setTimeout(function(){if(pid&&window.RicercaMaledizioniFlow){window.RicercaMaledizioniFlow.resume(pid,SESSION_READONLY);}else{var z=sq('stepZero');if(z){try{z.scrollIntoView({behavior:'auto',block:'start'});}catch(e){}}}},120);
+} 
+function loadSession(id){ 
+ setStatus('session-home-msg','Caricamento Ricerca…',''); 
+ return FB.db.collection(SESSION_COLLECTION).doc(id).get().then(function(doc){if(!doc.exists)throw new Error('La Ricerca non esiste più.');openSessionDoc(doc.id,doc.data());setStatus('session-home-msg','','');}).catch(function(err){console.error(err);setStatus('session-home-msg','Impossibile aprire la Ricerca: '+err.message,'bad');if(sq('maledizioni-session-home'))sq('maledizioni-session-home').style.display='block';}); 
+} 
+function loadSessionList(){ 
+ var host=sq('session-list');if(!host||!FB.db||!FB.user)return;host.innerHTML='<div class="session-status">Caricamento sessioni…</div>'; 
+ FB.db.collection(SESSION_COLLECTION).get().then(function(snap){ 
+ var rows=[];snap.forEach(function(doc){rows.push({id:doc.id,data:doc.data()});}); 
+ rows.sort(function(a,b){var at=a.data.updatedAt&&a.data.updatedAt.seconds?a.data.updatedAt.seconds:0,bt=b.data.updatedAt&&b.data.updatedAt.seconds?b.data.updatedAt.seconds:0;return bt-at;});host.innerHTML=''; 
+ if(!rows.length){host.innerHTML='<div class="session-status">Non ci sono Ricerche Maledizioni in corso. Puoi crearne una qui sopra.</div>';return;} 
+ rows.forEach(function(r){ 
+ var d=r.data,mine=d.ownerUid===FB.user.uid,narr=FB.user.uid===NARRATOR_UID; 
+ var box=document.createElement('div');box.className='session-item';var row=document.createElement('div');row.className='session-item-row'; 
+ var left=document.createElement('div');var ti=document.createElement('div');ti.className='session-title';ti.textContent=(d.pgName||d.initialPgName||'PG')+' — '+(d.tipoPassaggio||'Passaggio da determinare');left.appendChild(ti); 
+ var meta=document.createElement('div');meta.className='session-meta';var dt=formatTs(d.updatedAt);meta.textContent=dt?'Aggiornata '+dt:'';left.appendChild(meta); 
+ var own=document.createElement('span');own.className='session-owner'+(mine?' mine':'');own.textContent=mine?'Tua Ricerca':(narr?'Gestibile dal Narratore':'Altro giocatore');left.appendChild(own); 
+ var b=document.createElement('button');b.type='button';b.className='session-btn'+((mine||narr)?'':' ghost');b.setAttribute('data-session-control','1');b.textContent=(mine||narr)?'Riprendi':'Visualizza';b.addEventListener(EVT,function(){navigateToSession(r.id);}); 
+ row.appendChild(left);row.appendChild(b);box.appendChild(row);host.appendChild(box); 
+ }); 
+ }).catch(function(err){console.error(err);host.innerHTML='<div class="session-status bad">Non riesco a leggere le Ricerche in corso: '+String(err.message||err)+'</div>';}); 
+} 
+function createSession(){ 
+ var inp=sq('new-session-pg'),name=(inp&&inp.value?inp.value:'').trim(); 
+ if(!name){setStatus('session-home-msg','Inserisci prima il nome del PG principale.','bad');if(inp)inp.focus();return;} 
+ if(!FB.user){setStatus('session-home-msg','Firebase non è ancora pronto. Riprova tra un momento.','bad');return;} 
+ setStatus('session-home-msg','Creazione della Ricerca…',''); 
+ var data={ownerUid:FB.user.uid,initialPgName:name,pgName:name,tipoPassaggio:'',passaggioId:'',createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp(),toolVersion:'firebase-v1',actionLog:[]}; 
+ FB.db.collection(SESSION_COLLECTION).add(data).then(function(ref){navigateToSession(ref.id);}).catch(function(err){console.error(err);setStatus('session-home-msg','Impossibile creare la Ricerca: '+err.message,'bad');}); 
+} 
+function positionDeleteModalAtCurrentView(ev){
+ var modal=sq('delete-session-modal'),box=modal?modal.querySelector('.session-modal-box'):null;if(!modal||!box)return;
+ var y=ev&&typeof ev.clientY==='number'?ev.clientY:Math.max(120,(window.innerHeight||600)/2);
+ box.classList.add('rm-local-positioned');
+ requestAnimationFrame(function(){var h=box.getBoundingClientRect().height||300,vh=window.innerHeight||600,min=Math.min(vh/2,20+h/2),max=Math.max(min,vh-20-h/2);var cy=Math.max(min,Math.min(max,y));box.style.top=cy+'px';box.style.transform='translate(-50%,-50%)';});
+}
+function openDeleteModal(ev){if(!CURRENT_SESSION||!sessionCanEdit(CURRENT_SESSION_DATA))return;sq('delete-session-check').checked=false;sq('btn-confirm-delete').disabled=true;sq('delete-session-msg').textContent='';var m=sq('delete-session-modal');m.classList.add('open');m.setAttribute('aria-hidden','false');positionDeleteModalAtCurrentView(ev);}
+function closeDeleteModal(){var m=sq('delete-session-modal');if(!m)return;var box=m.querySelector('.session-modal-box');if(box){box.classList.remove('rm-local-positioned');box.style.top='';box.style.transform='';}m.classList.remove('open');m.setAttribute('aria-hidden','true');} 
+function deleteCurrentSession(){ 
+ if(!CURRENT_SESSION||!sessionCanEdit(CURRENT_SESSION_DATA)||!sq('delete-session-check').checked)return; 
+ var id=CURRENT_SESSION;sq('btn-confirm-delete').disabled=true;sq('delete-session-msg').textContent='Eliminazione definitiva in corso…'; 
+ FB.db.collection(SESSION_COLLECTION).doc(id).delete().then(function(){CURRENT_SESSION=null;CURRENT_SESSION_DATA=null;SESSION_ACTIONS=[];closeDeleteModal();try{sessionStorage.setItem('rmal_deleted_notice','1');}catch(e){}navigateToDashboard();}).catch(function(err){console.error(err);sq('delete-session-msg').textContent='Eliminazione non riuscita: '+err.message;sq('btn-confirm-delete').disabled=false;}); 
+} 
+function backToDashboard(){var done=Promise.resolve();if(CURRENT_SESSION&&sessionCanEdit(CURRENT_SESSION_DATA))done=saveNow();done.finally(function(){navigateToDashboard();});} 
+function setupControls(){ 
+ attachRecorder(); 
+ sq('btn-new-session').addEventListener(EVT,createSession); 
+ sq('new-session-pg').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();createSession();}}); 
+ sq('btn-refresh-sessions').addEventListener(EVT,loadSessionList); 
+ sq('btn-back-sessions').addEventListener(EVT,backToDashboard); 
+ sq('btn-delete-session').addEventListener(EVT,openDeleteModal); 
+ sq('btn-cancel-delete').addEventListener(EVT,closeDeleteModal); 
+ sq('delete-session-check').addEventListener('change',function(){sq('btn-confirm-delete').disabled=!sq('delete-session-check').checked;}); 
+ sq('btn-confirm-delete').addEventListener(EVT,deleteCurrentSession); 
+ sq('delete-session-modal').addEventListener(EVT,function(e){if(e.target===sq('delete-session-modal'))closeDeleteModal();}); 
+ document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden'&&CURRENT_SESSION&&!SESSION_READONLY)saveNow();}); 
+ window.addEventListener('pagehide',function(){if(CURRENT_SESSION&&!SESSION_READONLY)saveNow();}); 
+} 
+function setupFirebase(){ 
+ setupControls();if(workspace())workspace().style.display='none';if(sq('maledizioni-session-home'))sq('maledizioni-session-home').style.display='block';var st=sq('firebase-auth-status'); 
+ try{ 
+ if(typeof firebase==='undefined')throw new Error('SDK Firebase non caricato'); 
+ if(!firebase.apps.length)firebase.initializeApp(FIREBASE_CONFIG);FB.app=firebase.app();FB.auth=firebase.auth();FB.db=firebase.firestore(); 
+ FB.auth.onAuthStateChanged(function(user){ 
+ if(user){ 
+ FB.user=user;if(st){st.textContent=user.uid===NARRATOR_UID?'Firebase connesso · modalità Narratore':'Firebase connesso · sessione anonima attiva';st.className='session-status ok';} 
+ var sid=sessionIdFromHash();if(sid)loadSession(sid);else{try{if(sessionStorage.getItem('rmal_deleted_notice')==='1'){sessionStorage.removeItem('rmal_deleted_notice');setStatus('session-home-msg','Ricerca eliminata definitivamente. Per giocarla di nuovo dovrà essere ricreata da zero.','ok');}}catch(e){}loadSessionList();}return; 
+ } 
+ FB.auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(function(){return FB.auth.signInAnonymously();}).catch(function(err){console.error(err);if(st){st.textContent='Errore autenticazione Firebase: '+err.message;st.className='session-status bad';}}); 
+ }); 
+ }catch(err){console.error(err);if(st){st.textContent='Firebase non disponibile: '+err.message;st.className='session-status bad';}} 
+} 
+document.addEventListener('DOMContentLoaded',setupFirebase); 
+})(); 
+</script> 
+ 
+ 
+<script type="text/javascript"> 
+(function(){ 
+var root=document.getElementById('ricerca-maledizioni'); 
+if(!root || !window.parent || window.parent===window){return;} 
+var last=0; 
+function sendHeight(){ 
+var h=Math.ceil(Math.max(root.scrollHeight,root.offsetHeight,root.getBoundingClientRect().height)); 
+if(!isFinite(h)||h<100){return;} 
+if(Math.abs(h-last)<2){return;} 
+last=h; 
+try{window.parent.postMessage({tipo:'altezzaRicercaMaledizioni',altezza:h},'*');}catch(e){} 
+} 
+window.addEventListener('load',sendHeight,false); 
+window.addEventListener('resize',sendHeight,false); 
+root.addEventListener('click',function(){setTimeout(sendHeight,0);setTimeout(sendHeight,120);},false); 
+root.addEventListener('input',function(){setTimeout(sendHeight,0);},false); 
+root.addEventListener('change',function(){setTimeout(sendHeight,0);},false); 
+if(window.ResizeObserver){new ResizeObserver(sendHeight).observe(root);} 
+if(window.MutationObserver){new MutationObserver(function(){setTimeout(sendHeight,0);}).observe(root,{childList:true,subtree:true,attributes:true});} 
+setTimeout(sendHeight,50);setTimeout(sendHeight,250);setTimeout(sendHeight,700); 
+})(); 
+</script> 
+</div>
