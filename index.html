@@ -592,8 +592,20 @@ padding: 20px}
 #ricerca-maledizioni .flow-difficulty b{color:var(--gold-soft) !important;}
 #ricerca-maledizioni .session-modal-box.rm-local-positioned{position:absolute !important;left:50% !important;margin:0 !important;}
 @media(max-width:760px){#ricerca-maledizioni .flow-page-btn{flex:1 1 100%;}#ricerca-maledizioni .flow-summary{padding:18px 16px;}}
+
+/* Revisione v4: testata globale sempre visibile anche nell'elenco sessioni */
+#ricerca-maledizioni .maledizioni-global-top{width:100%;margin:0 0 28px;overflow:visible;text-align:center;padding:48px 20px 32px;}
+#ricerca-maledizioni .maledizioni-global-top .seal{display:inline-flex !important;overflow:visible;}
+#ricerca-maledizioni .maledizioni-global-top h1{font-family:'magic',var(--serif) !important;font-size:clamp(2.35rem,5vw,3.25rem) !important;line-height:1.08;text-align:center;margin:8px 0 10px;}
 </style> 
  
+<header class="top maledizioni-global-top"> 
+ <div class="seal" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 4h8a3 3 0 0 1 3 3v9a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V7a3 3 0 0 1 3-3Z"></path><path d="M8 4a3 3 0 1 0 0 6h2"></path><path d="M16 20a3 3 0 1 0 0-6h-1"></path><path d="M10 9h6"></path><path d="M10 12h5"></path><path d="M10 15h4"></path></svg></div> 
+ <div class="eyebrow">Felix Felicis GDR</div> 
+ <h1>Ricerca Maledizioni</h1>
+ <p class="subtitle">Per PG Spezzaincantesimi e Acumen</p> 
+</header>
+
 <section id="maledizioni-session-home" class="session-home"> 
  <div class="session-card"> 
  <div class="session-card-head"><h2>Ricerche Maledizioni in corso</h2></div> 
@@ -630,12 +642,7 @@ padding: 20px}
  </div> 
  </div> 
  
-<header class="top"> 
- <div class="seal" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 4h8a3 3 0 0 1 3 3v9a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V7a3 3 0 0 1 3-3Z"></path><path d="M8 4a3 3 0 1 0 0 6h2"></path><path d="M16 20a3 3 0 1 0 0-6h-1"></path><path d="M10 9h6"></path><path d="M10 12h5"></path><path d="M10 15h4"></path></svg></div> 
- <div class="eyebrow">Felix Felicis GDR</div> 
- <h1>Ricerca Maledizioni</h1>
- <p class="subtitle">Per PG Spezzaincantesimi e Acumen</p> 
-</header> 
+ 
  
 <main> 
  
