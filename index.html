@@ -1,3 +1,13 @@
+<!-- Revisione v19: Corruzione Mentale P5 valida solo a gruppo realmente risolto, invalidata se cambia la composizione; ID stabili per tutti i dadi speciali e replay Firebase più robusto -->
+<!-- Revisione v18: risultati persistenti e validati per Risonanza Maledetta (1d4) e Corruzione Mentale (1d5), con invalidazione retroattiva corretta degli effetti speciali -->
+<!-- Revisione v17: prove a doppio tiro atomiche — uso consumato solo a prova completa, secondo tiro cancellato se si annulla il primo, riepilogo finale solo su esiti risolti -->
+<!-- Revisione v16: aggiunta/rimozione PG con invalidazione per dipendenza reale; preserva i tiri degli altri partecipanti quando bonus, pending, doppio tiro o esclusione non cambiano -->
+<!-- Revisione v15: dipendenza corretta tra 1d5 di attivazione ed effetto in Analisi/Tracciatura; il secondo tiro viene invalidato solo quando cambia lo stato di attivazione -->
+<!-- Revisione v14: 1d5 finali di Analisi/Tracciatura nuovamente funzionanti e rimozione PG senza perdita degli effetti speciali degli altri partecipanti -->
+<!-- Revisione v13: Fonte obbligatoria per i bonus attivi e invalidazione per dipendenza reale tra PG/Fasi; preserva i tiri indipendenti -->
+<!-- Revisione v12: matrice esiti corretta per PG/Fase, rimozione PG sicura, riverifica idempotente e Parametri effettivi esplicitati -->
+<!-- Revisione v11: actionLog Firebase non registra numeri impossibili, invalidazioni PG più selettive, input numerici non distruttivi e risultati speciali indipendenti preservati -->
+<!-- Revisione v10: usi di Fase realmente automatici, riepiloghi solo degli effetti usati, validazione non distruttiva dei dadi e invalidazioni dipendenti; Firebase v9 preservato -->
 <!-- Revisione v9: bonus generali e di Fase distinti, Oggetti/Borsa multipli, usi automatici, validazione numerica e invalidazione coerente; Firebase v8 preservato -->
 <!-- Revisione v8: compatibilità diretta con passagePicker v6/v7 + correzione intestazione HTML; mantiene la migrazione legacy rafforzata della v7 -->
 <!-- Revisione v6: determinazione Passaggio consolidata (scelta/1d5, massimo 3 determinazioni, Ricerca collegata e requisiti) + sessioni Firebase allineate agli standard definitivi: readonly reversibile, salvataggio/uscita/eliminazione sicuri, doppia creazione bloccata, metadata live e migrazione legacy -->
@@ -971,7 +981,8 @@ risultati: [],
 special: {},
 flowPage:'config',
 summaryVisited:false
-}; 
+};
+var legacyUseAdjustments = {}; 
 /* inizializza matrici per PG e per fase */ 
 function ensureMatrices(){ 
 var npg = state.pgs.length; 
@@ -985,7 +996,6 @@ if(!state.generalBonuses[t]){ state.generalBonuses[t] = []; }
 if(!state.phaseEffects[t]){ state.phaseEffects[t] = []; }
 if(!state.rolls[t]){ state.rolls[t] = []; } 
 if(!state.rolls2[t]){ state.rolls2[t] = []; } 
-if(!state.risultati[t]){ state.risultati[t] = []; } 
 for(var f=0; f<nfasi; f++){ 
 if(!state.vals[t][f]){ state.vals[t][f] = {}; } 
 if(state.bonusC[t][f] === undefined){ state.bonusC[t][f] = 0; } 
@@ -995,9 +1005,10 @@ if(!state.phaseEffects[t][f]){ state.phaseEffects[t][f] = []; }
 if(state.rolls[t][f] === undefined){ state.rolls[t][f] = ''; } 
 if(state.rolls2[t][f] === undefined){ state.rolls2[t][f] = ''; } 
 } 
+}
+for(var rf=0;rf<nfasi;rf++){if(!state.risultati[rf])state.risultati[rf]=[];}
 } 
-} 
- 
+
 
 function strictIntValue(v,allowNegative){
  var s=String(v===undefined||v===null?'':v).trim();
@@ -1006,7 +1017,7 @@ function strictIntValue(v,allowNegative){
  var n=Number(s);return Number.isSafeInteger(n)?n:null;
 }
 function emptyGeneralBonus(){return {source:'',target:'',value:'0',active:true};}
-function emptyPhaseEffect(){return {source:'',condition:'',kind:'threshold',target:'__threshold',value:'0',maxUses:'',usedUses:'',active:true};}
+function emptyPhaseEffect(){return {source:'',condition:'',kind:'threshold',target:'__threshold',value:'0',maxUses:'',usedUses:'0',consumedHere:false,active:true};}
 function allParameterOptions(){
  var seen={},out=[];
  config.fasi.forEach(function(f){(f.campi||[]).forEach(function(c){if(!seen[c.key]){seen[c.key]=true;out.push({key:c.key,label:c.label});}});});
@@ -1015,17 +1026,39 @@ function allParameterOptions(){
 function phaseParameterOptions(fase){return (fase.campi||[]).map(function(c){return {key:c.key,label:c.label};});}
 function generalBonusValue(pgIdx,key){
  var total=0,rows=state.generalBonuses[pgIdx]||[];
- rows.forEach(function(r){var v=strictIntValue(r.value,true);if(r.active!==false&&r.target===key&&v!==null){total+=v;}});
+ rows.forEach(function(r){
+  var v=strictIntValue(r.value,true),sourceOk=!!String(r&&r.source||'').trim();
+  if(r.active!==false&&sourceOk&&r.target===key&&v!==null&&v!==0){total+=v;}
+ });
  return total;
 }
 function phaseEffectState(row){
  var value=strictIntValue(row&&row.value,true);
  var hasMax=!!(row&&String(row.maxUses||'').trim()!=='');
  var max=hasMax?strictIntValue(row.maxUses,false):null;
+ var baseUsed=row&&String(row.usedUses||'').trim()!==''?strictIntValue(row.usedUses,false):0;
+ var here=!!(row&&row.consumedHere);
+ var totalUsed=baseUsed===null?null:baseUsed+(here?1:0);
+ var sourceOk=(value===0)||!!String(row&&row.source||'').trim();
+ var valid=value!==null&&sourceOk&&baseUsed!==null&&(!hasMax||(max!==null&&max>=0&&baseUsed<=max&&totalUsed<=max));
+ var available=valid&&(!hasMax||(max>0&&(here||baseUsed<max)));
+ var exhausted=valid&&hasMax&&!here&&baseUsed>=max;
+ return {
+  value:value,max:max,baseUsed:baseUsed,totalUsed:totalUsed,used:totalUsed,sourceOk:sourceOk,
+  valid:valid,available:available,exhausted:exhausted,
+  remaining:hasMax&&max!==null&&totalUsed!==null?max-totalUsed:null,
+  applied:!!(row&&row.active!==false&&sourceOk&&valid&&available&&value!==0)
+ };
+}
+function oldV9PhaseEffectState(row){
+ var value=strictIntValue(row&&row.value,true);
+ var hasMax=!!(row&&String(row.maxUses||'').trim()!=='');
+ var max=hasMax?strictIntValue(row.maxUses,false):null;
  var used=row&&String(row.usedUses||'').trim()!==''?strictIntValue(row.usedUses,false):0;
- var valid=value!==null&&used!==null&&(!hasMax||(max!==null&&used<=max));
- var usageReady=!hasMax||(max>0&&used>0&&used<=max);
- return {value:value,max:max,used:used,valid:valid,usageReady:usageReady,remaining:hasMax&&max!==null?max-used:null,applied:!!(row&&row.active!==false&&valid&&usageReady&&value!==0)};
+ var sourceOk=(value===0)||!!String(row&&row.source||'').trim();
+ var valid=value!==null&&sourceOk&&used!==null&&(!hasMax||(max!==null&&used<=max));
+ var ready=!hasMax||(max>0&&used>0&&used<=max);
+ return {value:value,max:max,used:used,valid:valid,applied:!!(row&&row.active!==false&&sourceOk&&valid&&ready&&value!==0)};
 }
 function phaseParamBonus(pgIdx,faseIdx,key){
  var total=0,rows=(state.phaseEffects[pgIdx]&&state.phaseEffects[pgIdx][faseIdx])||[];
@@ -1046,22 +1079,190 @@ function effectivePhaseValues(pgIdx,faseIdx,fase){
  });
  return {values:eff,notes:notes};
 }
+function validRollNumber(raw,faces){
+ var s=String(raw===undefined||raw===null?'':raw).trim();
+ if(!/^\d+$/.test(s))return null;
+ var n=Number(s);return Number.isSafeInteger(n)&&n>=1&&n<=faces?n:null;
+}
+function phaseStartedValid(pgIdx,faseIdx){
+ var fase=config.fasi[faseIdx],r=state.risultati[faseIdx]&&state.risultati[faseIdx][pgIdx];
+ if(!fase||!r||r.escluso||r.bloccato||r.risultatoImpossibile)return false;
+ if(r.successo!==true&&r.successo!==false)return false;
+ return validRollNumber(state.rolls[pgIdx]&&state.rolls[pgIdx][faseIdx],fase.dado)!==null;
+}
+function generalWasUsed(pgIdx,key){
+ for(var fi=0;fi<config.fasi.length;fi++){
+  if(!phaseStartedValid(pgIdx,fi))continue;
+  if((config.fasi[fi].campi||[]).some(function(c){return c.key===key;}))return true;
+ }
+ return false;
+}
+function phaseEffectUsedInputId(pgIdx,faseIdx,rowIdx){
+ return 'rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-'+rowIdx+'-used';
+}
+function consumePhaseUses(pgIdx,faseIdx){
+ var rows=(state.phaseEffects[pgIdx]&&state.phaseEffects[pgIdx][faseIdx])||[];
+ rows.forEach(function(row,rowIdx){
+  if(row.consumedHere)return;
+  if(window.__RM_RESTORING__&&String(window.__RM_SESSION_VERSION__||'')==='v9'){
+   var old=oldV9PhaseEffectState(row);
+   if(!old.applied)return;
+   if(old.used>0){
+    row.usedUses=String(Math.max(0,old.used-1));
+    legacyUseAdjustments[phaseEffectUsedInputId(pgIdx,faseIdx,rowIdx)]=row.usedUses;
+   }
+   row.consumedHere=true;
+   return;
+  }
+  var st=phaseEffectState(row);
+  if(st.applied)row.consumedHere=true;
+ });
+}
+function releasePhaseUses(pgIdx,faseIdx){
+ var rows=(state.phaseEffects[pgIdx]&&state.phaseEffects[pgIdx][faseIdx])||[];
+ rows.forEach(function(row){row.consumedHere=false;});
+}
+function clearSingleRoll(pgIdx,faseIdx){
+ releasePhaseUses(pgIdx,faseIdx);
+ if(state.rolls[pgIdx])state.rolls[pgIdx][faseIdx]='';
+ if(state.rolls2[pgIdx])state.rolls2[pgIdx][faseIdx]='';
+}
+function clearSpecialForPg(pgIdx){
+ if(config.id==='p1'){
+  if(state.special&&state.special.p1Activation)state.special.p1Activation[pgIdx]='';
+  if(state.special&&state.special.p1Effect)state.special.p1Effect[pgIdx]='';
+  return;
+ }
+ if(config.id==='p2'){
+  if(state.special&&state.special.p2Risonanza)state.special.p2Risonanza[pgIdx]='';
+  return;
+ }
+ if(config.id==='p5'){
+  /* La Corruzione Mentale è un esito di gruppo: quando cambia un esito
+     meccanicamente rilevante della Fase III, i relativi 1d5 vanno rifatti. */
+  if(state.special&&state.special.p5Corruzione)state.special.p5Corruzione=[];
+ }
+}
 function clearRollsFromPhase(startIdx){
  for(var p=0;p<state.pgs.length;p++){
-  for(var f=startIdx;f<config.fasi.length;f++){
-   if(state.rolls[p])state.rolls[p][f]='';
-   if(state.rolls2[p])state.rolls2[p][f]='';
-  }
+  for(var f=startIdx;f<config.fasi.length;f++)clearSingleRoll(p,f);
  }
  state.special={};
 }
-function clearRollsAfterPhase(faseIdx){
- if(faseIdx+1<config.fasi.length)clearRollsFromPhase(faseIdx+1);else state.special={};
+function clearDependentRolls(pgIdx,faseIdx){
+ if(faseIdx>=config.fasi.length-1){clearSpecialForPg(pgIdx);return;}
+ if(config.id==='p1'||config.id==='p5'){
+  for(var f=faseIdx+1;f<config.fasi.length;f++)clearSingleRoll(pgIdx,f);
+ }else if(config.id==='p2'){
+  if(faseIdx===0){
+   clearSingleRoll(pgIdx,1);
+   for(var p=0;p<state.pgs.length;p++)clearSingleRoll(p,2);
+  }else if(faseIdx===1){
+   for(var p2=0;p2<state.pgs.length;p2++)clearSingleRoll(p2,2);
+  }
+ }else if(config.id==='p3'||config.id==='p4'){
+  for(var p3=0;p3<state.pgs.length;p3++){
+   for(var f2=faseIdx+1;f2<config.fasi.length;f2++)clearSingleRoll(p3,f2);
+  }
+ }else{
+  for(var p4=0;p4<state.pgs.length;p4++){
+   for(var f3=faseIdx+1;f3<config.fasi.length;f3++)clearSingleRoll(p4,f3);
+  }
+ }
+ clearSpecialForPg(pgIdx);
+}
+function resultMatrixSnapshot(){
+ var out=[];
+ for(var f=0;f<config.fasi.length;f++){
+  out[f]=[];
+  for(var p=0;p<state.pgs.length;p++){
+   var r=state.risultati[f]&&state.risultati[f][p];
+   out[f][p]=r?{successo:r.successo,escluso:!!r.escluso,bloccato:!!r.bloccato,risultatoImpossibile:!!r.risultatoImpossibile}:null;
+  }
+ }
+ return out;
+}
+function carryForMatrix(faseIdx,pgIdx,matrix){
+ var fase=config.fasi[faseIdx];
+ if(!fase||!fase.carry||faseIdx<=0)return {bonus:0};
+ var prev=matrix[faseIdx-1]?matrix[faseIdx-1][pgIdx]:null,others=[];
+ for(var p=0;p<state.pgs.length;p++){if(p!==pgIdx)others.push(matrix[faseIdx-1]?matrix[faseIdx-1][p]:null);}
+ return fase.carry(prev,others)||{bonus:0};
+}
+function carryMechanicalKey(c){
+ c=c||{};
+ return [
+  Number(c.bonus||0),
+  c.pending?1:0,
+  c.rollTwice?1:0,
+  c.excludeMe?1:0
+ ].join('|');
+}
+function propagateOutcomeChange(pgIdx,faseIdx,oldOutcome,newOutcome){
+ if(oldOutcome===newOutcome)return;
+ var last=config.fasi.length-1;
+ if(faseIdx>=last){clearSpecialForPg(pgIdx);return;}
+
+ var oldM=resultMatrixSnapshot(),newM=resultMatrixSnapshot();
+ if(!oldM[faseIdx])oldM[faseIdx]=[];
+ if(!newM[faseIdx])newM[faseIdx]=[];
+
+ var existing=oldM[faseIdx][pgIdx];
+ oldM[faseIdx][pgIdx]=existing?Object.assign({},existing,{successo:oldOutcome}):{successo:oldOutcome,escluso:false};
+ newM[faseIdx][pgIdx]=(newOutcome===null||newOutcome===undefined)?null:{successo:newOutcome,escluso:false};
+
+ for(var f=faseIdx+1;f<config.fasi.length;f++){
+  if(!newM[f])newM[f]=[];
+  for(var p=0;p<state.pgs.length;p++){
+   var before=carryForMatrix(f,p,oldM),after=carryForMatrix(f,p,newM);
+   if(carryMechanicalKey(before)!==carryMechanicalKey(after)){
+    clearSingleRoll(p,f);
+    if(f===last)clearSpecialForPg(p);
+    newM[f][p]=after&&after.excludeMe?{successo:false,escluso:true}:null;
+   }else{
+    newM[f][p]=oldM[f]?oldM[f][p]:null;
+   }
+  }
+ }
+}
+function clearRollsAfterPhase(faseIdx,pgIdx,oldOutcome,newOutcome){
+ propagateOutcomeChange(pgIdx,faseIdx,oldOutcome,newOutcome);
+}
+function participantMechanicsSnapshot(){
+ var matrix=resultMatrixSnapshot(),keys=[];
+ for(var f=1;f<config.fasi.length;f++){
+  keys[f]=[];
+  for(var p=0;p<state.pgs.length;p++)keys[f][p]=carryMechanicalKey(carryForMatrix(f,p,matrix));
+ }
+ return {matrix:matrix,keys:keys,count:state.pgs.length};
+}
+function invalidateAfterParticipantChange(snapshot,removedIndex,added){
+ if(!snapshot)return;
+ var matrix=resultMatrixSnapshot(),last=config.fasi.length-1;
+ for(var f=1;f<config.fasi.length;f++){
+  if(!matrix[f])matrix[f]=[];
+  for(var p=0;p<state.pgs.length;p++){
+   var oldIdx=added?p:(p<removedIndex?p:p+1);
+   if(oldIdx<0||oldIdx>=snapshot.count)continue; /* nuovo PG: non ha tiri da preservare */
+   var before=snapshot.keys[f]?snapshot.keys[f][oldIdx]:null;
+   var after=carryMechanicalKey(carryForMatrix(f,p,matrix));
+   if(before!==after){
+    clearSingleRoll(p,f);
+    var c=carryForMatrix(f,p,matrix);
+    matrix[f][p]=c&&c.excludeMe?{successo:false,escluso:true}:null;
+    if(f===last)clearSpecialForPg(p);
+   }else{
+    matrix[f][p]=snapshot.matrix[f]?snapshot.matrix[f][oldIdx]:null;
+   }
+  }
+ }
 }
 function invalidatePhaseFormula(pgIdx,faseIdx){
- if(state.rolls[pgIdx])state.rolls[pgIdx][faseIdx]='';
- if(state.rolls2[pgIdx])state.rolls2[pgIdx][faseIdx]='';
- if(faseIdx+1<config.fasi.length)clearRollsFromPhase(faseIdx+1);else state.special={};
+ var r=state.risultati[faseIdx]&&state.risultati[faseIdx][pgIdx];
+ var oldOutcome=r&&(r.successo===true||r.successo===false)?r.successo:null;
+ clearSingleRoll(pgIdx,faseIdx);
+ if(oldOutcome!==null)propagateOutcomeChange(pgIdx,faseIdx,oldOutcome,null);
+ if(faseIdx>=config.fasi.length-1)clearSpecialForPg(pgIdx);
 }
 function firstPhaseUsingKey(key){
  if(!key)return 0;
@@ -1086,12 +1287,23 @@ function sourceName(row,fallback){
  return (s||fallback||'EFFETTO').toUpperCase();
 }
 function usageText(st){
- if(st.max===null)return '';
- return ' · '+(st.used||0)+'/'+st.max+' USI → '+Math.max(0,st.remaining===null?0:st.remaining)+' RIMASTI';
+ if(st.max===null)return st&&st.totalUsed>0?' · '+st.totalUsed+' US'+(st.totalUsed===1?'O CONSUMATO':'I CONSUMATI'):'';
+ return ' · '+(st.totalUsed||0)+'/'+st.max+' USI → '+Math.max(0,st.remaining===null?0:st.remaining)+' RIMASTI';
 }
 function effectLine(row,faseLabel,paramLabel){
  var st=phaseEffectState(row),cond=String(row.condition||'').trim(),kind=row.kind==='param'?('PARAMETRO '+(paramLabel||row.target||'')):'POSSIBILITÀ';
  return sourceName(row,'OGGETTO/BORSA')+(cond?' · '+cond.toUpperCase():'')+' → '+(st.value>=0?'+':'')+st.value+' '+kind+' · '+faseLabel.toUpperCase()+usageText(st);
+}
+function phaseEffectDisplayLine(row,pgIdx,faseIdx,fase,paramLabel){
+ var line=effectLine(row,fase.nome,paramLabel);
+ if(row&&row.kind==='param'&&row.target){
+  var raw=state.vals[pgIdx]&&state.vals[pgIdx][faseIdx]?state.vals[pgIdx][faseIdx][row.target]:null;
+  var eff=effectivePhaseValues(pgIdx,faseIdx,fase).values[row.target];
+  if(typeof raw==='number'&&isFinite(raw)&&typeof eff==='number'&&isFinite(eff)){
+   line+=' · '+String(paramLabel||row.target).toUpperCase()+' EFFETTIVO '+raw+' → '+eff;
+  }
+ }
+ return line;
 }
 function generalLine(row){
  var v=strictIntValue(row.value,true),opts=allParameterOptions(),label=row.target||'Parametro';
@@ -1099,8 +1311,8 @@ function generalLine(row){
  return sourceName(row,'BONUS GENERALE')+' → '+(v>=0?'+':'')+v+' '+label.toUpperCase()+' · GENERALE';
 }
 function generalContributionKey(row){
- var v=strictIntValue(row&&row.value,true);
- return row&&row.active!==false&&row.target&&v!==null&&v!==0?(row.target+':'+v):'';
+ var v=strictIntValue(row&&row.value,true),sourceOk=!!String(row&&row.source||'').trim();
+ return row&&row.active!==false&&sourceOk&&row.target&&v!==null&&v!==0?(row.target+':'+v):'';
 }
 function phaseContributionKey(row){
  var st=phaseEffectState(row);
@@ -1122,19 +1334,23 @@ function buildGeneralBonusManager(pgIdx){
  (state.generalBonuses[pgIdx]||[]).forEach(function(row,rowIdx){
   var rbox=el('div','bonus-row'),grid=el('div','bonus-row-grid');
   var source=document.createElement('input');source.type='text';source.value=row.source||'';source.placeholder='Es. Oggetto permanente';source.id='rmg-'+config.id+'-'+pgIdx+'-'+rowIdx+'-source';
-  var sf='rmg-source-'+pgIdx+'-'+rowIdx;source.setAttribute('data-focus-key',sf);source.addEventListener('input',function(){row.source=source.value;rerenderFocus(sf);});grid.appendChild(makeField('Fonte',source,true));
+  var sf='rmg-source-'+pgIdx+'-'+rowIdx;source.setAttribute('data-focus-key',sf);source.addEventListener('input',function(){var before=generalContributionKey(row);row.source=source.value;invalidateGeneralTransition(pgIdx,before,generalContributionKey(row));rerenderFocus(sf);});grid.appendChild(makeField('Fonte',source,true));
   var target=document.createElement('select');target.id='rmg-'+config.id+'-'+pgIdx+'-'+rowIdx+'-target';
   var blank=document.createElement('option');blank.value='';blank.textContent='— scegli Parametro —';target.appendChild(blank);
   opts.forEach(function(o){var op=document.createElement('option');op.value=o.key;op.textContent=o.label;if(row.target===o.key)op.selected=true;target.appendChild(op);});
   target.addEventListener('change',function(){var before=generalContributionKey(row);row.target=target.value;invalidateGeneralTransition(pgIdx,before,generalContributionKey(row));render();});grid.appendChild(makeField('Parametro modificato',target,false));
   var val=document.createElement('input');val.type='number';val.value=row.value;val.step='1';val.setAttribute('data-allow-negative','1');val.id='rmg-'+config.id+'-'+pgIdx+'-'+rowIdx+'-value';
-  var vf='rmg-value-'+pgIdx+'-'+rowIdx;val.setAttribute('data-focus-key',vf);val.addEventListener('input',function(){var before=generalContributionKey(row);row.value=val.value;invalidateGeneralTransition(pgIdx,before,generalContributionKey(row));rerenderFocus(vf);});grid.appendChild(makeField('Bonus al Parametro',val,false));
+  var vf='rmg-value-'+pgIdx+'-'+rowIdx;val.setAttribute('data-focus-key',vf);val.addEventListener('input',function(){var raw=String(val.value||'').trim(),previous=row.value;if(raw!==''&&strictIntValue(raw,true)===null){val.value=previous;return;}var before=generalContributionKey(row);row.value=raw===''?'0':raw;invalidateGeneralTransition(pgIdx,before,generalContributionKey(row));rerenderFocus(vf);});grid.appendChild(makeField('Bonus al Parametro',val,false));
   rbox.appendChild(grid);
   var acts=el('div','bonus-row-actions'),active=el('label','bonus-active'),ck=document.createElement('input');
   ck.type='checkbox';ck.checked=row.active!==false;ck.id='rmg-'+config.id+'-'+pgIdx+'-'+rowIdx+'-active';ck.addEventListener('input',function(){var before=generalContributionKey(row);row.active=ck.checked;invalidateGeneralTransition(pgIdx,before,generalContributionKey(row));render();});
   active.appendChild(ck);active.appendChild(document.createTextNode('Applica ai calcoli'));acts.appendChild(active);
   var rm=el('button','small bonus-remove','Elimina');rm.type='button';rm.addEventListener(EVT,function(){var before=generalContributionKey(row);state.generalBonuses[pgIdx].splice(rowIdx,1);invalidateGeneralTransition(pgIdx,before,'');render();});acts.appendChild(rm);rbox.appendChild(acts);
-  var gv=strictIntValue(row.value,true);if(row.active!==false&&row.target&&gv!==null&&gv!==0){var s=el('div','bonus-applied-summary');s.appendChild(el('div','bonus-applied-line',generalLine(row)));rbox.appendChild(s);}
+  var gv=strictIntValue(row.value,true);
+  if(row.active!==false&&String(row.value||'').trim()!==''&&gv===null)rbox.appendChild(el('div','bonus-invalid','Il bonus generale deve essere un numero intero.'));
+  else if(row.active!==false&&gv!==null&&gv!==0&&!String(row.source||'').trim())rbox.appendChild(el('div','bonus-invalid','Indica la Fonte del bonus generale.'));
+  else if(row.active!==false&&gv!==null&&gv!==0&&!row.target)rbox.appendChild(el('div','bonus-invalid','Scegli il Parametro modificato.'));
+  if(row.active!==false&&String(row.source||'').trim()&&row.target&&gv!==null&&gv!==0){var s=el('div','bonus-applied-summary');s.appendChild(el('div','bonus-applied-line',generalLine(row)));rbox.appendChild(s);}
   rows.appendChild(rbox);
  });
  box.appendChild(rows);
@@ -1145,13 +1361,15 @@ function buildPhaseEffectManager(pgIdx,faseIdx,fase){
  var box=el('div','bonus-manager');
  var head=el('div','bonus-manager-head'),left=el('div');
  left.appendChild(el('div','bonus-manager-title','Oggetti / Borsa / altri effetti di questa Fase'));
- left.appendChild(el('div','bonus-manager-help','Aggiungi più effetti se il regolamento lo consente. I bonus al Parametro entrano prima della formula; i bonus alle possibilità vengono aggiunti dopo. Conoscenza e Pozione restano nei selettori dedicati e non vanno duplicate qui.'));
+ left.appendChild(el('div','bonus-manager-help','Puoi predisporre più effetti. Il bonus al Parametro entra prima della formula; il bonus alle possibilità si somma alla soglia finale. Se indichi usi limitati, l’uso della Fase viene conteggiato automaticamente quando inserisci un tiro valido.'));
  head.appendChild(left);box.appendChild(head);
  var rows=el('div','bonus-rows'),params=phaseParameterOptions(fase),arr=state.phaseEffects[pgIdx][faseIdx];
  arr.forEach(function(row,rowIdx){
+  if(row.consumedHere===undefined)row.consumedHere=false;
+  if(row.usedUses===undefined||row.usedUses===null||row.usedUses==='')row.usedUses='0';
   var rbox=el('div','bonus-row'),grid=el('div','bonus-row-grid');
   var source=document.createElement('input');source.type='text';source.value=row.source||'';source.placeholder='Es. Borsa / oggetto';source.id='rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-'+rowIdx+'-source';
-  var sf='rmx-source-'+faseIdx+'-'+pgIdx+'-'+rowIdx;source.setAttribute('data-focus-key',sf);source.addEventListener('input',function(){row.source=source.value;rerenderFocus(sf);});grid.appendChild(makeField('Fonte / Oggetto',source,true));
+  var sf='rmx-source-'+faseIdx+'-'+pgIdx+'-'+rowIdx;source.setAttribute('data-focus-key',sf);source.addEventListener('input',function(){var before=phaseContributionKey(row);row.source=source.value;if(before!==phaseContributionKey(row))invalidatePhaseFormula(pgIdx,faseIdx);rerenderFocus(sf);});grid.appendChild(makeField('Fonte / Oggetto',source,true));
   var cond=document.createElement('input');cond.type='text';cond.value=row.condition||'';cond.placeholder='Es. solo su maledizioni';cond.id='rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-'+rowIdx+'-condition';
   var cf='rmx-condition-'+faseIdx+'-'+pgIdx+'-'+rowIdx;cond.setAttribute('data-focus-key',cf);cond.addEventListener('input',function(){row.condition=cond.value;rerenderFocus(cf);});grid.appendChild(makeField('Condizione / efficacia',cond,true));
   var kind=document.createElement('select');[['threshold','Bonus alle possibilità'],['param','Bonus al Parametro']].forEach(function(x){var op=document.createElement('option');op.value=x[0];op.textContent=x[1];if(row.kind===x[0])op.selected=true;kind.appendChild(op);});
@@ -1161,43 +1379,47 @@ function buildPhaseEffectManager(pgIdx,faseIdx,fase){
   else{params.forEach(function(p){var op=document.createElement('option');op.value=p.key;op.textContent=p.label;if(row.target===p.key)op.selected=true;target.appendChild(op);});if(!row.target&&params.length)row.target=params[0].key;}
   target.addEventListener('change',function(){var before=phaseContributionKey(row);row.target=target.value;if(before!==phaseContributionKey(row))invalidatePhaseFormula(pgIdx,faseIdx);render();});grid.appendChild(makeField('Su cosa agisce',target,false));
   var val=document.createElement('input');val.type='number';val.step='1';val.value=row.value;val.setAttribute('data-allow-negative','1');val.id='rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-'+rowIdx+'-value';
-  var vf='rmx-value-'+faseIdx+'-'+pgIdx+'-'+rowIdx;val.setAttribute('data-focus-key',vf);val.addEventListener('input',function(){var before=phaseContributionKey(row);row.value=val.value;if(before!==phaseContributionKey(row))invalidatePhaseFormula(pgIdx,faseIdx);rerenderFocus(vf);});grid.appendChild(makeField('Valore del bonus',val,false));
+  var vf='rmx-value-'+faseIdx+'-'+pgIdx+'-'+rowIdx;val.setAttribute('data-focus-key',vf);val.addEventListener('input',function(){var raw=String(val.value||'').trim(),previous=row.value;if(raw!==''&&strictIntValue(raw,true)===null){val.value=previous;return;}var before=phaseContributionKey(row);row.value=raw===''?'0':raw;if(before!==phaseContributionKey(row))invalidatePhaseFormula(pgIdx,faseIdx);rerenderFocus(vf);});grid.appendChild(makeField('Valore del bonus',val,false));
   var max=document.createElement('input');max.type='number';max.min='0';max.step='1';max.value=row.maxUses;max.placeholder='vuoto = non limitato';max.id='rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-'+rowIdx+'-max';
-  var mf='rmx-max-'+faseIdx+'-'+pgIdx+'-'+rowIdx;max.setAttribute('data-focus-key',mf);max.addEventListener('input',function(){var before=phaseContributionKey(row);row.maxUses=max.value;if(before!==phaseContributionKey(row))invalidatePhaseFormula(pgIdx,faseIdx);rerenderFocus(mf);});grid.appendChild(makeField('Usi disponibili',max,false));
+  var mf='rmx-max-'+faseIdx+'-'+pgIdx+'-'+rowIdx;max.setAttribute('data-focus-key',mf);max.addEventListener('input',function(){var raw=String(max.value||'').trim(),previous=row.maxUses;if(raw!==''&&strictIntValue(raw,false)===null){max.value=previous;return;}var before=phaseContributionKey(row);row.maxUses=raw;if(before!==phaseContributionKey(row))invalidatePhaseFormula(pgIdx,faseIdx);rerenderFocus(mf);});grid.appendChild(makeField('Usi disponibili',max,false));
   var used=document.createElement('input');used.type='number';used.min='0';used.step='1';used.value=row.usedUses;used.placeholder='0';used.id='rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-'+rowIdx+'-used';
-  var uf='rmx-used-'+faseIdx+'-'+pgIdx+'-'+rowIdx;used.setAttribute('data-focus-key',uf);used.addEventListener('input',function(){var before=phaseContributionKey(row);row.usedUses=used.value;if(before!==phaseContributionKey(row))invalidatePhaseFormula(pgIdx,faseIdx);rerenderFocus(uf);});grid.appendChild(makeField('Usi consumati',used,false));
+  var uf='rmx-used-'+faseIdx+'-'+pgIdx+'-'+rowIdx;used.setAttribute('data-focus-key',uf);used.addEventListener('input',function(){var raw=String(used.value||'').trim(),previous=row.usedUses;if(raw!==''&&strictIntValue(raw,false)===null){used.value=previous;return;}var before=phaseContributionKey(row);row.usedUses=raw===''?'0':raw;if(before!==phaseContributionKey(row))invalidatePhaseFormula(pgIdx,faseIdx);rerenderFocus(uf);});grid.appendChild(makeField('Usi già consumati',used,false));
+  var total=document.createElement('input');total.type='text';total.readOnly=true;var st0=phaseEffectState(row);total.value=st0.totalUsed===null?'—':String(st0.totalUsed);grid.appendChild(makeField('Usi consumati totali',total,false));
   var phase=document.createElement('input');phase.type='text';phase.readOnly=true;phase.value=fase.nome;grid.appendChild(makeField('Fase',phase,true));
   rbox.appendChild(grid);
   var acts=el('div','bonus-row-actions'),active=el('label','bonus-active'),ck=document.createElement('input');
   ck.type='checkbox';ck.checked=row.active!==false;ck.id='rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-'+rowIdx+'-active';ck.addEventListener('input',function(){var before=phaseContributionKey(row);row.active=ck.checked;if(before!==phaseContributionKey(row))invalidatePhaseFormula(pgIdx,faseIdx);render();});
   active.appendChild(ck);active.appendChild(document.createTextNode('Applica ai calcoli (condizione soddisfatta)'));acts.appendChild(active);
-  var rm=el('button','small bonus-remove','Elimina');rm.type='button';rm.addEventListener(EVT,function(){var had=phaseEffectState(row).applied;arr.splice(rowIdx,1);if(had)invalidatePhaseFormula(pgIdx,faseIdx);render();});acts.appendChild(rm);rbox.appendChild(acts);
+  var rm=el('button','small bonus-remove','Elimina');rm.type='button';rm.addEventListener(EVT,function(){var had=phaseContributionKey(row)||row.consumedHere;if(had)invalidatePhaseFormula(pgIdx,faseIdx);arr.splice(rowIdx,1);render();});acts.appendChild(rm);rbox.appendChild(acts);
   var st=phaseEffectState(row);
-  if(!st.valid||(st.max!==null&&!st.usageReady)){rbox.appendChild(el('div','bonus-invalid',!st.valid?'Controlla valore e usi: sono ammessi solo interi e gli usi consumati non possono superare quelli disponibili.':'Per applicare un effetto con usi limitati, indica almeno 1 uso consumato.'));}
-  if(st.applied){var lab='';params.forEach(function(p){if(p.key===row.target)lab=p.label;});var s=el('div','bonus-applied-summary');s.appendChild(el('div','bonus-applied-line',effectLine(row,fase.nome,lab)));rbox.appendChild(s);}
+  if(st.value!==0&&!String(row.source||'').trim()){rbox.appendChild(el('div','bonus-invalid','Indica la Fonte / Oggetto del bonus prima di applicarlo.'));}
+  else if(!st.valid){rbox.appendChild(el('div','bonus-invalid','Controlla valore e usi: sono ammessi solo interi; gli usi già consumati e l’uso automatico di questa Fase non possono superare quelli disponibili.'));}
+  else if(st.exhausted){rbox.appendChild(el('div','bonus-invalid','Usi esauriti: l’effetto resta configurato ma non entra nella formula.'));}
+  if(st.applied){var lab='';params.forEach(function(p){if(p.key===row.target)lab=p.label;});var s=el('div','bonus-applied-summary');s.appendChild(el('div','bonus-applied-line',(row.consumedHere?'USATO · ':'PRONTO · ')+phaseEffectDisplayLine(row,pgIdx,faseIdx,fase,lab)));rbox.appendChild(s);}
   rows.appendChild(rbox);
  });
  box.appendChild(rows);
  var add=el('button','small bonus-add','+ Aggiungi bonus');add.type='button';add.addEventListener(EVT,function(){arr.push(emptyPhaseEffect());render();});box.appendChild(add);
- var summary=el('div','bonus-applied-summary'),has=false;
+ var summary=el('div','bonus-applied-summary'),has=false,usedPhase=phaseStartedValid(pgIdx,faseIdx);
  var bc=fase.bonusConoscenza?fase.bonusConoscenza[state.bonusC[pgIdx][faseIdx]]:0,bp=fase.bonusPozione?fase.bonusPozione[state.bonusP[pgIdx][faseIdx]]:0,legacy=state.extra[pgIdx][faseIdx]||0;
- if(bc){summary.appendChild(el('div','bonus-applied-line','CONOSCENZA → +'+bc+' POSSIBILITÀ · '+fase.nome.toUpperCase()));has=true;}
- if(bp){summary.appendChild(el('div','bonus-applied-line','POZIONE → +'+bp+' POSSIBILITÀ · '+fase.nome.toUpperCase()));has=true;}
- if(legacy){summary.appendChild(el('div','bonus-applied-line','OGGETTO/BORSA (SESSIONE PRECEDENTE) → '+(legacy>=0?'+':'')+legacy+' POSSIBILITÀ · '+fase.nome.toUpperCase()));has=true;}
+ if(bc){summary.appendChild(el('div','bonus-applied-line',(usedPhase?'CONOSCENZA USATA':'CONOSCENZA SELEZIONATA')+' → +'+bc+' POSSIBILITÀ · '+fase.nome.toUpperCase()));has=true;}
+ if(bp){summary.appendChild(el('div','bonus-applied-line',(usedPhase?'POZIONE USATA':'POZIONE SELEZIONATA')+' → +'+bp+' POSSIBILITÀ · '+fase.nome.toUpperCase()));has=true;}
+ if(legacy){summary.appendChild(el('div','bonus-applied-line',(usedPhase?'USATO · ':'PRONTO · ')+'OGGETTO/BORSA (SESSIONE PRECEDENTE) → '+(legacy>=0?'+':'')+legacy+' POSSIBILITÀ · '+fase.nome.toUpperCase()));has=true;}
  if(has)box.appendChild(summary);
  return box;
 }
 function buildFinalEffectsBox(){
- var box=el('div','final-effects-box');box.setAttribute('data-flow-part','outcome');box.appendChild(el('h4',null,'Oggetti, Pozioni e Conoscenze usati'));
+ var box=el('div','final-effects-box');box.setAttribute('data-flow-part','outcome');box.appendChild(el('h4',null,'Oggetti, Pozioni e Conoscenze effettivamente utilizzati'));
  var count=0;
  state.pgs.forEach(function(pg,p){
-  (state.generalBonuses[p]||[]).forEach(function(r){var v=strictIntValue(r.value,true);if(r.active!==false&&r.target&&v!==null&&v!==0){box.appendChild(el('p',null,pg.nome+' · '+generalLine(r)));count++;}});
+  (state.generalBonuses[p]||[]).forEach(function(r){var v=strictIntValue(r.value,true);if(r.active!==false&&String(r.source||'').trim()&&r.target&&v!==null&&v!==0&&generalWasUsed(p,r.target)){box.appendChild(el('p',null,pg.nome+' · '+generalLine(r)));count++;}});
   config.fasi.forEach(function(fase,fi){
+   var usedPhase=phaseStartedValid(p,fi);
    var bc=fase.bonusConoscenza?fase.bonusConoscenza[state.bonusC[p][fi]]:0,bp=fase.bonusPozione?fase.bonusPozione[state.bonusP[p][fi]]:0,legacy=state.extra[p][fi]||0;
-   if(bc){box.appendChild(el('p',null,pg.nome+' · CONOSCENZA → +'+bc+' POSSIBILITÀ · '+fase.nome.toUpperCase()));count++;}
-   if(bp){box.appendChild(el('p',null,pg.nome+' · POZIONE → +'+bp+' POSSIBILITÀ · '+fase.nome.toUpperCase()));count++;}
-   if(legacy){box.appendChild(el('p',null,pg.nome+' · OGGETTO/BORSA (SESSIONE PRECEDENTE) → '+(legacy>=0?'+':'')+legacy+' POSSIBILITÀ · '+fase.nome.toUpperCase()));count++;}
-   ((state.phaseEffects[p]&&state.phaseEffects[p][fi])||[]).forEach(function(r){var st=phaseEffectState(r);if(st.applied){var lab='';phaseParameterOptions(fase).forEach(function(x){if(x.key===r.target)lab=x.label;});box.appendChild(el('p',null,pg.nome+' · '+effectLine(r,fase.nome,lab)));count++;}});
+   if(usedPhase&&bc){box.appendChild(el('p',null,pg.nome+' · CONOSCENZA → +'+bc+' POSSIBILITÀ · '+fase.nome.toUpperCase()));count++;}
+   if(usedPhase&&bp){box.appendChild(el('p',null,pg.nome+' · POZIONE → +'+bp+' POSSIBILITÀ · '+fase.nome.toUpperCase()));count++;}
+   if(usedPhase&&legacy){box.appendChild(el('p',null,pg.nome+' · OGGETTO/BORSA (SESSIONE PRECEDENTE) → '+(legacy>=0?'+':'')+legacy+' POSSIBILITÀ · '+fase.nome.toUpperCase()));count++;}
+   ((state.phaseEffects[p]&&state.phaseEffects[p][fi])||[]).forEach(function(r){if(r.consumedHere){var lab='';phaseParameterOptions(fase).forEach(function(x){if(x.key===r.target)lab=x.label;});box.appendChild(el('p',null,pg.nome+' · '+phaseEffectDisplayLine(r,p,fi,fase,lab)));count++;}});
   });
  });
  if(!count){box.style.display='none';}
@@ -1269,7 +1491,8 @@ applyFlowView(false);
 row.appendChild(input); 
 if(state.pgs.length > 2){ 
 var rm = el('button','small remove-pg','Rimuovi'); 
-rm.addEventListener(EVT, function(){ 
+rm.addEventListener(EVT, function(){
+var participantSnapshot=participantMechanicsSnapshot();
 state.pgs.splice(idx,1); 
 state.vals.splice(idx,1); 
 state.bonusC.splice(idx,1); 
@@ -1279,9 +1502,14 @@ state.generalBonuses.splice(idx,1);
 state.phaseEffects.splice(idx,1);
 state.rolls.splice(idx,1); 
 state.rolls2.splice(idx,1); 
-state.risultati.splice(idx,1); 
-state.special = {};
-if(config.fasi.length>1)clearRollsFromPhase(1); 
+for(var rfi=0;rfi<state.risultati.length;rfi++){if(state.risultati[rfi])state.risultati[rfi].splice(idx,1);}
+if(config.id==='p1'){
+ if(state.special&&state.special.p1Activation)state.special.p1Activation.splice(idx,1);
+ if(state.special&&state.special.p1Effect)state.special.p1Effect.splice(idx,1);
+}
+if(config.id==='p2'&&state.special&&state.special.p2Risonanza)state.special.p2Risonanza.splice(idx,1);
+if(config.id==='p5'&&state.special&&state.special.p5Corruzione)state.special.p5Corruzione.splice(idx,1);
+invalidateAfterParticipantChange(participantSnapshot,idx,false);
 render(); 
 }); 
 row.appendChild(rm); 
@@ -1291,9 +1519,11 @@ mgr.appendChild(row);
 }); 
  
 var addBtn = el('button','small add-pg','+ Aggiungi PG'); 
-addBtn.addEventListener(EVT, function(){ 
+addBtn.addEventListener(EVT, function(){
+var participantSnapshot=participantMechanicsSnapshot();
 state.pgs.push({nome:'PG ' + (state.pgs.length+1)});
-if(config.fasi.length>1)clearRollsFromPhase(1); 
+if(config.id==='p5'&&state.special&&state.special.p5Corruzione)state.special.p5Corruzione=[];
+invalidateAfterParticipantChange(participantSnapshot,-1,true);
 render(); 
 }); 
 mgr.appendChild(addBtn);
@@ -1592,11 +1822,14 @@ inp.min = '0';
 inp.step = '1'; 
 var statFocusKey = 'stat-' + faseIdx + '-' + pgIdx + '-' + campo.key; 
 inp.setAttribute('data-focus-key', statFocusKey); 
-inp.addEventListener('input', function(){ 
-var rawStat=String(inp.value||'').trim();
-state.vals[pgIdx][faseIdx][campo.key] = rawStat===''?null:(/^\d+$/.test(rawStat)?Number(rawStat):null);
+inp.addEventListener('input', function(){
+var rawStat=String(inp.value||'').trim(),previous=state.vals[pgIdx][faseIdx][campo.key];
+if(rawStat!==''&&!/^\d+$/.test(rawStat)){inp.value=(previous===undefined||previous===null)?'':String(previous);return;}
+var next=rawStat===''?null:Number(rawStat);
+if(previous===next)return;
+state.vals[pgIdx][faseIdx][campo.key]=next;
 invalidatePhaseFormula(pgIdx,faseIdx);
-rerenderFocus(statFocusKey); 
+rerenderFocus(statFocusKey);
 }); 
 wrap.appendChild(inp); 
 grid.appendChild(wrap); 
@@ -1654,11 +1887,14 @@ inpE.placeholder = '0 (facoltativo)';
 inpE.step = '1'; 
 var extraFocusKey = 'extra-' + faseIdx + '-' + pgIdx; 
 inpE.setAttribute('data-focus-key', extraFocusKey); 
-inpE.addEventListener('input', function(){ 
-var legacyRaw=String(inpE.value||'').trim();
-state.extra[pgIdx][faseIdx] = legacyRaw===''?0:(/^\d+$/.test(legacyRaw)?Number(legacyRaw):0);
+inpE.addEventListener('input', function(){
+var legacyRaw=String(inpE.value||'').trim(),previous=state.extra[pgIdx][faseIdx]||0;
+if(legacyRaw!==''&&!/^\d+$/.test(legacyRaw)){inpE.value=previous?String(previous):'';return;}
+var next=legacyRaw===''?0:Number(legacyRaw);
+if(previous===next)return;
+state.extra[pgIdx][faseIdx]=next;
 invalidatePhaseFormula(pgIdx,faseIdx);
-rerenderFocus(extraFocusKey); 
+rerenderFocus(extraFocusKey);
 }); 
 wrapE.appendChild(inpE); 
 grid.appendChild(wrapE);
@@ -1703,7 +1939,8 @@ bd.innerHTML = '<b>Fase in attesa.</b> ' + (carryInfo.label || 'Completa la Fase
 } else { 
 var bdParts = []; 
 termini.forEach(function(tt){ bdParts.push(tt.v + ' ' + tt.t); }); 
-bd.innerHTML = 'Possibilità totali: <b>' + somma + '</b> su 1d' + fase.dado + ' (' + bdParts.join(' + ') + ')'; 
+bd.innerHTML = 'Possibilità totali: <b>' + somma + '</b> su 1d' + fase.dado + ' (' + bdParts.join(' + ') + ')';
+if(effPack.notes&&effPack.notes.length){bd.innerHTML += '<div class="effective-param-note"><b>Parametri effettivi:</b> '+effPack.notes.join(' · ')+'</div>';}
 } 
 card.appendChild(bd); 
  
@@ -1742,10 +1979,40 @@ rollInp.value = state.rolls[pgIdx][faseIdx];
 rollInp.disabled = faseBloccata; 
 var rollFocusKey = 'roll-' + faseIdx + '-' + pgIdx + '-1'; 
 rollInp.setAttribute('data-focus-key', rollFocusKey); 
-rollInp.addEventListener('input', function(){ 
-state.rolls[pgIdx][faseIdx] = rollInp.value;
-clearRollsAfterPhase(faseIdx); 
-rerenderFocus(rollFocusKey); 
+rollInp.addEventListener('input', function(){
+ var raw=String(rollInp.value||'').trim(),previous=state.rolls[pgIdx][faseIdx],n=validRollNumber(raw,fase.dado);
+ if(raw===''){
+  if(previous!==''&&previous!==undefined){
+   var previousResult=state.risultati[faseIdx]&&state.risultati[faseIdx][pgIdx]?state.risultati[faseIdx][pgIdx]:null;
+   var hadOutcome=previousResult&&(previousResult.successo===true||previousResult.successo===false);
+   releasePhaseUses(pgIdx,faseIdx);
+   state.rolls[pgIdx][faseIdx]='';
+   if(carryInfo.rollTwice)state.rolls2[pgIdx][faseIdx]='';
+   if(hadOutcome)clearRollsAfterPhase(faseIdx,pgIdx,previousResult.successo,null);
+  }
+  rerenderFocus(rollFocusKey);return;
+ }
+ if(n===null){
+  rollInp.value=(previous===undefined||previous===null)?'':String(previous);
+  if(tag){tag.className='result-tag fail';tag.textContent='Risultato impossibile: mantenuto il precedente';}
+  return;
+ }
+ if(String(previous)===String(n)){
+  if(!carryInfo.rollTwice||validRollNumber(state.rolls2[pgIdx][faseIdx],fase.dado)!==null)consumePhaseUses(pgIdx,faseIdx);
+  else releasePhaseUses(pgIdx,faseIdx);
+  return;
+ }
+ var oldResult=state.risultati[faseIdx]&&state.risultati[faseIdx][pgIdx]?state.risultati[faseIdx][pgIdx]:null;
+ var oldOutcome=oldResult?oldResult.successo:null,newOutcome=null;
+ if(carryInfo.rollTwice){
+  var existingSecond=validRollNumber(state.rolls2[pgIdx][faseIdx],fase.dado);
+  if(existingSecond!==null)newOutcome=Math.max(n,existingSecond)<=somma;
+ }else newOutcome=n<=somma;
+ state.rolls[pgIdx][faseIdx]=String(n);
+ if(!carryInfo.rollTwice||existingSecond!==null)consumePhaseUses(pgIdx,faseIdx);
+ else releasePhaseUses(pgIdx,faseIdx);
+ if(oldOutcome!==newOutcome)clearRollsAfterPhase(faseIdx,pgIdx,oldOutcome,newOutcome);
+ rerenderFocus(rollFocusKey);
 }); 
 rollRow.appendChild(rollInp); 
  
@@ -1761,10 +2028,31 @@ roll2Inp.value = state.rolls2[pgIdx][faseIdx];
 roll2Inp.disabled = faseBloccata; 
 var roll2FocusKey = 'roll-' + faseIdx + '-' + pgIdx + '-2'; 
 roll2Inp.setAttribute('data-focus-key', roll2FocusKey); 
-roll2Inp.addEventListener('input', function(){ 
-state.rolls2[pgIdx][faseIdx] = roll2Inp.value;
-clearRollsAfterPhase(faseIdx); 
-rerenderFocus(roll2FocusKey); 
+roll2Inp.addEventListener('input', function(){
+ var raw=String(roll2Inp.value||'').trim(),previous=state.rolls2[pgIdx][faseIdx],n=validRollNumber(raw,fase.dado);
+ if(raw===''){
+  if(previous!==''&&previous!==undefined){
+   var previousResult2=state.risultati[faseIdx]&&state.risultati[faseIdx][pgIdx]?state.risultati[faseIdx][pgIdx]:null;
+   var hadOutcome2=previousResult2&&(previousResult2.successo===true||previousResult2.successo===false);
+   state.rolls2[pgIdx][faseIdx]='';
+   releasePhaseUses(pgIdx,faseIdx);
+   if(hadOutcome2)clearRollsAfterPhase(faseIdx,pgIdx,previousResult2.successo,null);
+  }
+  rerenderFocus(roll2FocusKey);return;
+ }
+ if(n===null){
+  roll2Inp.value=(previous===undefined||previous===null)?'':String(previous);
+  if(tag){tag.className='result-tag fail';tag.textContent='Risultato impossibile: mantenuto il 2° tiro precedente';}
+  return;
+ }
+ if(String(previous)===String(n)){if(validRollNumber(state.rolls[pgIdx][faseIdx],fase.dado)!==null)consumePhaseUses(pgIdx,faseIdx);return;}
+ var oldResult2=state.risultati[faseIdx]&&state.risultati[faseIdx][pgIdx]?state.risultati[faseIdx][pgIdx]:null;
+ var oldOutcome2=oldResult2?oldResult2.successo:null,primaryNow=validRollNumber(state.rolls[pgIdx][faseIdx],fase.dado);
+ var newOutcome2=primaryNow===null?null:(Math.max(primaryNow,n)<=somma);
+ state.rolls2[pgIdx][faseIdx]=String(n);
+ if(primaryNow!==null)consumePhaseUses(pgIdx,faseIdx);
+ if(oldOutcome2!==newOutcome2)clearRollsAfterPhase(faseIdx,pgIdx,oldOutcome2,newOutcome2);
+ rerenderFocus(roll2FocusKey);
 }); 
 rollRow.appendChild(roll2Inp); 
 } 
@@ -1845,10 +2133,18 @@ tabBtn.addEventListener(EVT, function(){
 attivaPassaggio(config.id); 
 }); 
  
-return {tabBtn:tabBtn,panel:panel,id:config.id,flow:{apply:applyFlowView,goto:gotoFlowPage,resume:resumeFlow,configReady:configReady,phaseComplete:phaseComplete,phaseHasData:phaseHasData,summaryForumText:summaryForumText}};
+return {tabBtn:tabBtn,panel:panel,id:config.id,legacyUseAdjustments:function(){var o={};Object.keys(legacyUseAdjustments).forEach(function(k){o[k]=legacyUseAdjustments[k];});return o;},flow:{apply:applyFlowView,goto:gotoFlowPage,resume:resumeFlow,configReady:configReady,phaseComplete:phaseComplete,phaseHasData:phaseHasData,summaryForumText:summaryForumText}};
 } 
  
  
+/* ---------- validazione dadi speciali fuori da creaPassaggio ---------- */
+function validSpecialRollNumber(raw,faces){
+ var s=String(raw===undefined||raw===null?'':raw).trim();
+ if(!/^\d+$/.test(s))return null;
+ var n=Number(s);
+ return Number.isSafeInteger(n)&&n>=1&&n<=faces?n:null;
+}
+
 /* ---------- formule condivise ---------- */ 
  
 function formulaMentePiuSapienza5(mLabel, sLabel, mKey){ 
@@ -1963,9 +2259,21 @@ aTag.value='[dice=1d5]Attivazione Effetto Negativo Involontario – ' + pg.nome 
 aRow.appendChild(aTag); 
 var aCopy=el('button','small','Copia'); aCopy.setAttribute('data-copy-control','1'); aCopy.addEventListener(EVT,function(){copyText(aTag.value,aCopy);}); aRow.appendChild(aCopy); 
 aRow.appendChild(el('span','roll-label','Risultato:')); 
-var aInp=document.createElement('input'); aInp.className='roll-input'; aInp.type='number'; aInp.setAttribute('data-required-flow','1'); aInp.min='1'; aInp.max='5'; aInp.step='1'; aInp.value=state.special.p1Activation[idx] || ''; 
+var aInp=document.createElement('input'); aInp.className='roll-input'; aInp.type='number'; aInp.id='rms-p1-activation-'+idx; aInp.setAttribute('data-required-flow','1'); aInp.min='1'; aInp.max='5'; aInp.step='1'; aInp.value=state.special.p1Activation[idx] || ''; 
 var aFocusKey='p1-activation-' + idx; aInp.setAttribute('data-focus-key',aFocusKey); 
-aInp.addEventListener('input',function(){ state.special.p1Activation[idx]=aInp.value; if(state.rerenderFocus){state.rerenderFocus(aFocusKey);} else if(state.rerender){state.rerender();} }); aRow.appendChild(aInp); 
+aInp.addEventListener('input',function(){
+ var raw=String(aInp.value||'').trim(),previous=state.special.p1Activation[idx],n=validSpecialRollNumber(raw,5);
+ var prevNum=validSpecialRollNumber(previous,5),prevActivated=prevNum!==null&&prevNum<=soglia;
+ if(raw===''){
+  state.special.p1Activation[idx]='';
+  if(prevActivated||state.special.p1Effect[idx]!==undefined&&state.special.p1Effect[idx]!=='')state.special.p1Effect[idx]='';
+  if(state.rerenderFocus){state.rerenderFocus(aFocusKey);}else if(state.rerender){state.rerender();}return;
+ }
+ if(n===null){aInp.value=(previous===undefined||previous===null)?'':String(previous);return;}
+ var nextActivated=n<=soglia;
+ if(prevActivated!==nextActivated)state.special.p1Effect[idx]='';
+ state.special.p1Activation[idx]=String(n);if(state.rerenderFocus){state.rerenderFocus(aFocusKey);}else if(state.rerender){state.rerender();}
+}); aRow.appendChild(aInp); 
 var av=Number(state.special.p1Activation[idx]); 
 if(state.special.p1Activation[idx] !== undefined && state.special.p1Activation[idx] !== '' && (!isFinite(av) || Math.floor(av)!==av || av<1 || av>5)){ aRow.appendChild(el('span','result-tag fail','Risultato impossibile')); } 
 else if(state.special.p1Activation[idx] === '' || state.special.p1Activation[idx] === undefined){ aRow.appendChild(el('span','result-tag pending','In attesa')); } 
@@ -1985,9 +2293,14 @@ var eTag=document.createElement('input'); eTag.className='dice-tag'; eTag.type='
 eTag.value='[dice=1d5]Determinazione Effetto Negativo Involontario – ' + pg.nome + '[/dice]'; eRow.appendChild(eTag); 
 var eCopy=el('button','small','Copia'); eCopy.setAttribute('data-copy-control','1'); eCopy.addEventListener(EVT,function(){copyText(eTag.value,eCopy);}); eRow.appendChild(eCopy); 
 eRow.appendChild(el('span','roll-label','Effetto:')); 
-var eInp=document.createElement('input'); eInp.className='roll-input'; eInp.type='number'; eInp.setAttribute('data-required-flow','1'); eInp.min='1'; eInp.max='5'; eInp.step='1'; eInp.value=state.special.p1Effect[idx] || ''; 
+var eInp=document.createElement('input'); eInp.className='roll-input'; eInp.type='number'; eInp.id='rms-p1-effect-'+idx; eInp.setAttribute('data-required-flow','1'); eInp.min='1'; eInp.max='5'; eInp.step='1'; eInp.value=state.special.p1Effect[idx] || ''; 
 var eFocusKey='p1-effect-' + idx; eInp.setAttribute('data-focus-key',eFocusKey); 
-eInp.addEventListener('input',function(){ state.special.p1Effect[idx]=eInp.value; if(state.rerenderFocus){state.rerenderFocus(eFocusKey);} else if(state.rerender){state.rerender();} }); eRow.appendChild(eInp); 
+eInp.addEventListener('input',function(){
+ var raw=String(eInp.value||'').trim(),previous=state.special.p1Effect[idx],n=validSpecialRollNumber(raw,5);
+ if(raw===''){state.special.p1Effect[idx]='';if(state.rerenderFocus){state.rerenderFocus(eFocusKey);}else if(state.rerender){state.rerender();}return;}
+ if(n===null){eInp.value=(previous===undefined||previous===null)?'':String(previous);return;}
+ state.special.p1Effect[idx]=String(n);if(state.rerenderFocus){state.rerenderFocus(eFocusKey);}else if(state.rerender){state.rerender();}
+}); eRow.appendChild(eInp); 
 var ev=Number(state.special.p1Effect[idx]); 
 var eStatus=el('span','result-tag pending','In attesa'); 
 if(state.special.p1Effect[idx] !== undefined && state.special.p1Effect[idx] !== '' && (!isFinite(ev)||Math.floor(ev)!==ev||ev<1||ev>5)){ eStatus.className='result-tag fail';eStatus.textContent='Risultato impossibile'; } 
@@ -2070,6 +2383,7 @@ notaFallimento:'L’oggetto sprigiona un impulso che colpisce il PG: si attiva u
 postFasi:function(state){ 
 var box = el('div','effetto-block'); 
 box.appendChild(el('h4', null, 'Conseguenze e Risonanza Maledetta')); 
+if(!state.special.p2Risonanza){ state.special.p2Risonanza = []; }
 var qualcheEffetto = false; 
 state.pgs.forEach(function(pg, idx){ 
 var f3 = state.risultati[2] ? state.risultati[2][idx] : null; 
@@ -2087,13 +2401,44 @@ dRow.appendChild(dTag);
 var cBtn = el('button','small','Copia');
 cBtn.setAttribute('data-copy-control','1');
 cBtn.addEventListener(EVT, function(){ copyText(dTag.value, cBtn); }); 
-dRow.appendChild(cBtn); 
+dRow.appendChild(cBtn);
+dRow.appendChild(el('span','roll-label','Risultato:'));
+var dInp=document.createElement('input');
+dInp.className='roll-input'; dInp.type='number'; dInp.id='rms-p2-risonanza-'+idx; dInp.setAttribute('data-required-flow','1');
+dInp.min='1'; dInp.max='4'; dInp.step='1'; dInp.value=state.special.p2Risonanza[idx] || '';
+var dFocusKey='p2-risonanza-' + idx; dInp.setAttribute('data-focus-key',dFocusKey);
+dInp.addEventListener('input',function(){
+ var raw=String(dInp.value||'').trim(),previous=state.special.p2Risonanza[idx],n=validSpecialRollNumber(raw,4);
+ if(raw===''){
+  state.special.p2Risonanza[idx]='';
+  if(state.rerenderFocus){state.rerenderFocus(dFocusKey);}else if(state.rerender){state.rerender();}
+  return;
+ }
+ if(n===null){dInp.value=(previous===undefined||previous===null)?'':String(previous);return;}
+ state.special.p2Risonanza[idx]=String(n);
+ if(state.rerenderFocus){state.rerenderFocus(dFocusKey);}else if(state.rerender){state.rerender();}
+});
+dRow.appendChild(dInp);
+var dVal=validSpecialRollNumber(state.special.p2Risonanza[idx],4);
+var dStatus=el('span','result-tag pending','In attesa');
+if(dVal!==null){dStatus.className='result-tag fail';dStatus.textContent='Risonanza '+dVal;}
+dRow.appendChild(dStatus);
 riga.appendChild(dRow); 
 var ul = el('ul','effetto-list'); 
 ul.appendChild(el('li', null, '1. L’oggetto crea un filo psichico col PG: per 5 post sente sussurri, prova attrazione verso l’oggetto e ha -5 Volontà')); 
 ul.appendChild(el('li', null, '2. Un’ondata di energia magica investe il PG: -5 Fatica e -2 Resistenza per 3 post')); 
 ul.appendChild(el('li', null, '3. L’oggetto lascia un’impronta sulla pelle o sull’anima del PG: per 5 post -3 in tutti i Parametri Magici')); 
-ul.appendChild(el('li', null, '4. Una parte dell’essenza maledetta penetra nel PG: manifesta un sintomo minore (mani tremanti, occhi anneriti, voce distorta) per tre post, solo narrativo')); 
+ul.appendChild(el('li', null, '4. Una parte dell’essenza maledetta penetra nel PG: manifesta un sintomo minore (mani tremanti, occhi anneriti, voce distorta) per tre post, solo narrativo'));
+if(dVal!==null){
+ var p2Map=[
+  '',
+  'Filo psichico: per 5 post sente sussurri, prova attrazione verso l’oggetto e ha -5 Volontà',
+  'Ondata di energia magica: -5 Fatica e -2 Resistenza per 3 post',
+  'Impronta sulla pelle o sull’anima: per 5 post -3 in tutti i Parametri Magici',
+  'Essenza maledetta nel PG: sintomo minore per tre post, solo narrativo'
+ ];
+ riga.appendChild(el('div','banner warn','Esito 1d4: '+p2Map[dVal]));
+}
 riga.appendChild(ul); 
 box.appendChild(riga); 
 }); 
@@ -2267,13 +2612,15 @@ notaFallimento:'Se tutti i PG che hanno potuto agire falliscono, l’Ombra scate
 postFasi:function(state){ 
 var box = el('div','effetto-block'); 
 box.appendChild(el('h4', null, 'Esito del Confronto')); 
+if(!state.special.p5Corruzione){ state.special.p5Corruzione = []; }
  
 var tuttiEsclusi = true; 
 var qualcunoAttivo = false; 
 var qualcunoSuccesso = false; 
 var qualcunoTentatoF3 = false; 
-var tuttiFallitiTraTentativi = true; 
- 
+var tuttiFallitiTraTentativi = true;
+var tuttiAttiviRisolti = true; 
+
 state.pgs.forEach(function(pg, idx){ 
 var f2 = state.risultati[1] ? state.risultati[1][idx] : null; 
 var f3 = state.risultati[2] ? state.risultati[2][idx] : null; 
@@ -2282,18 +2629,20 @@ if(f3){ if(f3.escluso){ escluso = true; } }
 if(!escluso){ tuttiEsclusi = false; } 
 if(f3){ 
 if(!f3.escluso){ 
-qualcunoAttivo = true; 
+qualcunoAttivo = true;
+var risolto = !f3.bloccato && !f3.risultatoImpossibile && (f3.successo===true || f3.successo===false);
+if(!risolto){ tuttiAttiviRisolti = false; }
 if(f3.successo === true){ qualcunoSuccesso = true; } 
-if(f3.successo !== null){ 
-if(f3.successo !== undefined){ 
+if(risolto){ 
 qualcunoTentatoF3 = true; 
 if(f3.successo !== false){ tuttiFallitiTraTentativi = false; } 
 } 
 } 
-} 
-} 
+}else if(!escluso){
+tuttiAttiviRisolti = false;
+}
 }); 
- 
+
 if(tuttiEsclusi){ 
 box.appendChild(el('div','banner warn','Tutti i PG sono rimasti intrappolati nelle illusioni della Fase II: l’Ombra vince, il Passaggio non può essere completato e nessun PG riscuote Prestigio dalla Missione.')); 
 return box; 
@@ -2304,7 +2653,7 @@ box.appendChild(el('div','banner calm','Almeno un PG ha avuto successo nella Fas
 return box; 
 } 
  
-if(qualcunoTentatoF3){ 
+if(qualcunoTentatoF3 && tuttiAttiviRisolti){ 
 if(tuttiFallitiTraTentativi){ 
 box.appendChild(el('p','muted','Tutti i PG che hanno potuto agire hanno fallito la Fase III. Nessun PG riscuote Prestigio dalla Missione "Lo Spezzaincantesimi". Ogni PG che ha partecipato alla Fase III tira separatamente il proprio 1d5 di Corruzione Mentale.')); 
 state.pgs.forEach(function(pg, idx){ 
@@ -2322,17 +2671,51 @@ dRow.appendChild(dTag);
 var cBtn = el('button','small','Copia');
 cBtn.setAttribute('data-copy-control','1');
 cBtn.addEventListener(EVT, function(){ copyText(dTag.value, cBtn); }); 
-dRow.appendChild(cBtn); 
+dRow.appendChild(cBtn);
+dRow.appendChild(el('span','roll-label','Risultato:'));
+var dInp=document.createElement('input');
+dInp.className='roll-input'; dInp.type='number'; dInp.id='rms-p5-corruzione-'+idx; dInp.setAttribute('data-required-flow','1');
+dInp.min='1'; dInp.max='5'; dInp.step='1'; dInp.value=state.special.p5Corruzione[idx] || '';
+var dFocusKey='p5-corruzione-' + idx; dInp.setAttribute('data-focus-key',dFocusKey);
+dInp.addEventListener('input',function(){
+ var raw=String(dInp.value||'').trim(),previous=state.special.p5Corruzione[idx],n=validSpecialRollNumber(raw,5);
+ if(raw===''){
+  state.special.p5Corruzione[idx]='';
+  if(state.rerenderFocus){state.rerenderFocus(dFocusKey);}else if(state.rerender){state.rerender();}
+  return;
+ }
+ if(n===null){dInp.value=(previous===undefined||previous===null)?'':String(previous);return;}
+ state.special.p5Corruzione[idx]=String(n);
+ if(state.rerenderFocus){state.rerenderFocus(dFocusKey);}else if(state.rerender){state.rerender();}
+});
+dRow.appendChild(dInp);
+var dVal=validSpecialRollNumber(state.special.p5Corruzione[idx],5);
+var dStatus=el('span','result-tag pending','In attesa');
+if(dVal!==null){dStatus.className='result-tag fail';dStatus.textContent='Corruzione '+dVal;}
+dRow.appendChild(dStatus);
 riga.appendChild(dRow); 
 var ul = el('ul','effetto-list'); 
 ul.appendChild(el('li', null, '1-2. Visioni ossessive: -5 Volontà per 5 post')); 
 ul.appendChild(el('li', null, '3-4. Disorientamento: -5 Percezione e -5 Destrezza per 5 post')); 
-ul.appendChild(el('li', null, '5. Legame residuo, l’Ombra tornerà: -0,5 Prestigio')); 
+ul.appendChild(el('li', null, '5. Legame residuo, l’Ombra tornerà: -0,5 Prestigio'));
+if(dVal!==null){
+ var p5Map=[
+  '',
+  'Visioni ossessive: -5 Volontà per 5 post',
+  'Visioni ossessive: -5 Volontà per 5 post',
+  'Disorientamento: -5 Percezione e -5 Destrezza per 5 post',
+  'Disorientamento: -5 Percezione e -5 Destrezza per 5 post',
+  'Legame residuo, l’Ombra tornerà: -0,5 Prestigio'
+ ];
+ riga.appendChild(el('div','banner warn','Esito 1d5: '+p5Map[dVal]));
+}
 riga.appendChild(ul); 
 box.appendChild(riga); 
 }); 
 } 
-} 
+}else if(qualcunoTentatoF3 && !tuttiAttiviRisolti){
+box.appendChild(el('div','banner warn','La Fase III non è ancora risolta per tutti i PG che possono agire: la Corruzione Mentale non può essere determinata finché mancano risultati validi.'));
+}
 return box; 
 } 
 }; 
@@ -2471,6 +2854,12 @@ window.RicercaMaledizioniPicker={
  activate:function(id){if(passageConfigById(id)){PASSAGE_PICKER.active=id;PASSAGE_PICKER.locked=true;applyPassagePickerUi();}},
  active:function(){return PASSAGE_PICKER.active||null;},
  rebuild:function(id){rebuildPassage(id);applyPassagePickerUi();}
+};
+
+window.RicercaMaledizioniLegacyUseAdjustments=function(){
+ var out={};
+ Object.keys(REGISTRO_PASSAGGI).forEach(function(id){var rec=REGISTRO_PASSAGGI[id];if(rec&&typeof rec.legacyUseAdjustments==='function'){var m=rec.legacyUseAdjustments();Object.keys(m).forEach(function(k){out[k]=m[k];});}});
+ return out;
 };
 
 window.RicercaMaledizioniFlow={
@@ -2629,8 +3018,21 @@ function actionFromEvent(e){
  return {type:e.type,loc:elementPath(target),value:target.value,checked:!!target.checked};
 }
 function sameLoc(a,b){return JSON.stringify(a||null)===JSON.stringify(b||null);}
+function recordableNumericInput(target){
+ if(!target||target.tagName!=='INPUT'||target.type!=='number')return true;
+ var raw=String(target.value||'').trim();
+ if(raw==='')return true;
+ var allowNegative=target.getAttribute('data-allow-negative')==='1';
+ if(!(allowNegative?/^-?\d+$/.test(raw):/^\d+$/.test(raw)))return false;
+ var n=Number(raw);if(!Number.isSafeInteger(n))return false;
+ var min=target.min!==''?Number(target.min):null,max=target.max!==''?Number(target.max):null;
+ if(min!==null&&isFinite(min)&&n<min)return false;
+ if(max!==null&&isFinite(max)&&n>max)return false;
+ return true;
+}
 function recordAction(e){
  if(RESTORING_SESSION||SESSION_READONLY||SESSION_DELETING||!CURRENT_SESSION||!sessionCanEdit(CURRENT_SESSION_DATA))return;
+ if(e&&e.target&&!recordableNumericInput(e.target))return;
  var a=actionFromEvent(e);if(!a||!a.loc)return;
  var last=SESSION_ACTIONS.length?SESSION_ACTIONS[SESSION_ACTIONS.length-1]:null;
  if(last&&a.type===last.type&&(a.type==='input'||a.type==='change')&&sameLoc(a.loc,last.loc))SESSION_ACTIONS[SESSION_ACTIONS.length-1]=a;
@@ -2668,7 +3070,7 @@ function legacyPassageFromActions(actions,data){
  return '';
 }
 function migratePickerState(data){
- if(data&&data.passagePicker&&['v6','v7','v8','v9'].indexOf(String(data.toolVersion||''))!==-1){window.RicercaMaledizioniPicker.restore(data.passagePicker);return;}
+ if(data&&data.passagePicker&&['v6','v7','v8','v9','v10','v11','v12','v13','v14','v15','v16','v17','v18','v19'].indexOf(String(data.toolVersion||''))!==-1){window.RicercaMaledizioniPicker.restore(data.passagePicker);return;}
  var pid=legacyPassageFromActions(SESSION_ACTIONS,data);
  if(pid){window.RicercaMaledizioniPicker.restore({attempts:1,locked:true,linked:false,active:pid,pending:null,eligible:true,legacy:true});}
  else{window.RicercaMaledizioniPicker.restore({attempts:0,locked:false,active:null,eligible:false,legacy:true});}
@@ -2702,7 +3104,7 @@ function applyWorkspaceReadOnlyLocks(){
 function setWorkspaceReadOnly(ro){var next=!!ro;if(!next)clearWorkspaceReadOnlyLocks();SESSION_READONLY=next;if(SESSION_READONLY)applyWorkspaceReadOnlyLocks();updateToolbar();}
 function payload(){
  var pid=selectedPassageId(),name=primaryPgName(),picker={};try{picker=window.RicercaMaledizioniPicker?window.RicercaMaledizioniPicker.state():{};}catch(e){}
- return {ownerUid:CURRENT_SESSION_DATA.ownerUid,initialPgName:CURRENT_SESSION_DATA.initialPgName||name,pgName:name,tipoPassaggio:pid?(PASSAGE_NAMES[pid]||'Passaggio'):'',passaggioId:pid||'',updatedAt:firebase.firestore.FieldValue.serverTimestamp(),toolVersion:'v9',passagePicker:picker,actionLog:SESSION_ACTIONS};
+ return {ownerUid:CURRENT_SESSION_DATA.ownerUid,initialPgName:CURRENT_SESSION_DATA.initialPgName||name,pgName:name,tipoPassaggio:pid?(PASSAGE_NAMES[pid]||'Passaggio'):'',passaggioId:pid||'',updatedAt:firebase.firestore.FieldValue.serverTimestamp(),toolVersion:'v19',passagePicker:picker,actionLog:SESSION_ACTIONS};
 }
 function scheduleSave(){
  if(RESTORING_SESSION||SESSION_READONLY||SESSION_DELETING||!CURRENT_SESSION||!sessionCanEdit(CURRENT_SESSION_DATA))return;
@@ -2727,14 +3129,27 @@ function openSessionDoc(id,data){
  if(sq('maledizioni-session-home'))sq('maledizioni-session-home').style.display='none';if(workspace())workspace().style.display='block';
  try{if(window.RicercaMaledizioniPicker)window.RicercaMaledizioniPicker.reset(true);}catch(e){}
  migratePickerState(data||{});
+ window.__RM_SESSION_VERSION__=String((data&&data.toolVersion)||'');
  window.__RM_RESTORING__=true;replayActions(SESSION_ACTIONS);window.__RM_RESTORING__=false;
+ if(String((data&&data.toolVersion)||'')==='v9'&&sessionCanEdit(data)){
+  try{
+   var adj=window.RicercaMaledizioniLegacyUseAdjustments?window.RicercaMaledizioniLegacyUseAdjustments():{},changed=false;
+   Object.keys(adj).forEach(function(id){
+    for(var ai=SESSION_ACTIONS.length-1;ai>=0;ai--){
+     var a=SESSION_ACTIONS[ai];
+     if(a&&a.loc&&a.loc.id===id&&(a.type==='input'||a.type==='change')){a.value=String(adj[id]);changed=true;break;}
+    }
+   });
+   if(changed){CURRENT_SESSION_DATA.actionLog=SESSION_ACTIONS.slice();scheduleSave();}
+  }catch(e){console.warn('Ricerca Maledizioni: migrazione usi v9 non completata',e);}
+ }
  var pid=selectedPassageId();if(pid&&window.RicercaMaledizioniFlow){try{window.RicercaMaledizioniFlow.activate(pid);}catch(e){}}
  setWorkspaceReadOnly(wantReadOnly);updateToolbar();
  setStatus('save-status',SESSION_READONLY?'Modalità sola lettura.':'Ricerca caricata · autosalvataggio attivo',SESSION_READONLY?'':'ok');
  setTimeout(function(){if(pid&&window.RicercaMaledizioniFlow){window.RicercaMaledizioniFlow.resume(pid,SESSION_READONLY);}else{var z=sq('stepZero');if(z){try{z.scrollIntoView({behavior:'auto',block:'start'});}catch(e){}}}if(SESSION_READONLY)applyWorkspaceReadOnlyLocks();},120);
 }
 function resetFailedSessionLoad(){
- clearWorkspaceReadOnlyLocks();CURRENT_SESSION=null;CURRENT_SESSION_DATA=null;SESSION_ACTIONS=[];SESSION_READONLY=false;SESSION_DELETING=false;LAST_SAVE_OK=true;PENDING_SAVE=false;SAVE_IN_FLIGHT=false;if(SAVE_TIMER){clearTimeout(SAVE_TIMER);SAVE_TIMER=null;}
+ clearWorkspaceReadOnlyLocks();CURRENT_SESSION=null;CURRENT_SESSION_DATA=null;SESSION_ACTIONS=[];window.__RM_SESSION_VERSION__='';SESSION_READONLY=false;SESSION_DELETING=false;LAST_SAVE_OK=true;PENDING_SAVE=false;SAVE_IN_FLIGHT=false;if(SAVE_TIMER){clearTimeout(SAVE_TIMER);SAVE_TIMER=null;}
  try{if(window.RicercaMaledizioniPicker)window.RicercaMaledizioniPicker.reset(true);}catch(e){}
  if(window.location.hash){try{history.replaceState(null,'',window.location.pathname+window.location.search);}catch(e){window.location.hash='';}}
  if(workspace())workspace().style.display='none';if(sq('maledizioni-session-home'))sq('maledizioni-session-home').style.display='block';
@@ -2767,7 +3182,7 @@ function createSession(){
  if(!name){setStatus('session-home-msg','Inserisci prima il nome del PG principale.','bad');if(inp)inp.focus();return;}
  if(!FB.user){setStatus('session-home-msg','Firebase non è ancora pronto. Riprova tra un momento.','bad');return;}
  setCreatingSession(true);setStatus('session-home-msg','Creazione della Ricerca…','');
- var data={ownerUid:FB.user.uid,initialPgName:name,pgName:name,tipoPassaggio:'',passaggioId:'',createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp(),toolVersion:'v9',passagePicker:{attempts:0,locked:false,linked:false,active:null,pending:null,eligible:false,linkedConfirmed:false,linkedChoice:'',legacy:false},actionLog:[]};
+ var data={ownerUid:FB.user.uid,initialPgName:name,pgName:name,tipoPassaggio:'',passaggioId:'',createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp(),toolVersion:'v19',passagePicker:{attempts:0,locked:false,linked:false,active:null,pending:null,eligible:false,linkedConfirmed:false,linkedChoice:'',legacy:false},actionLog:[]};
  FB.db.collection(SESSION_COLLECTION).add(data).then(function(ref){
   setCreatingSession(false);if(inp)inp.value='';var now=null;try{now=firebase.firestore.Timestamp.now();}catch(e){}
   var localData=Object.assign({},data,{createdAt:now,updatedAt:now});setSessionHash(ref.id);
