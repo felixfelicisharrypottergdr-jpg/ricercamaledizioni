@@ -3100,6 +3100,42 @@ var FIREBASE_CONFIG={
 }; 
 var SESSION_COLLECTION='ricerca_maledizioni';
 var NARRATOR_UID='TFgqfVrFLjW5SwqRFXmEi8tDhtM2';
+
+/* Cache leggera dell'elenco sessioni: riduce le document reads senza memorizzare i dati di gioco.
+   La cache viene usata soltanto quando rappresenta un elenco COMPLETO ottenuto da Firebase. */
+var SESSION_LIST_CACHE_KEY=SESSION_COLLECTION+'_list_cache_v2';
+function sessionListMeta(d){
+  d=d||{};var out={ownerUid:d.ownerUid||'',initialPgName:d.initialPgName||'',pgName:d.pgName||'',tipoPaziente:d.tipoPaziente||'',tipoMissione:d.tipoMissione||'',missionId:d.missionId||'',tipoPassaggio:d.tipoPassaggio||'',passaggioId:d.passaggioId||'',tipoAccordo:d.tipoAccordo||'',accordoId:d.accordoId||'',tipoCaso:d.tipoCaso||'',tipoCasoNum:d.tipoCasoNum==null?null:d.tipoCasoNum,tipoCrimine:d.tipoCrimine||'',crimeKey:d.crimeKey||''};
+  var ts=d.updatedAt,sec=null;
+  try{if(ts&&typeof ts.toMillis==='function')sec=Math.floor(ts.toMillis()/1000);else if(ts&&isFinite(Number(ts.seconds)))sec=Number(ts.seconds);}catch(e){}
+  if(sec!==null)out.updatedAt={seconds:sec};
+  return out;
+}
+function readSessionListCache(){
+  try{
+    var raw=sessionStorage.getItem(SESSION_LIST_CACHE_KEY);if(raw===null)return null;
+    var box=JSON.parse(raw);
+    if(!box||box.version!==2||box.complete!==true||!Array.isArray(box.rows))return null;
+    return box;
+  }catch(e){return null;}
+}
+function writeSessionListCache(rows){
+  try{sessionStorage.setItem(SESSION_LIST_CACHE_KEY,JSON.stringify({version:2,complete:true,savedAt:Date.now(),rows:rows||[]}));}catch(e){}
+}
+function cacheSessionListSnapshot(snap){var rows=[];snap.forEach(function(doc){rows.push({id:doc.id,data:sessionListMeta(doc.data())});});writeSessionListCache(rows);}
+function updateSessionListCacheEntry(id,data){
+  if(!id)return;var box=readSessionListCache();if(!box)return;
+  var rows=box.rows.slice(),found=false;
+  for(var i=0;i<rows.length;i++){if(rows[i]&&rows[i].id===id){rows[i]={id:id,data:sessionListMeta(data)};found=true;break;}}
+  if(!found)rows.push({id:id,data:sessionListMeta(data)});writeSessionListCache(rows);
+}
+function removeSessionListCacheEntry(id){var box=readSessionListCache();if(!box)return;writeSessionListCache(box.rows.filter(function(r){return r&&r.id!==id;}));}
+function cachedSessionListSnapshot(rows){return {forEach:function(cb){(rows||[]).forEach(function(r){cb({id:r.id,data:function(){return r.data||{};}});});}};}
+function sessionListSnapshot(forceServer){
+  if(!forceServer){var box=readSessionListCache();if(box)return Promise.resolve(cachedSessionListSnapshot(box.rows));}
+  return FB.db.collection(SESSION_COLLECTION).get().then(function(snap){cacheSessionListSnapshot(snap);return snap;});
+}
+
 var PASSAGE_NAMES={p1:'Analisi e Tracciatura',p2:'Scavo e Recupero',p3:'Esecuzione dello Spezzamento',p4:'Esecuzione dell’Esorcismo',p5:'Affronto dell’Ombra'};
 var FB={app:null,auth:null,db:null,user:null};
 var CURRENT_SESSION=null,CURRENT_SESSION_DATA=null,SESSION_READONLY=false;
@@ -3110,7 +3146,7 @@ function sq(id){return document.getElementById(id);}
 function workspace(){return sq('maledizioni-workspace');}
 function sessionCanEdit(data){return !!(FB.user&&data&&(data.ownerUid===FB.user.uid||FB.user.uid===NARRATOR_UID));}
 function setStatus(id,text,kind){var n=sq(id);if(!n)return;n.textContent=text||'';n.className='session-status'+(kind?' '+kind:'');}
-function formatTs(ts){try{var d=ts&&typeof ts.toDate==='function'?ts.toDate():null;return d?d.toLocaleString('it-IT',{dateStyle:'short',timeStyle:'short'}):'';}catch(e){return '';}}
+function formatTs(ts){try{var d=ts&&typeof ts.toDate==='function'?ts.toDate():(ts&&isFinite(Number(ts.seconds))?new Date(Number(ts.seconds)*1000):null);return d?d.toLocaleString('it-IT',{dateStyle:'short',timeStyle:'short'}):'';}catch(e){return '';}}
 function sessionIdFromHash(){var h=String(window.location.hash||'').replace(/^#/,'');if(h.indexOf('session=')!==0)return '';try{return decodeURIComponent(h.slice(8));}catch(e){return h.slice(8);}}
 function setSessionHash(id){try{history.replaceState(null,'',window.location.pathname+window.location.search+'#session='+encodeURIComponent(id));}catch(e){window.location.hash='session='+encodeURIComponent(id);}}
 function navigateToSession(id){window.location.hash='session='+encodeURIComponent(id);window.location.reload();}
@@ -3263,7 +3299,7 @@ function applyWorkspaceReadOnlyLocks(){
 function setWorkspaceReadOnly(ro){var next=!!ro;if(!next)clearWorkspaceReadOnlyLocks();SESSION_READONLY=next;if(SESSION_READONLY)applyWorkspaceReadOnlyLocks();updateToolbar();}
 function payload(){
  var pid=selectedPassageId(),name=primaryPgName(),picker={};try{picker=window.RicercaMaledizioniPicker?window.RicercaMaledizioniPicker.state():{};}catch(e){}
- return {ownerUid:CURRENT_SESSION_DATA.ownerUid,initialPgName:CURRENT_SESSION_DATA.initialPgName||name,pgName:name,tipoPassaggio:pid?(PASSAGE_NAMES[pid]||'Passaggio'):'',passaggioId:pid||'',updatedAt:firebase.firestore.FieldValue.serverTimestamp(),toolVersion:'v22',passagePicker:picker,actionLog:SESSION_ACTIONS};
+ return {ownerUid:CURRENT_SESSION_DATA.ownerUid,initialPgName:CURRENT_SESSION_DATA.initialPgName||name,pgName:name,tipoPassaggio:pid?(PASSAGE_NAMES[pid]||'Passaggio'):'',passaggioId:pid||'',updatedAt:firebase.firestore.FieldValue.serverTimestamp(),toolVersion:'v24',passagePicker:picker,actionLog:SESSION_ACTIONS};
 }
 function scheduleSave(){
  if(RESTORING_SESSION||SESSION_READONLY||SESSION_DELETING||!CURRENT_SESSION||!sessionCanEdit(CURRENT_SESSION_DATA))return;
@@ -3277,7 +3313,7 @@ function saveNow(){
  SAVE_IN_FLIGHT=true;PENDING_SAVE=false;var p=payload();
  return FB.db.collection(SESSION_COLLECTION).doc(CURRENT_SESSION).set(p,{merge:true}).then(function(){
   LAST_SAVE_OK=true;Object.keys(p).forEach(function(k){if(k!=='updatedAt')CURRENT_SESSION_DATA[k]=p[k];});
-  try{CURRENT_SESSION_DATA.updatedAt=firebase.firestore.Timestamp.now();}catch(e){}
+  try{CURRENT_SESSION_DATA.updatedAt=firebase.firestore.Timestamp.now();updateSessionListCacheEntry(CURRENT_SESSION,CURRENT_SESSION_DATA);}catch(e){}
   setStatus('save-status','Ricerca salvata automaticamente ✓','ok');updateToolbar();
  }).catch(function(err){LAST_SAVE_OK=false;console.error(err);setStatus('save-status','Errore di salvataggio: non chiudere la pagina.','bad');}).finally(function(){SAVE_IN_FLIGHT=false;if(PENDING_SAVE&&!SESSION_DELETING){PENDING_SAVE=false;scheduleSave();}});
 }
@@ -3315,11 +3351,11 @@ function resetFailedSessionLoad(){
 }
 function loadSession(id){
  setStatus('session-home-msg','Caricamento Ricerca…','');
- return FB.db.collection(SESSION_COLLECTION).doc(id).get().then(function(doc){if(!doc.exists)throw new Error('La Ricerca non esiste più.');openSessionDoc(doc.id,doc.data());setStatus('session-home-msg','','');}).catch(function(err){console.error(err);resetFailedSessionLoad();setStatus('session-home-msg','Impossibile aprire la Ricerca: '+err.message,'bad');loadSessionList();});
+ return FB.db.collection(SESSION_COLLECTION).doc(id).get().then(function(doc){if(!doc.exists)throw new Error('La Ricerca non esiste più.');openSessionDoc(doc.id,doc.data());setStatus('session-home-msg','','');}).catch(function(err){console.error(err);resetFailedSessionLoad();setStatus('session-home-msg','Impossibile aprire la Ricerca: '+err.message,'bad');loadSessionList(true);});
 }
-function loadSessionList(){
+function loadSessionList(forceServer){
  var host=sq('session-list');if(!host||!FB.db||!FB.user)return;host.innerHTML='<div class="session-status">Caricamento sessioni…</div>';
- FB.db.collection(SESSION_COLLECTION).get().then(function(snap){
+ sessionListSnapshot(!!forceServer).then(function(snap){
   var rows=[];snap.forEach(function(doc){rows.push({id:doc.id,data:doc.data()});});
   rows.sort(function(a,b){var at=a.data.updatedAt&&a.data.updatedAt.seconds?a.data.updatedAt.seconds:0,bt=b.data.updatedAt&&b.data.updatedAt.seconds?b.data.updatedAt.seconds:0;return bt-at;});host.innerHTML='';
   if(!rows.length){host.innerHTML='<div class="session-status">Non ci sono Ricerche Maledizioni in corso. Puoi crearne una qui sopra.</div>';return;}
@@ -3341,10 +3377,10 @@ function createSession(){
  if(!name){setStatus('session-home-msg','Inserisci prima il nome del PG principale.','bad');if(inp)inp.focus();return;}
  if(!FB.user){setStatus('session-home-msg','Firebase non è ancora pronto. Riprova tra un momento.','bad');return;}
  setCreatingSession(true);setStatus('session-home-msg','Creazione della Ricerca…','');
- var data={ownerUid:FB.user.uid,initialPgName:name,pgName:name,tipoPassaggio:'',passaggioId:'',createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp(),toolVersion:'v22',passagePicker:{attempts:0,locked:false,linked:false,active:null,pending:null,eligible:false,linkedConfirmed:false,linkedChoice:'',legacy:false},actionLog:[]};
+ var data={ownerUid:FB.user.uid,initialPgName:name,pgName:name,tipoPassaggio:'',passaggioId:'',createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp(),toolVersion:'v24',passagePicker:{attempts:0,locked:false,linked:false,active:null,pending:null,eligible:false,linkedConfirmed:false,linkedChoice:'',legacy:false},actionLog:[]};
  FB.db.collection(SESSION_COLLECTION).add(data).then(function(ref){
   setCreatingSession(false);if(inp)inp.value='';var now=null;try{now=firebase.firestore.Timestamp.now();}catch(e){}
-  var localData=Object.assign({},data,{createdAt:now,updatedAt:now});setSessionHash(ref.id);
+  var localData=Object.assign({},data,{createdAt:now,updatedAt:now});updateSessionListCacheEntry(ref.id,localData);setSessionHash(ref.id);
   try{openSessionDoc(ref.id,localData);setStatus('session-home-msg','','');}catch(err){console.error(err);setStatus('session-home-msg','La Ricerca è stata creata correttamente, ma non sono riuscito ad aprirla nell’interfaccia. Aggiorna la pagina e aprila dall’elenco.','bad');}
  },function(err){setCreatingSession(false);console.error(err);setStatus('session-home-msg','Impossibile creare la Ricerca: '+err.message,'bad');});
 }
@@ -3361,7 +3397,7 @@ function deleteCurrentSession(){
  SESSION_DELETING=true;var id=CURRENT_SESSION;if(SAVE_TIMER){clearTimeout(SAVE_TIMER);SAVE_TIMER=null;}PENDING_SAVE=false;
  var confirm=sq('btn-confirm-delete'),cancel=sq('btn-cancel-delete');if(confirm)confirm.disabled=true;if(cancel)cancel.disabled=true;sq('delete-session-msg').textContent='Eliminazione definitiva in corso…';
  waitForSessionSaveDrain().then(function(){return FB.db.collection(SESSION_COLLECTION).doc(id).delete();}).then(function(){
-  CURRENT_SESSION=null;CURRENT_SESSION_DATA=null;SESSION_ACTIONS=[];SESSION_DELETING=false;var m=sq('delete-session-modal');if(m){m.classList.remove('open');m.setAttribute('aria-hidden','true');}try{sessionStorage.setItem('rmal_deleted_notice','1');}catch(e){}navigateToDashboard();
+  removeSessionListCacheEntry(id);CURRENT_SESSION=null;CURRENT_SESSION_DATA=null;SESSION_ACTIONS=[];SESSION_DELETING=false;var m=sq('delete-session-modal');if(m){m.classList.remove('open');m.setAttribute('aria-hidden','true');}try{sessionStorage.setItem('rmal_deleted_notice','1');}catch(e){}navigateToDashboard();
  }).catch(function(err){console.error(err);SESSION_DELETING=false;if(confirm)confirm.disabled=false;if(cancel)cancel.disabled=false;sq('delete-session-msg').textContent='Eliminazione non riuscita: '+err.message;LAST_SAVE_OK=false;scheduleSave();});
 }
 function backToDashboard(){
@@ -3374,7 +3410,7 @@ function setupControls(){
  attachRecorder();
  sq('btn-new-session').addEventListener(EVT,createSession);
  sq('new-session-pg').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();createSession();}});
- sq('btn-refresh-sessions').addEventListener(EVT,loadSessionList);
+ sq('btn-refresh-sessions').addEventListener(EVT,function(){loadSessionList(true);});
  sq('btn-back-sessions').addEventListener(EVT,backToDashboard);
  sq('btn-delete-session').addEventListener(EVT,openDeleteModal);
  sq('btn-cancel-delete').addEventListener(EVT,closeDeleteModal);
