@@ -1,5 +1,22 @@
+<!-- Revisione v21: 3 rinunce reali (4 determinazioni), usi Oggetti condivisi per PG+Fonte fra Fasi, preset verificati Prezzario, scadenza bonus generale per Fase, Fatica a mezzi punti e reminder malus persistenti -->
+<!-- Revisione v19: Corruzione Mentale P5 valida solo a gruppo realmente risolto, invalidata se cambia la composizione; ID stabili per tutti i dadi speciali e replay Firebase più robusto -->
+<!-- Revisione v18: risultati persistenti e validati per Risonanza Maledetta (1d4) e Corruzione Mentale (1d5), con invalidazione retroattiva corretta degli effetti speciali -->
+<!-- Revisione v17: prove a doppio tiro atomiche — uso consumato solo a prova completa, secondo tiro cancellato se si annulla il primo, riepilogo finale solo su esiti risolti -->
+<!-- Revisione v16: aggiunta/rimozione PG con invalidazione per dipendenza reale; preserva i tiri degli altri partecipanti quando bonus, pending, doppio tiro o esclusione non cambiano -->
+<!-- Revisione v15: dipendenza corretta tra 1d5 di attivazione ed effetto in Analisi/Tracciatura; il secondo tiro viene invalidato solo quando cambia lo stato di attivazione -->
+<!-- Revisione v14: 1d5 finali di Analisi/Tracciatura nuovamente funzionanti e rimozione PG senza perdita degli effetti speciali degli altri partecipanti -->
+<!-- Revisione v13: Fonte obbligatoria per i bonus attivi e invalidazione per dipendenza reale tra PG/Fasi; preserva i tiri indipendenti -->
+<!-- Revisione v12: matrice esiti corretta per PG/Fase, rimozione PG sicura, riverifica idempotente e Parametri effettivi esplicitati -->
+<!-- Revisione v11: actionLog Firebase non registra numeri impossibili, invalidazioni PG più selettive, input numerici non distruttivi e risultati speciali indipendenti preservati -->
+<!-- Revisione v10: usi di Fase realmente automatici, riepiloghi solo degli effetti usati, validazione non distruttiva dei dadi e invalidazioni dipendenti; Firebase v9 preservato -->
+<!-- Revisione v9: bonus generali e di Fase distinti, Oggetti/Borsa multipli, usi automatici, validazione numerica e invalidazione coerente; Firebase v8 preservato -->
+<!-- Revisione v8: compatibilità diretta con passagePicker v6/v7 + correzione intestazione HTML; mantiene la migrazione legacy rafforzata della v7 -->
+<!-- Revisione v6: determinazione Passaggio consolidata (scelta/1d5, storico: limite determinazioni precedente, Ricerca collegata e requisiti) + sessioni Firebase allineate agli standard definitivi: readonly reversibile, salvataggio/uscita/eliminazione sicuri, doppia creazione bloccata, metadata live e migrazione legacy -->
+<!-- Revisione v5: quote numerici semplificati — i dadi che restituiscono direttamente il proprio valore non elencano inutilmente tutte le facce -->
+<!-- Revisione v2 standard completo: BBCode esteso, copia stabile, popup locale, navigazione Configurazione/Riepilogo/Fasi/Esito, ripresa intelligente e controlli di coerenza -->
+<!-- Revisione Firebase: sessioni multiple, autosalvataggio, ripresa, sola lettura e cancellazione definitiva protetta --> 
 <div id="ricerca-maledizioni" class="foglio" style="width:100% !important;max-width:none !important;margin:0 !important;padding:0 !important;background:#160E09 !important;color:#F7EADC !important;box-sizing:border-box !important;"> 
-<style>@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css'); 
+<style>@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css'); 
 @font-face {font-family: 'magic'; 
  src: url('https://dl.dropboxusercontent.com/scl/fi/nbzmrri4qyvc3tzx96911/HarryBeastDisplay-Regular.woff2?rlkey=he290voe32k33gowug23c1osc&st=nj9fgly1') format('woff2'); 
  font-weight: normal; 
@@ -701,7 +718,7 @@ padding: 20px}
 <div class="d5-choice-grid" id="d5choiceGrid"></div>
 
 <div class="rm-picker-box" id="rm-picker-box">
-  <div class="rm-picker-attempts" id="rm-passage-attempts">Determinazioni utilizzate: 0/3</div>
+  <div class="rm-picker-attempts" id="rm-passage-attempts">Determinazioni utilizzate: 0/4</div>
   <label class="rm-picker-check"><input type="checkbox" id="rm-participants-confirm" data-picker-control="1"><span><b>Confermo che la role coinvolge almeno 2 PG</b> e che tutti i partecipanti sono Spezzaincantesimi, Acumen o entrambi.</span></label>
   <div class="rm-picker-row">
     <button class="small" id="rm-confirm-passage" type="button" data-picker-control="1">Conferma Passaggio</button>
@@ -948,6 +965,33 @@ if(prev.successo === false){ return {bonus:0, excludeMe:true, label:'Il PG resta
 return {bonus:0, pending:true, label:'Completa la Fase precedente prima di effettuare questo tiro.'}; 
 } 
  
+
+/* ---------- preset verificati per Ricerca Maledizioni ---------- */
+var RMAL_PHASE_PRESETS=[];
+function addRmalManualPresets(baseId,label,family,paramLabel){
+ RMAL_PHASE_PRESETS.push(
+  {id:baseId+'_std',family:family,label:label+' — standard (+2 '+paramLabel+' · 10 usi)',source:label+' — standard',value:2,maxUses:'10',condition:'solo se la prova usa '+paramLabel+' · 10 usi'},
+  {id:baseId+'_elf',family:family,label:label+' — Mercato degli Elfi (+1 '+paramLabel+' · 5 usi)',source:label+' — Mercato degli Elfi',value:1,maxUses:'5',condition:'solo se la prova usa '+paramLabel+' · 5 usi'},
+  {id:baseId+'_obs',family:family,label:label+' — Obscurus Books (+2 '+paramLabel+' · 10 usi)',source:label+' — Obscurus Books',value:2,maxUses:'10',condition:'solo se la prova usa '+paramLabel+' · 10 usi'}
+ );
+}
+addRmalManualPresets('manuale_acumen','Manuali dell’Acumen','acume','Acume');
+addRmalManualPresets('manuale_sensus','Manuali del Sensus','percezione','Percezione');
+addRmalManualPresets('manuale_voluntas','Manuali del Voluntas','volonta','Volontà');
+for(var rmalAv=1;rmalAv<=7;rmalAv++){
+ RMAL_PHASE_PRESETS.push({id:'amuleto_'+rmalAv,family:'any',label:'Amuleto della Fortuna (+'+rmalAv+' possibilità · 3 usi)',source:'Amuleto della Fortuna +'+rmalAv,value:rmalAv,maxUses:'3',condition:'solo se in questa situazione concede possibilità e non facce del dado · 3 usi'});
+}
+function rmalPhasePresetsFor(fase){
+ var labels=(fase.campi||[]).map(function(c){return String(c.label||'');}).join(' ');
+ return RMAL_PHASE_PRESETS.filter(function(p){
+  if(p.family==='any')return true;
+  if(p.family==='acume')return labels.indexOf('Acume')!==-1;
+  if(p.family==='percezione')return labels.indexOf('Percezione')!==-1;
+  if(p.family==='volonta')return labels.indexOf('Volontà')!==-1;
+  return false;
+ });
+}
+
 /* ---------- motore generico di un Passaggio ---------- */ 
  
 function creaPassaggio(config){ 
@@ -1000,39 +1044,84 @@ function strictIntValue(v,allowNegative){
  if(!re.test(s)){return null;}
  var n=Number(s);return Number.isSafeInteger(n)?n:null;
 }
-function emptyGeneralBonus(){return {source:'',target:'',value:'0',active:true};}
-function emptyPhaseEffect(){return {source:'',condition:'',kind:'threshold',target:'__threshold',value:'0',maxUses:'0',usedUses:'0',consumedHere:false,active:true};}
+function emptyGeneralBonus(){return {source:'',condition:'',target:'',value:'0',active:true,endBeforePhase:''};}
+function emptyPhaseEffect(){return {source:'',condition:'',kind:'threshold',target:'__threshold',value:'0',maxUses:'',usedUses:'0',consumedHere:false,active:true};}
 function allParameterOptions(){
  var seen={},out=[];
  config.fasi.forEach(function(f){(f.campi||[]).forEach(function(c){if(!seen[c.key]){seen[c.key]=true;out.push({key:c.key,label:c.label});}});});
  return out;
 }
 function phaseParameterOptions(fase){return (fase.campi||[]).map(function(c){return {key:c.key,label:c.label};});}
-function generalBonusValue(pgIdx,key){
+function generalBonusActiveInPhase(row,faseIdx){
+ if(!row||row.active===false)return false;
+ var end=String(row.endBeforePhase===undefined||row.endBeforePhase===null?'':row.endBeforePhase).trim();
+ if(end==='')return true;
+ var n=strictIntValue(end,false);
+ return n===null?true:faseIdx<n;
+}
+function generalBonusValue(pgIdx,key,faseIdx){
  var total=0,rows=state.generalBonuses[pgIdx]||[];
  rows.forEach(function(r){
   var v=strictIntValue(r.value,true),sourceOk=!!String(r&&r.source||'').trim();
-  if(r.active!==false&&sourceOk&&r.target===key&&v!==null&&v!==0){total+=v;}
+  if(generalBonusActiveInPhase(r,faseIdx)&&sourceOk&&r.target===key&&v!==null&&v!==0){total+=v;}
  });
  return total;
 }
-function phaseEffectState(row){
+function normalizePhaseSource(value){
+ return String(value||'').trim().toLocaleLowerCase('it-IT').replace(/\s+/g,' ');
+}
+function phaseEffectPool(pgIdx,row){
+ var key=normalizePhaseSource(row&&row.source),out={key:key,baseUsed:0,max:null,conflict:false,invalid:false,consumedPhases:{},rows:[]};
+ if(!key||!state.phaseEffects[pgIdx])return out;
+ var maxSeen=null;
+ for(var fi=0;fi<config.fasi.length;fi++){
+  var rows=state.phaseEffects[pgIdx][fi]||[];
+  rows.forEach(function(r){
+   if(normalizePhaseSource(r&&r.source)!==key)return;
+   out.rows.push({row:r,faseIdx:fi});
+   var u=String(r.usedUses===undefined||r.usedUses===null?'':r.usedUses).trim();
+   if(u!==''){
+    var un=strictIntValue(u,false);
+    if(un===null)out.invalid=true;
+    else out.baseUsed=Math.max(out.baseUsed,un);
+   }
+   var mx=String(r.maxUses===undefined||r.maxUses===null?'':r.maxUses).trim();
+   if(mx!==''){
+    var mn=strictIntValue(mx,false);
+    if(mn===null)out.invalid=true;
+    else{
+     if(maxSeen===null)maxSeen=mn;
+     else if(maxSeen!==mn)out.conflict=true;
+     maxSeen=maxSeen===null?mn:Math.min(maxSeen,mn);
+    }
+   }
+   if(r.consumedHere)out.consumedPhases[fi]=true;
+  });
+ }
+ out.max=maxSeen;
+ out.consumedCount=Object.keys(out.consumedPhases).length;
+ out.totalUsed=out.baseUsed+out.consumedCount;
+ return out;
+}
+function phaseEffectState(row,pgIdx,faseIdx){
  var value=strictIntValue(row&&row.value,true);
- var rawMax=String(row&&row.maxUses!==undefined&&row.maxUses!==null?row.maxUses:'').trim();
- var parsedMax=rawMax===''?0:strictIntValue(rawMax,false);
- var hasMax=parsedMax!==null&&parsedMax>0;
- var max=hasMax?parsedMax:null;
- var baseUsed=row&&String(row.usedUses||'').trim()!==''?strictIntValue(row.usedUses,false):0;
- var here=!!(row&&row.consumedHere);
- var totalUsed=baseUsed===null?null:baseUsed+(here?1:0);
  var sourceOk=(value===0)||!!String(row&&row.source||'').trim();
- var maxInputValid=parsedMax!==null&&parsedMax>=0;
- var valid=value!==null&&sourceOk&&baseUsed!==null&&maxInputValid&&(!hasMax||(baseUsed<=max&&totalUsed<=max));
- var available=valid&&(!hasMax||(max>0&&(here||baseUsed<max)));
- var exhausted=valid&&hasMax&&!here&&baseUsed>=max;
+ var pool=(pgIdx===undefined||pgIdx===null)?null:phaseEffectPool(pgIdx,row);
+ var ownHasMax=!!(row&&String(row.maxUses||'').trim()!=='');
+ var ownMax=ownHasMax?strictIntValue(row.maxUses,false):null;
+ var ownUsed=row&&String(row.usedUses||'').trim()!==''?strictIntValue(row.usedUses,false):0;
+ var max=pool&&pool.key?pool.max:ownMax;
+ var baseUsed=pool&&pool.key?pool.baseUsed:ownUsed;
+ var here=pool&&pool.key&&faseIdx!==undefined&&faseIdx!==null?!!pool.consumedPhases[faseIdx]:!!(row&&row.consumedHere);
+ var totalUsed=pool&&pool.key?pool.totalUsed:(baseUsed===null?null:baseUsed+(here?1:0));
+ var hasMax=(pool&&pool.key)?max!==null:ownHasMax;
+ var conflict=!!(pool&&pool.key&&pool.conflict),poolInvalid=!!(pool&&pool.key&&pool.invalid);
+ var valid=value!==null&&sourceOk&&baseUsed!==null&&!conflict&&!poolInvalid&&(!hasMax||(max!==null&&max>=0&&baseUsed<=max&&totalUsed<=max));
+ var available=valid&&(!hasMax||(max>0&&(here||totalUsed<max)));
+ var exhausted=valid&&hasMax&&!here&&totalUsed>=max;
  return {
   value:value,max:max,baseUsed:baseUsed,totalUsed:totalUsed,used:totalUsed,sourceOk:sourceOk,
-  valid:valid,available:available,exhausted:exhausted,
+  valid:valid,available:available,exhausted:exhausted,conflict:conflict,poolInvalid:poolInvalid,here:here,
   remaining:hasMax&&max!==null&&totalUsed!==null?max-totalUsed:null,
   applied:!!(row&&row.active!==false&&sourceOk&&valid&&available&&value!==0)
  };
@@ -1049,18 +1138,18 @@ function oldV9PhaseEffectState(row){
 }
 function phaseParamBonus(pgIdx,faseIdx,key){
  var total=0,rows=(state.phaseEffects[pgIdx]&&state.phaseEffects[pgIdx][faseIdx])||[];
- rows.forEach(function(r){var st=phaseEffectState(r);if(st.applied&&r.kind==='param'&&r.target===key){total+=st.value;}});
+ rows.forEach(function(r){var st=phaseEffectState(r,pgIdx,faseIdx);if(st.applied&&r.kind==='param'&&r.target===key){total+=st.value;}});
  return total;
 }
 function phaseThresholdBonus(pgIdx,faseIdx){
  var total=0,rows=(state.phaseEffects[pgIdx]&&state.phaseEffects[pgIdx][faseIdx])||[];
- rows.forEach(function(r){var st=phaseEffectState(r);if(st.applied&&r.kind==='threshold'){total+=st.value;}});
+ rows.forEach(function(r){var st=phaseEffectState(r,pgIdx,faseIdx);if(st.applied&&r.kind==='threshold'){total+=st.value;}});
  return total;
 }
 function effectivePhaseValues(pgIdx,faseIdx,fase){
  var base=state.vals[pgIdx]&&state.vals[pgIdx][faseIdx]?state.vals[pgIdx][faseIdx]:{},eff={},notes=[];
  (fase.campi||[]).forEach(function(c){
-  var raw=base[c.key],gb=generalBonusValue(pgIdx,c.key),pb=phaseParamBonus(pgIdx,faseIdx,c.key),b=gb+pb;
+  var raw=base[c.key],gb=generalBonusValue(pgIdx,c.key,faseIdx),pb=phaseParamBonus(pgIdx,faseIdx,c.key),b=gb+pb;
   eff[c.key]=(typeof raw==='number'&&isFinite(raw))?raw+b:raw;
   if(b&&typeof raw==='number'&&isFinite(raw)){notes.push(c.label+': '+raw+(b>0?' + ':' - ')+Math.abs(b)+' = '+eff[c.key]);}
  });
@@ -1077,21 +1166,26 @@ function phaseStartedValid(pgIdx,faseIdx){
  if(r.successo!==true&&r.successo!==false)return false;
  return validRollNumber(state.rolls[pgIdx]&&state.rolls[pgIdx][faseIdx],fase.dado)!==null;
 }
-function generalWasUsed(pgIdx,key){
+function generalWasUsed(pgIdx,key,row){
  for(var fi=0;fi<config.fasi.length;fi++){
-  if(!phaseStartedValid(pgIdx,fi))continue;
+  if(!phaseStartedValid(pgIdx,fi)||!generalBonusActiveInPhase(row,fi))continue;
   if((config.fasi[fi].campi||[]).some(function(c){return c.key===key;}))return true;
  }
  return false;
+}
+function firstUnresolvedPhaseForPg(pgIdx){
+ for(var fi=0;fi<config.fasi.length;fi++)if(!phaseStartedValid(pgIdx,fi))return fi;
+ return config.fasi.length;
 }
 function phaseEffectUsedInputId(pgIdx,faseIdx,rowIdx){
  return 'rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-'+rowIdx+'-used';
 }
 function consumePhaseUses(pgIdx,faseIdx){
  var rows=(state.phaseEffects[pgIdx]&&state.phaseEffects[pgIdx][faseIdx])||[];
+ var handled={};
  rows.forEach(function(row,rowIdx){
-  if(row.consumedHere)return;
   if(window.__RM_RESTORING__&&String(window.__RM_SESSION_VERSION__||'')==='v9'){
+   if(row.consumedHere)return;
    var old=oldV9PhaseEffectState(row);
    if(!old.applied)return;
    if(old.used>0){
@@ -1101,8 +1195,21 @@ function consumePhaseUses(pgIdx,faseIdx){
    row.consumedHere=true;
    return;
   }
-  var st=phaseEffectState(row);
-  if(st.applied)row.consumedHere=true;
+  var key=normalizePhaseSource(row&&row.source);
+  if(!key)key='__row__'+rowIdx;
+  if(handled[key])return;
+  handled[key]=true;
+  var group=rows.filter(function(r,ix){
+   var rk=normalizePhaseSource(r&&r.source);
+   if(!rk)rk='__row__'+ix;
+   return rk===key;
+  });
+  var shouldUse=group.some(function(r){return phaseEffectState(r,pgIdx,faseIdx).applied;});
+  if(!shouldUse)return;
+  group.forEach(function(r){
+   var st=phaseEffectState(r,pgIdx,faseIdx);
+   if(st.applied)r.consumedHere=true;
+  });
  });
 }
 function releasePhaseUses(pgIdx,faseIdx){
@@ -1244,6 +1351,20 @@ function invalidateAfterParticipantChange(snapshot,removedIndex,added){
   }
  }
 }
+function firstPhaseWithSource(pgIdx,sourceKey){
+ if(!sourceKey)return config.fasi.length;
+ for(var fi=0;fi<config.fasi.length;fi++){
+  var rows=(state.phaseEffects[pgIdx]&&state.phaseEffects[pgIdx][fi])||[];
+  if(rows.some(function(r){return normalizePhaseSource(r&&r.source)===sourceKey;}))return fi;
+ }
+ return config.fasi.length;
+}
+function invalidatePhaseSourceChange(pgIdx,faseIdx,oldSourceKey,newSourceKey){
+ var start=faseIdx;
+ if(oldSourceKey)start=Math.min(start,firstPhaseWithSource(pgIdx,oldSourceKey));
+ if(newSourceKey)start=Math.min(start,firstPhaseWithSource(pgIdx,newSourceKey));
+ invalidatePhaseFormula(pgIdx,start);
+}
 function invalidatePhaseFormula(pgIdx,faseIdx){
  var r=state.risultati[faseIdx]&&state.risultati[faseIdx][pgIdx];
  var oldOutcome=r&&(r.successo===true||r.successo===false)?r.successo:null;
@@ -1277,12 +1398,12 @@ function usageText(st){
  if(st.max===null)return st&&st.totalUsed>0?' · '+st.totalUsed+' US'+(st.totalUsed===1?'O CONSUMATO':'I CONSUMATI'):'';
  return ' · '+(st.totalUsed||0)+'/'+st.max+' USI → '+Math.max(0,st.remaining===null?0:st.remaining)+' RIMASTI';
 }
-function effectLine(row,faseLabel,paramLabel){
- var st=phaseEffectState(row),cond=String(row.condition||'').trim(),kind=row.kind==='param'?('PARAMETRO '+(paramLabel||row.target||'')):'POSSIBILITÀ';
+function effectLine(row,pgIdx,faseIdx,faseLabel,paramLabel){
+ var st=phaseEffectState(row,pgIdx,faseIdx),cond=String(row.condition||'').trim(),kind=row.kind==='param'?('PARAMETRO '+(paramLabel||row.target||'')):'POSSIBILITÀ';
  return sourceName(row,'OGGETTO/BORSA')+(cond?' · '+cond.toUpperCase():'')+' → '+(st.value>=0?'+':'')+st.value+' '+kind+' · '+faseLabel.toUpperCase()+usageText(st);
 }
 function phaseEffectDisplayLine(row,pgIdx,faseIdx,fase,paramLabel){
- var line=effectLine(row,fase.nome,paramLabel);
+ var line=effectLine(row,pgIdx,faseIdx,fase.nome,paramLabel);
  if(row&&row.kind==='param'&&row.target){
   var raw=state.vals[pgIdx]&&state.vals[pgIdx][faseIdx]?state.vals[pgIdx][faseIdx][row.target]:null;
   var eff=effectivePhaseValues(pgIdx,faseIdx,fase).values[row.target];
@@ -1293,17 +1414,19 @@ function phaseEffectDisplayLine(row,pgIdx,faseIdx,fase,paramLabel){
  return line;
 }
 function generalLine(row){
- var v=strictIntValue(row.value,true),opts=allParameterOptions(),label=row.target||'Parametro';
+ var v=strictIntValue(row.value,true),opts=allParameterOptions(),label=row.target||'Parametro',cond=String(row.condition||'').trim();
  opts.forEach(function(o){if(o.key===row.target)label=o.label;});
- return sourceName(row,'BONUS GENERALE')+' → '+(v>=0?'+':'')+v+' '+label.toUpperCase()+' · GENERALE';
+ var end=String(row.endBeforePhase===undefined||row.endBeforePhase===null?'':row.endBeforePhase).trim(),suffix=' · GENERALE';
+ if(end!==''){var n=strictIntValue(end,false);if(n!==null&&n<config.fasi.length)suffix+=' · TERMINATO PRIMA DELLA FASE '+(n+1);}
+ return sourceName(row,'BONUS GENERALE')+(cond?' · '+cond.toUpperCase():'')+' → '+(v>=0?'+':'')+v+' '+label.toUpperCase()+suffix;
 }
 function generalContributionKey(row){
  var v=strictIntValue(row&&row.value,true),sourceOk=!!String(row&&row.source||'').trim();
- return row&&row.active!==false&&sourceOk&&row.target&&v!==null&&v!==0?(row.target+':'+v):'';
+ return row&&row.active!==false&&sourceOk&&row.target&&v!==null&&v!==0?(row.target+':'+v+':'+normalizePhaseSource(row.source)+':'+String(row.endBeforePhase||'')):'';
 }
-function phaseContributionKey(row){
- var st=phaseEffectState(row);
- return st.applied?((row.kind||'threshold')+':'+(row.target||'')+':'+st.value):'';
+function phaseContributionKey(row,pgIdx,faseIdx){
+ var st=phaseEffectState(row,pgIdx,faseIdx);
+ return st.applied?((row.kind||'threshold')+':'+(row.target||'')+':'+st.value+':'+normalizePhaseSource(row.source)+':'+String(row.maxUses||'')+':'+String(row.usedUses||'')):'';
 }
 function makeField(label,node,wide){
  var w=el('div','stat-field'+(wide?' wide':''));
@@ -1315,13 +1438,18 @@ function buildGeneralBonusManager(pgIdx){
  var box=el('div','bonus-manager general-bonus-manager');
  var head=el('div','bonus-manager-head'),left=el('div');
  left.appendChild(el('div','bonus-manager-title','Bonus generali del personaggio'));
- left.appendChild(el('div','bonus-manager-help','Inseriscili qui una sola volta. Modificano il Parametro prima delle formule e delle divisioni; nelle Fasi inserisci soltanto effetti specifici.'));
+ left.appendChild(el('div','bonus-manager-help','Usali per modifiche già attive e valide su più post/Fasi. Vengono applicate al Parametro prima delle formule e delle divisioni. Se un effetto scade dopo tiri già conclusi, usa “Termina da ora” prima del tiro successivo: i tiri precedenti restano calcolati con il bonus. Usa “Elimina / correggi” solo se il bonus era stato inserito per errore. Per percentuali o azzeramenti inserisci manualmente la variazione numerica già calcolata.'));
+ if(config.id==='p2')left.appendChild(el('div','bonus-manager-help','Prezzario verificato: la Divisa da Spezzaincantesimi vale +4 Fatica per 50 post (standard) oppure +2 Fatica per 25 post (Mercato degli Elfi). Se la inserisci qui, nel campo “Fatica attuale” usa il valore senza questo stesso bonus, per non conteggiarlo due volte.'));
  head.appendChild(left);box.appendChild(head);
  var rows=el('div','bonus-rows'),opts=allParameterOptions();
  (state.generalBonuses[pgIdx]||[]).forEach(function(row,rowIdx){
+  if(row.condition===undefined)row.condition='';
+  if(row.endBeforePhase===undefined||row.endBeforePhase===null)row.endBeforePhase='';
   var rbox=el('div','bonus-row'),grid=el('div','bonus-row-grid');
-  var source=document.createElement('input');source.type='text';source.value=row.source||'';source.placeholder='Es. Oggetto permanente';source.id='rmg-'+config.id+'-'+pgIdx+'-'+rowIdx+'-source';
+  var source=document.createElement('input');source.type='text';source.value=row.source||'';source.placeholder='Es. Oggetto / effetto persistente';source.id='rmg-'+config.id+'-'+pgIdx+'-'+rowIdx+'-source';
   var sf='rmg-source-'+pgIdx+'-'+rowIdx;source.setAttribute('data-focus-key',sf);source.addEventListener('input',function(){var before=generalContributionKey(row);row.source=source.value;invalidateGeneralTransition(pgIdx,before,generalContributionKey(row));rerenderFocus(sf);});grid.appendChild(makeField('Fonte',source,true));
+  var cond=document.createElement('input');cond.type='text';cond.value=row.condition||'';cond.placeholder='Es. attivo per 5 post / indossato';cond.id='rmg-'+config.id+'-'+pgIdx+'-'+rowIdx+'-condition';
+  var cf='rmg-condition-'+pgIdx+'-'+rowIdx;cond.setAttribute('data-focus-key',cf);cond.addEventListener('input',function(){row.condition=cond.value;rerenderFocus(cf);});grid.appendChild(makeField('Condizione / durata',cond,true));
   var target=document.createElement('select');target.id='rmg-'+config.id+'-'+pgIdx+'-'+rowIdx+'-target';
   var blank=document.createElement('option');blank.value='';blank.textContent='— scegli Parametro —';target.appendChild(blank);
   opts.forEach(function(o){var op=document.createElement('option');op.value=o.key;op.textContent=o.label;if(row.target===o.key)op.selected=true;target.appendChild(op);});
@@ -1332,12 +1460,21 @@ function buildGeneralBonusManager(pgIdx){
   var acts=el('div','bonus-row-actions'),active=el('label','bonus-active'),ck=document.createElement('input');
   ck.type='checkbox';ck.checked=row.active!==false;ck.id='rmg-'+config.id+'-'+pgIdx+'-'+rowIdx+'-active';ck.addEventListener('input',function(){var before=generalContributionKey(row);row.active=ck.checked;invalidateGeneralTransition(pgIdx,before,generalContributionKey(row));render();});
   active.appendChild(ck);active.appendChild(document.createTextNode('Applica ai calcoli'));acts.appendChild(active);
-  var rm=el('button','small bonus-remove','Elimina');rm.type='button';rm.addEventListener(EVT,function(){var before=generalContributionKey(row);state.generalBonuses[pgIdx].splice(rowIdx,1);invalidateGeneralTransition(pgIdx,before,'');render();});acts.appendChild(rm);rbox.appendChild(acts);
+  var ended=String(row.endBeforePhase||'')!=='';
+  var endNow=el('button','small bonus-end',ended?'Terminato':'Termina da ora');endNow.type='button';endNow.disabled=ended;
+  endNow.title='Usa quando l’effetto scade realmente dopo tiri già conclusi; non corregge retroattivamente le Fasi precedenti.';
+  endNow.addEventListener(EVT,function(){
+   if(String(row.endBeforePhase||'')!=='')return;
+   row.endBeforePhase=String(firstUnresolvedPhaseForPg(pgIdx));
+   render();
+  });
+  acts.appendChild(endNow);
+  var rm=el('button','small bonus-remove','Elimina / correggi');rm.type='button';rm.addEventListener(EVT,function(){var before=generalContributionKey(row);state.generalBonuses[pgIdx].splice(rowIdx,1);invalidateGeneralTransition(pgIdx,before,'');render();});acts.appendChild(rm);rbox.appendChild(acts);
   var gv=strictIntValue(row.value,true);
   if(row.active!==false&&String(row.value||'').trim()!==''&&gv===null)rbox.appendChild(el('div','bonus-invalid','Il bonus generale deve essere un numero intero.'));
   else if(row.active!==false&&gv!==null&&gv!==0&&!String(row.source||'').trim())rbox.appendChild(el('div','bonus-invalid','Indica la Fonte del bonus generale.'));
   else if(row.active!==false&&gv!==null&&gv!==0&&!row.target)rbox.appendChild(el('div','bonus-invalid','Scegli il Parametro modificato.'));
-  if(row.active!==false&&String(row.source||'').trim()&&row.target&&gv!==null&&gv!==0){var s=el('div','bonus-applied-summary');s.appendChild(el('div','bonus-applied-line',generalLine(row)));rbox.appendChild(s);}
+  if(row.active!==false&&String(row.source||'').trim()&&row.target&&gv!==null&&gv!==0){var ss=el('div','bonus-applied-summary');ss.appendChild(el('div','bonus-applied-line',generalLine(row)));rbox.appendChild(ss);}
   rows.appendChild(rbox);
  });
  box.appendChild(rows);
@@ -1348,45 +1485,90 @@ function buildPhaseEffectManager(pgIdx,faseIdx,fase){
  var box=el('div','bonus-manager');
  var head=el('div','bonus-manager-head'),left=el('div');
  left.appendChild(el('div','bonus-manager-title','Oggetti / Borsa / altri effetti di questa Fase'));
- left.appendChild(el('div','bonus-manager-help','Puoi predisporre più effetti. Il bonus al Parametro entra prima della formula; il bonus alle possibilità si somma alla soglia finale. Se indichi usi limitati, l’uso della Fase viene conteggiato automaticamente quando inserisci un tiro valido.'));
+ left.appendChild(el('div','bonus-manager-help','Il bonus al Parametro entra prima della formula; il bonus alle possibilità si somma alla soglia finale. Gli usi limitati sono condivisi automaticamente tra tutte le Fasi per lo stesso PG e la stessa Fonte: scrivi quindi lo stesso nome della Fonte. “Usi già consumati” indica gli usi precedenti a questa Ricerca; quelli di questa Ricerca vengono conteggiati dai tiri validi.'));
+ if(config.id==='p3'||config.id==='p4')left.appendChild(el('div','bonus-manager-help','Questa Ricerca usa formule proprie: non aggiungere una seconda volta i bonus della normale prova 1d50 della Guida alla Tracciatura per Spezzamento/Esorcismo. Il Livello è già incluso dove previsto dalla formula.'));
  head.appendChild(left);box.appendChild(head);
- var rows=el('div','bonus-rows'),params=phaseParameterOptions(fase),arr=state.phaseEffects[pgIdx][faseIdx];
+
+ var params=phaseParameterOptions(fase),arr=state.phaseEffects[pgIdx][faseIdx],presets=rmalPhasePresetsFor(fase);
+ if(presets.length){
+  var pwrap=el('div','bonus-row'),pgrid=el('div','bonus-row-grid');
+  var psel=document.createElement('select');psel.id='rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-preset';
+  var blankp=document.createElement('option');blankp.value='';blankp.textContent='— Bonus verificato da Prezzario —';psel.appendChild(blankp);
+  presets.forEach(function(p){var op=document.createElement('option');op.value=p.id;op.textContent=p.label;psel.appendChild(op);});
+  pgrid.appendChild(makeField('Aggiungi rapidamente',psel,true));
+  var padd=el('button','small bonus-add','Aggiungi preset');padd.type='button';padd.id='rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-preset-add';
+  var pmsg=el('div','bonus-manager-help','Manuali: applica il preset solo se stai usando proprio il Parametro indicato. Amuleto: usalo solo quando il suo effetto è espresso in possibilità, non in facce del dado.');
+  padd.addEventListener(EVT,function(){
+   var id=psel.value,preset=null;
+   presets.forEach(function(p){if(p.id===id)preset=p;});
+   if(!preset)return;
+   if(arr.some(function(r){return r&&r.presetId===id;})){pmsg.textContent='Questo preset è già presente in questa Fase.';return;}
+   arr.push({source:preset.source,condition:preset.condition,kind:'threshold',target:'__threshold',value:String(preset.value),maxUses:String(preset.maxUses||''),usedUses:'0',consumedHere:false,active:true,presetId:id});
+   render();
+  });
+  pwrap.appendChild(pgrid);pwrap.appendChild(padd);pwrap.appendChild(pmsg);box.appendChild(pwrap);
+ }
+
+ var rows=el('div','bonus-rows');
  arr.forEach(function(row,rowIdx){
   if(row.consumedHere===undefined)row.consumedHere=false;
   if(row.usedUses===undefined||row.usedUses===null||row.usedUses==='')row.usedUses='0';
   var rbox=el('div','bonus-row'),grid=el('div','bonus-row-grid');
-  var source=document.createElement('input');source.type='text';source.value=row.source||'';source.placeholder='Es. Borsa / oggetto';source.id='rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-'+rowIdx+'-source';
-  var sf='rmx-source-'+faseIdx+'-'+pgIdx+'-'+rowIdx;source.setAttribute('data-focus-key',sf);source.addEventListener('input',function(){var before=phaseContributionKey(row);row.source=source.value;if(before!==phaseContributionKey(row))invalidatePhaseFormula(pgIdx,faseIdx);rerenderFocus(sf);});grid.appendChild(makeField('Fonte / Oggetto',source,true));
-  var cond=document.createElement('input');cond.type='text';cond.value=row.condition||'';cond.placeholder='Es. solo su maledizioni';cond.id='rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-'+rowIdx+'-condition';
+
+  var source=document.createElement('input');source.type='text';source.value=row.source||'';source.placeholder='Es. Manuali dell’Acumen — standard';source.id='rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-'+rowIdx+'-source';
+  var sf='rmx-source-'+faseIdx+'-'+pgIdx+'-'+rowIdx;source.setAttribute('data-focus-key',sf);source.addEventListener('input',function(){
+   var oldKey=normalizePhaseSource(row.source),before=phaseContributionKey(row,pgIdx,faseIdx);
+   row.source=source.value;
+   var newKey=normalizePhaseSource(row.source),after=phaseContributionKey(row,pgIdx,faseIdx);
+   if(oldKey!==newKey||before!==after)invalidatePhaseSourceChange(pgIdx,faseIdx,oldKey,newKey);
+   rerenderFocus(sf);
+  });grid.appendChild(makeField('Fonte / Oggetto',source,true));
+
+  var cond=document.createElement('input');cond.type='text';cond.value=row.condition||'';cond.placeholder='Es. solo se la prova usa Acume';cond.id='rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-'+rowIdx+'-condition';
   var cf='rmx-condition-'+faseIdx+'-'+pgIdx+'-'+rowIdx;cond.setAttribute('data-focus-key',cf);cond.addEventListener('input',function(){row.condition=cond.value;rerenderFocus(cf);});grid.appendChild(makeField('Condizione / efficacia',cond,true));
+
   var kind=document.createElement('select');[['threshold','Bonus alle possibilità'],['param','Bonus al Parametro']].forEach(function(x){var op=document.createElement('option');op.value=x[0];op.textContent=x[1];if(row.kind===x[0])op.selected=true;kind.appendChild(op);});
-  kind.id='rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-'+rowIdx+'-kind';kind.addEventListener('change',function(){var before=phaseContributionKey(row);row.kind=kind.value;if(row.kind==='threshold')row.target='__threshold';else if(!params.some(function(p){return p.key===row.target;}))row.target=params.length?params[0].key:'';if(before!==phaseContributionKey(row))invalidatePhaseFormula(pgIdx,faseIdx);render();});grid.appendChild(makeField('Tipo di bonus',kind,false));
+  kind.id='rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-'+rowIdx+'-kind';kind.addEventListener('change',function(){var before=phaseContributionKey(row,pgIdx,faseIdx);row.kind=kind.value;if(row.kind==='threshold')row.target='__threshold';else if(!params.some(function(p){return p.key===row.target;}))row.target=params.length?params[0].key:'';if(before!==phaseContributionKey(row,pgIdx,faseIdx))invalidatePhaseFormula(pgIdx,faseIdx);render();});grid.appendChild(makeField('Tipo di bonus',kind,false));
+
   var target=document.createElement('select');target.id='rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-'+rowIdx+'-target';
   if(row.kind==='threshold'){var sop=document.createElement('option');sop.value='__threshold';sop.textContent='Soglia / possibilità';target.appendChild(sop);row.target='__threshold';}
   else{params.forEach(function(p){var op=document.createElement('option');op.value=p.key;op.textContent=p.label;if(row.target===p.key)op.selected=true;target.appendChild(op);});if(!row.target&&params.length)row.target=params[0].key;}
-  target.addEventListener('change',function(){var before=phaseContributionKey(row);row.target=target.value;if(before!==phaseContributionKey(row))invalidatePhaseFormula(pgIdx,faseIdx);render();});grid.appendChild(makeField('Su cosa agisce',target,false));
+  target.addEventListener('change',function(){var before=phaseContributionKey(row,pgIdx,faseIdx);row.target=target.value;if(before!==phaseContributionKey(row,pgIdx,faseIdx))invalidatePhaseFormula(pgIdx,faseIdx);render();});grid.appendChild(makeField('Su cosa agisce',target,false));
+
   var val=document.createElement('input');val.type='number';val.step='1';val.value=row.value;val.setAttribute('data-allow-negative','1');val.id='rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-'+rowIdx+'-value';
-  var vf='rmx-value-'+faseIdx+'-'+pgIdx+'-'+rowIdx;val.setAttribute('data-focus-key',vf);val.addEventListener('input',function(){var raw=String(val.value||'').trim(),previous=row.value;if(raw!==''&&strictIntValue(raw,true)===null){val.value=previous;return;}var before=phaseContributionKey(row);row.value=raw===''?'0':raw;if(before!==phaseContributionKey(row))invalidatePhaseFormula(pgIdx,faseIdx);rerenderFocus(vf);});grid.appendChild(makeField('Valore del bonus',val,false));
-  var max=document.createElement('input');max.type='number';max.min='0';max.step='1';max.value=(row.maxUses===undefined||row.maxUses===null||String(row.maxUses).trim()==='')?'0':row.maxUses;max.placeholder='0 = senza limite';max.id='rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-'+rowIdx+'-max';
-  var mf='rmx-max-'+faseIdx+'-'+pgIdx+'-'+rowIdx;max.setAttribute('data-focus-key',mf);max.addEventListener('input',function(){var raw=String(max.value||'').trim(),previous=row.maxUses;if(raw!==''&&strictIntValue(raw,false)===null){max.value=previous;return;}var before=phaseContributionKey(row);row.maxUses=raw;if(before!==phaseContributionKey(row))invalidatePhaseFormula(pgIdx,faseIdx);rerenderFocus(mf);});grid.appendChild(makeField('Usi disponibili (0 = senza limite)',max,false));
+  var vf='rmx-value-'+faseIdx+'-'+pgIdx+'-'+rowIdx;val.setAttribute('data-focus-key',vf);val.addEventListener('input',function(){var raw=String(val.value||'').trim(),previous=row.value;if(raw!==''&&strictIntValue(raw,true)===null){val.value=previous;return;}var before=phaseContributionKey(row,pgIdx,faseIdx);row.value=raw===''?'0':raw;if(before!==phaseContributionKey(row,pgIdx,faseIdx))invalidatePhaseFormula(pgIdx,faseIdx);rerenderFocus(vf);});grid.appendChild(makeField('Valore del bonus',val,false));
+
+  var max=document.createElement('input');max.type='number';max.min='0';max.step='1';max.value=row.maxUses;max.placeholder='vuoto = non limitato';max.id='rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-'+rowIdx+'-max';
+  var mf='rmx-max-'+faseIdx+'-'+pgIdx+'-'+rowIdx;max.setAttribute('data-focus-key',mf);max.addEventListener('input',function(){var raw=String(max.value||'').trim(),previous=row.maxUses;if(raw!==''&&strictIntValue(raw,false)===null){max.value=previous;return;}var key=normalizePhaseSource(row.source),start=firstPhaseWithSource(pgIdx,key);row.maxUses=raw;invalidatePhaseFormula(pgIdx,Math.min(faseIdx,start));rerenderFocus(mf);});grid.appendChild(makeField('Usi disponibili',max,false));
+
   var used=document.createElement('input');used.type='number';used.min='0';used.step='1';used.value=row.usedUses;used.placeholder='0';used.id='rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-'+rowIdx+'-used';
-  var uf='rmx-used-'+faseIdx+'-'+pgIdx+'-'+rowIdx;used.setAttribute('data-focus-key',uf);used.addEventListener('input',function(){var raw=String(used.value||'').trim(),previous=row.usedUses;if(raw!==''&&strictIntValue(raw,false)===null){used.value=previous;return;}var before=phaseContributionKey(row);row.usedUses=raw===''?'0':raw;if(before!==phaseContributionKey(row))invalidatePhaseFormula(pgIdx,faseIdx);rerenderFocus(uf);});grid.appendChild(makeField('Usi già consumati',used,false));
-  var total=document.createElement('input');total.type='text';total.readOnly=true;var st0=phaseEffectState(row);total.value=st0.totalUsed===null?'—':String(st0.totalUsed);grid.appendChild(makeField('Usi consumati totali',total,false));
+  var uf='rmx-used-'+faseIdx+'-'+pgIdx+'-'+rowIdx;used.setAttribute('data-focus-key',uf);used.addEventListener('input',function(){var raw=String(used.value||'').trim(),previous=row.usedUses;if(raw!==''&&strictIntValue(raw,false)===null){used.value=previous;return;}var key=normalizePhaseSource(row.source),start=firstPhaseWithSource(pgIdx,key);row.usedUses=raw===''?'0':raw;invalidatePhaseFormula(pgIdx,Math.min(faseIdx,start));rerenderFocus(uf);});grid.appendChild(makeField('Usi già consumati prima della Ricerca',used,false));
+
+  var total=document.createElement('input');total.type='text';total.readOnly=true;var st0=phaseEffectState(row,pgIdx,faseIdx);total.value=st0.totalUsed===null?'—':String(st0.totalUsed);grid.appendChild(makeField('Usi consumati totali (Fonte condivisa)',total,false));
   var phase=document.createElement('input');phase.type='text';phase.readOnly=true;phase.value=fase.nome;grid.appendChild(makeField('Fase',phase,true));
   rbox.appendChild(grid);
+
   var acts=el('div','bonus-row-actions'),active=el('label','bonus-active'),ck=document.createElement('input');
-  ck.type='checkbox';ck.checked=row.active!==false;ck.id='rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-'+rowIdx+'-active';ck.addEventListener('input',function(){var before=phaseContributionKey(row);row.active=ck.checked;if(before!==phaseContributionKey(row))invalidatePhaseFormula(pgIdx,faseIdx);render();});
+  ck.type='checkbox';ck.checked=row.active!==false;ck.id='rmx-'+config.id+'-'+faseIdx+'-'+pgIdx+'-'+rowIdx+'-active';ck.addEventListener('input',function(){var before=phaseContributionKey(row,pgIdx,faseIdx);row.active=ck.checked;if(before!==phaseContributionKey(row,pgIdx,faseIdx))invalidatePhaseFormula(pgIdx,faseIdx);render();});
   active.appendChild(ck);active.appendChild(document.createTextNode('Applica ai calcoli (condizione soddisfatta)'));acts.appendChild(active);
-  var rm=el('button','small bonus-remove','Elimina');rm.type='button';rm.addEventListener(EVT,function(){var had=phaseContributionKey(row)||row.consumedHere;if(had)invalidatePhaseFormula(pgIdx,faseIdx);arr.splice(rowIdx,1);render();});acts.appendChild(rm);rbox.appendChild(acts);
-  var st=phaseEffectState(row);
+
+  var rm=el('button','small bonus-remove','Elimina / correggi');rm.type='button';rm.addEventListener(EVT,function(){
+   var key=normalizePhaseSource(row.source),start=firstPhaseWithSource(pgIdx,key);
+   if(key||phaseContributionKey(row,pgIdx,faseIdx)||row.consumedHere)invalidatePhaseFormula(pgIdx,Math.min(faseIdx,start));
+   arr.splice(rowIdx,1);render();
+  });acts.appendChild(rm);rbox.appendChild(acts);
+
+  var st=phaseEffectState(row,pgIdx,faseIdx);
   if(st.value!==0&&!String(row.source||'').trim()){rbox.appendChild(el('div','bonus-invalid','Indica la Fonte / Oggetto del bonus prima di applicarlo.'));}
-  else if(!st.valid){rbox.appendChild(el('div','bonus-invalid','Controlla valore e usi: sono ammessi solo interi; gli usi già consumati e l’uso automatico di questa Fase non possono superare quelli disponibili.'));}
-  else if(st.exhausted){rbox.appendChild(el('div','bonus-invalid','Usi esauriti: l’effetto resta configurato ma non entra nella formula.'));}
-  if(st.applied){var lab='';params.forEach(function(p){if(p.key===row.target)lab=p.label;});var s=el('div','bonus-applied-summary');s.appendChild(el('div','bonus-applied-line',(row.consumedHere?'USATO · ':'PRONTO · ')+phaseEffectDisplayLine(row,pgIdx,faseIdx,fase,lab)));rbox.appendChild(s);}
+  else if(st.conflict){rbox.appendChild(el('div','bonus-invalid','La stessa Fonte ha un numero di usi disponibili diverso in un’altra Fase: usa lo stesso totale per tutte le righe della Fonte.'));}
+  else if(!st.valid){rbox.appendChild(el('div','bonus-invalid','Controlla valore e usi: sono ammessi solo interi; gli usi della stessa Fonte sono condivisi tra le Fasi e non possono superare quelli disponibili.'));}
+  else if(st.exhausted){rbox.appendChild(el('div','bonus-invalid','Usi esauriti per questa Fonte: l’effetto resta configurato ma non entra nella formula.'));}
+  if(st.applied){var lab='';params.forEach(function(p){if(p.key===row.target)lab=p.label;});var sm=el('div','bonus-applied-summary');sm.appendChild(el('div','bonus-applied-line',(st.here?'USATO · ':'PRONTO · ')+phaseEffectDisplayLine(row,pgIdx,faseIdx,fase,lab)));rbox.appendChild(sm);}
   rows.appendChild(rbox);
  });
  box.appendChild(rows);
- var add=el('button','small bonus-add','+ Aggiungi bonus');add.type='button';add.addEventListener(EVT,function(){arr.push(emptyPhaseEffect());render();});box.appendChild(add);
+
+ var add=el('button','small bonus-add','+ Aggiungi bonus manuale');add.type='button';add.addEventListener(EVT,function(){arr.push(emptyPhaseEffect());render();});box.appendChild(add);
  var summary=el('div','bonus-applied-summary'),has=false,usedPhase=phaseStartedValid(pgIdx,faseIdx);
  var bc=fase.bonusConoscenza?fase.bonusConoscenza[state.bonusC[pgIdx][faseIdx]]:0,bp=fase.bonusPozione?fase.bonusPozione[state.bonusP[pgIdx][faseIdx]]:0,legacy=state.extra[pgIdx][faseIdx]||0;
  if(bc){summary.appendChild(el('div','bonus-applied-line',(usedPhase?'CONOSCENZA USATA':'CONOSCENZA SELEZIONATA')+' → +'+bc+' POSSIBILITÀ · '+fase.nome.toUpperCase()));has=true;}
@@ -1396,10 +1578,11 @@ function buildPhaseEffectManager(pgIdx,faseIdx,fase){
  return box;
 }
 function buildFinalEffectsBox(){
- var box=el('div','final-effects-box');box.setAttribute('data-flow-part','outcome');box.appendChild(el('h4',null,'Oggetti, Pozioni e Conoscenze effettivamente utilizzati'));
+ var box=el('div','final-effects-box');box.setAttribute('data-flow-part','outcome');box.appendChild(el('h4',null,'Riepilogo effetti, Oggetti, Pozioni e Conoscenze'));
+ box.appendChild(el('div','note-line','Ricorda: eventuali malus con durata in post non esauriti entro questa role devono essere completati nella prima role successiva utile, fino al loro naturale termine.'));
  var count=0;
  state.pgs.forEach(function(pg,p){
-  (state.generalBonuses[p]||[]).forEach(function(r){var v=strictIntValue(r.value,true);if(r.active!==false&&String(r.source||'').trim()&&r.target&&v!==null&&v!==0&&generalWasUsed(p,r.target)){box.appendChild(el('p',null,pg.nome+' · '+generalLine(r)));count++;}});
+  (state.generalBonuses[p]||[]).forEach(function(r){var v=strictIntValue(r.value,true);if(r.active!==false&&String(r.source||'').trim()&&r.target&&v!==null&&v!==0&&generalWasUsed(p,r.target,r)){box.appendChild(el('p',null,pg.nome+' · '+generalLine(r)));count++;}});
   config.fasi.forEach(function(fase,fi){
    var usedPhase=phaseStartedValid(p,fi);
    var bc=fase.bonusConoscenza?fase.bonusConoscenza[state.bonusC[p][fi]]:0,bp=fase.bonusPozione?fase.bonusPozione[state.bonusP[p][fi]]:0,legacy=state.extra[p][fi]||0;
@@ -1409,7 +1592,7 @@ function buildFinalEffectsBox(){
    ((state.phaseEffects[p]&&state.phaseEffects[p][fi])||[]).forEach(function(r){if(r.consumedHere){var lab='';phaseParameterOptions(fase).forEach(function(x){if(x.key===r.target)lab=x.label;});box.appendChild(el('p',null,pg.nome+' · '+phaseEffectDisplayLine(r,p,fi,fase,lab)));count++;}});
   });
  });
- if(!count){box.style.display='none';}
+ if(!count){box.appendChild(el('p','muted','Nessun Oggetto, Pozione o Conoscenza risulta ancora consumato nelle prove registrate.'));}
  return box;
 }
 function decorateNumericFields(scope){
@@ -1435,6 +1618,7 @@ panel.addEventListener('keydown',function(e){
  if(['Backspace','Delete','Tab','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','Enter'].indexOf(e.key)!==-1)return;
  if(/^\d$/.test(e.key))return;
  if(e.key==='-'&&t.getAttribute('data-allow-negative')==='1'&&String(t.value||'').indexOf('-')===-1&&(typeof t.selectionStart!=='number'||t.selectionStart===0))return;
+ if((e.key==='.'||e.key===',')&&t.getAttribute('data-allow-decimal')==='1'&&String(t.value||'').indexOf('.')===-1&&String(t.value||'').indexOf(',')===-1)return;
  if(e.key.length===1)e.preventDefault();
 },true); 
  
@@ -1806,12 +1990,15 @@ var storedVal = state.vals[pgIdx][faseIdx][campo.key];
 inp.value = (storedVal !== undefined && storedVal !== null) ? storedVal : ''; 
 inp.placeholder = 'Inserisci valore'; 
 inp.min = '0'; 
-inp.step = '1'; 
+var allowHalf = campo.key === 'fatica';
+inp.step = allowHalf ? '0.5' : '1';
+if(allowHalf)inp.setAttribute('data-allow-decimal','1');
 var statFocusKey = 'stat-' + faseIdx + '-' + pgIdx + '-' + campo.key; 
 inp.setAttribute('data-focus-key', statFocusKey); 
 inp.addEventListener('input', function(){
 var rawStat=String(inp.value||'').trim(),previous=state.vals[pgIdx][faseIdx][campo.key];
-if(rawStat!==''&&!/^\d+$/.test(rawStat)){inp.value=(previous===undefined||previous===null)?'':String(previous);return;}
+var statOk=allowHalf?/^\d+(?:\.0|\.5)?$/.test(rawStat):/^\d+$/.test(rawStat);
+if(rawStat!==''&&!statOk){inp.value=(previous===undefined||previous===null)?'':String(previous);return;}
 var next=rawStat===''?null:Number(rawStat);
 if(previous===next)return;
 state.vals[pgIdx][faseIdx][campo.key]=next;
@@ -2721,19 +2908,19 @@ function pickerStatus(text,kind){var n=document.getElementById('rm-passage-statu
 function pickerPassageName(id){var c=passageConfigById(id);return c?c.titolo:'Passaggio';}
 function pickerSnapshot(){return {attempts:PASSAGE_PICKER.attempts,locked:PASSAGE_PICKER.locked,linked:PASSAGE_PICKER.linked,active:PASSAGE_PICKER.active,pending:PASSAGE_PICKER.pending,eligible:PASSAGE_PICKER.eligible,linkedConfirmed:PASSAGE_PICKER.linkedConfirmed,linkedChoice:PASSAGE_PICKER.linkedChoice,legacy:PASSAGE_PICKER.legacy};}
 function applyPassagePickerUi(){
- var attempts=document.getElementById('rm-passage-attempts');if(attempts)attempts.textContent='Determinazioni utilizzate: '+PASSAGE_PICKER.attempts+'/3'+(PASSAGE_PICKER.linked?' · Ricerca collegata':'');
+ var attempts=document.getElementById('rm-passage-attempts');if(attempts)attempts.textContent='Determinazioni utilizzate: '+PASSAGE_PICKER.attempts+'/4'+(PASSAGE_PICKER.linked?' · Ricerca collegata':'');
  var elig=document.getElementById('rm-participants-confirm');if(elig){elig.checked=!!PASSAGE_PICKER.eligible;elig.disabled=!!PASSAGE_PICKER.locked;}
  var lc=document.getElementById('rm-linked-confirm');if(lc){lc.checked=!!PASSAGE_PICKER.linkedConfirmed;lc.disabled=!!PASSAGE_PICKER.locked||PASSAGE_PICKER.attempts>0;}
  var ls=document.getElementById('rm-linked-passage');if(ls){ls.value=PASSAGE_PICKER.linkedChoice||'';ls.disabled=!!PASSAGE_PICKER.locked||PASSAGE_PICKER.attempts>0;}
  var lo=document.getElementById('rm-open-linked');if(lo)lo.disabled=!!PASSAGE_PICKER.locked||PASSAGE_PICKER.attempts>0;
- var confirm=document.getElementById('rm-confirm-passage');if(confirm)confirm.disabled=!!PASSAGE_PICKER.locked||!PASSAGE_PICKER.pending||PASSAGE_PICKER.attempts>=3;
- var ren=document.getElementById('rm-renounce-passage');if(ren)ren.disabled=!PASSAGE_PICKER.locked||(PASSAGE_PICKER.attempts>=3&&!PASSAGE_PICKER.linked);
- var choices=document.querySelectorAll('#d5choiceGrid button');Array.prototype.forEach.call(choices,function(b,idx){var id='p'+(idx+1);b.disabled=!!PASSAGE_PICKER.locked||PASSAGE_PICKER.attempts>=3;b.classList.toggle('active',PASSAGE_PICKER.pending===id&&!PASSAGE_PICKER.locked);});
+ var confirm=document.getElementById('rm-confirm-passage');if(confirm)confirm.disabled=!!PASSAGE_PICKER.locked||!PASSAGE_PICKER.pending||PASSAGE_PICKER.attempts>=4;
+ var ren=document.getElementById('rm-renounce-passage');if(ren)ren.disabled=!PASSAGE_PICKER.locked||(PASSAGE_PICKER.attempts>=4&&!PASSAGE_PICKER.linked);
+ var choices=document.querySelectorAll('#d5choiceGrid button');Array.prototype.forEach.call(choices,function(b,idx){var id='p'+(idx+1);b.disabled=!!PASSAGE_PICKER.locked||PASSAGE_PICKER.attempts>=4;b.classList.toggle('active',PASSAGE_PICKER.pending===id&&!PASSAGE_PICKER.locked);});
  Object.keys(REGISTRO_PASSAGGI).forEach(function(id){var rec=REGISTRO_PASSAGGI[id];if(!rec||!rec.tabBtn)return;rec.tabBtn.disabled=!(PASSAGE_PICKER.locked&&PASSAGE_PICKER.active===id);});
  if(PASSAGE_PICKER.locked&&PASSAGE_PICKER.active)attivaPassaggio(PASSAGE_PICKER.active);
 }
 function choosePassageCandidate(id){
- if(PASSAGE_PICKER.locked||PASSAGE_PICKER.attempts>=3||!passageConfigById(id))return;
+ if(PASSAGE_PICKER.locked||PASSAGE_PICKER.attempts>=4||!passageConfigById(id))return;
  PASSAGE_PICKER.pending=id;PASSAGE_PICKER.linkedChoice='';
  pickerStatus('Passaggio selezionato: '+pickerPassageName(id)+'. Conferma per renderlo definitivo per questo tentativo.','');
  applyPassagePickerUi();pickerNotify();
@@ -2747,15 +2934,15 @@ function rebuildPassage(id){
 }
 function rebuildAllPassages(){Object.keys(REGISTRO_PASSAGGI).forEach(function(id){rebuildPassage(id);});}
 function confirmPassageSelection(){
- if(PASSAGE_PICKER.locked||!PASSAGE_PICKER.pending||PASSAGE_PICKER.attempts>=3)return;
+ if(PASSAGE_PICKER.locked||!PASSAGE_PICKER.pending||PASSAGE_PICKER.attempts>=4)return;
  if(!PASSAGE_PICKER.eligible){pickerStatus('Conferma prima che la role coinvolga almeno 2 PG e che tutti siano Spezzaincantesimi e/o Acumen.','bad');return;}
  PASSAGE_PICKER.attempts++;PASSAGE_PICKER.active=PASSAGE_PICKER.pending;PASSAGE_PICKER.pending=null;PASSAGE_PICKER.locked=true;PASSAGE_PICKER.linked=false;PASSAGE_PICKER.linkedConfirmed=false;PASSAGE_PICKER.linkedChoice='';
- pickerStatus('Passaggio confermato: '+pickerPassageName(PASSAGE_PICKER.active)+(PASSAGE_PICKER.attempts>=3?' · terza determinazione: non è possibile rinunciare nuovamente.':''),'ok');
+ pickerStatus('Passaggio confermato: '+pickerPassageName(PASSAGE_PICKER.active)+(PASSAGE_PICKER.attempts>=4?' · quarta determinazione: hai utilizzato tutte e 3 le rinunce consentite.':''),'ok');
  applyPassagePickerUi();pickerNotify();
 }
 function renouncePassage(){
  if(!PASSAGE_PICKER.locked||!PASSAGE_PICKER.active)return;
- if(PASSAGE_PICKER.attempts>=3&&!PASSAGE_PICKER.linked){pickerStatus('Hai già utilizzato 3 determinazioni: questo Passaggio è definitivo per la role.','bad');return;}
+ if(PASSAGE_PICKER.attempts>=4&&!PASSAGE_PICKER.linked){pickerStatus('Hai già utilizzato le 3 rinunce consentite: questo Passaggio è definitivo per la role.','bad');return;}
  var old=PASSAGE_PICKER.active;try{if(typeof window.RicercaMaledizioniClearPassageActions==='function')window.RicercaMaledizioniClearPassageActions(old);}catch(e){}
  rebuildPassage(old);PASSAGE_PICKER.active=null;PASSAGE_PICKER.pending=null;PASSAGE_PICKER.locked=false;PASSAGE_PICKER.linked=false;PASSAGE_PICKER.linkedConfirmed=false;PASSAGE_PICKER.linkedChoice='';
  pickerStatus('Rinuncia registrata. Scegli un nuovo Passaggio e confermalo; le informazioni del Passaggio rinunciato sono state azzerate.','');
@@ -2776,7 +2963,7 @@ function resetPassagePicker(all){
  pickerStatus('Scegli uno dei cinque Passaggi qui sopra, liberamente oppure in base al risultato del tuo 1d5, quindi conferma.','');applyPassagePickerUi();
 }
 function restorePassagePicker(state){
- state=state||{};PASSAGE_PICKER={attempts:Math.max(0,Math.min(3,parseInt(state.attempts,10)||0)),locked:!!state.locked,linked:!!state.linked,active:passageConfigById(state.active)?state.active:null,pending:passageConfigById(state.pending)?state.pending:null,eligible:!!state.eligible,linkedConfirmed:!!state.linkedConfirmed,linkedChoice:passageConfigById(state.linkedChoice)?state.linkedChoice:'',legacy:!!state.legacy};
+ state=state||{};PASSAGE_PICKER={attempts:Math.max(0,Math.min(4,parseInt(state.attempts,10)||0)),locked:!!state.locked,linked:!!state.linked,active:passageConfigById(state.active)?state.active:null,pending:passageConfigById(state.pending)?state.pending:null,eligible:!!state.eligible,linkedConfirmed:!!state.linkedConfirmed,linkedChoice:passageConfigById(state.linkedChoice)?state.linkedChoice:'',legacy:!!state.legacy};
  if(PASSAGE_PICKER.active)PASSAGE_PICKER.locked=true;
  pickerStatus(PASSAGE_PICKER.active?((PASSAGE_PICKER.linked?'Ricerca collegata: ':'Passaggio attivo: ')+pickerPassageName(PASSAGE_PICKER.active)):'Scegli uno dei cinque Passaggi e conferma.','');applyPassagePickerUi();
 }
@@ -2911,9 +3098,9 @@ avviaRicerca();
 </script> 
  
  
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script type="text/javascript"></script> 
+<script type="text/javascript"></script> 
+<script type="text/javascript"></script> 
 <script type="text/javascript"> 
 (function(){ 
 'use strict'; 
@@ -2996,7 +3183,7 @@ function actionFromEvent(e){
  if(e.type==='click'){
   var b=target.closest?target.closest('button'):null;if(!b||!w.contains(b)||isCopyButton(b))return null;
   var pid=passageIdFromButton(b),flowBtn=b.getAttribute&&b.getAttribute('data-flow-page-btn')==='1';
-  if(!pid&&!b.classList.contains('add-pg')&&!b.classList.contains('remove-pg')&&!b.classList.contains('bonus-add')&&!b.classList.contains('bonus-remove')&&!flowBtn)return null;
+  if(!pid&&!b.classList.contains('add-pg')&&!b.classList.contains('remove-pg')&&!b.classList.contains('bonus-add')&&!b.classList.contains('bonus-remove')&&!b.classList.contains('bonus-end')&&!flowBtn)return null;
   return {type:'click',loc:elementPath(b),passageId:pid||''};
  }
  if(['INPUT','SELECT','TEXTAREA'].indexOf(target.tagName)===-1||target.readOnly)return null;
@@ -3009,9 +3196,10 @@ function recordableNumericInput(target){
  if(!target||target.tagName!=='INPUT'||target.type!=='number')return true;
  var raw=String(target.value||'').trim();
  if(raw==='')return true;
- var allowNegative=target.getAttribute('data-allow-negative')==='1';
- if(!(allowNegative?/^-?\d+$/.test(raw):/^\d+$/.test(raw)))return false;
- var n=Number(raw);if(!Number.isSafeInteger(n))return false;
+ var allowNegative=target.getAttribute('data-allow-negative')==='1',allowDecimal=target.getAttribute('data-allow-decimal')==='1';
+ var ok=allowDecimal?(allowNegative?/^-?\d+(?:\.0|\.5)?$/.test(raw):/^\d+(?:\.0|\.5)?$/.test(raw)):(allowNegative?/^-?\d+$/.test(raw):/^\d+$/.test(raw));
+ if(!ok)return false;
+ var n=Number(raw);if(!Number.isFinite(n)||(allowDecimal?Math.round(n*2)!==n*2:!Number.isSafeInteger(n)))return false;
  var min=target.min!==''?Number(target.min):null,max=target.max!==''?Number(target.max):null;
  if(min!==null&&isFinite(min)&&n<min)return false;
  if(max!==null&&isFinite(max)&&n>max)return false;
@@ -3057,7 +3245,7 @@ function legacyPassageFromActions(actions,data){
  return '';
 }
 function migratePickerState(data){
- if(data&&data.passagePicker&&['v6','v7','v8','v9','v10','v11','v12','v13','v14','v15','v16','v17','v18','v19'].indexOf(String(data.toolVersion||''))!==-1){window.RicercaMaledizioniPicker.restore(data.passagePicker);return;}
+ if(data&&data.passagePicker&&['v6','v7','v8','v9','v10','v11','v12','v13','v14','v15','v16','v17','v18','v19','v20','v21'].indexOf(String(data.toolVersion||''))!==-1){window.RicercaMaledizioniPicker.restore(data.passagePicker);return;}
  var pid=legacyPassageFromActions(SESSION_ACTIONS,data);
  if(pid){window.RicercaMaledizioniPicker.restore({attempts:1,locked:true,linked:false,active:pid,pending:null,eligible:true,legacy:true});}
  else{window.RicercaMaledizioniPicker.restore({attempts:0,locked:false,active:null,eligible:false,legacy:true});}
@@ -3091,7 +3279,7 @@ function applyWorkspaceReadOnlyLocks(){
 function setWorkspaceReadOnly(ro){var next=!!ro;if(!next)clearWorkspaceReadOnlyLocks();SESSION_READONLY=next;if(SESSION_READONLY)applyWorkspaceReadOnlyLocks();updateToolbar();}
 function payload(){
  var pid=selectedPassageId(),name=primaryPgName(),picker={};try{picker=window.RicercaMaledizioniPicker?window.RicercaMaledizioniPicker.state():{};}catch(e){}
- return {ownerUid:CURRENT_SESSION_DATA.ownerUid,initialPgName:CURRENT_SESSION_DATA.initialPgName||name,pgName:name,tipoPassaggio:pid?(PASSAGE_NAMES[pid]||'Passaggio'):'',passaggioId:pid||'',updatedAt:firebase.firestore.FieldValue.serverTimestamp(),toolVersion:'v19',passagePicker:picker,actionLog:SESSION_ACTIONS};
+ return {ownerUid:CURRENT_SESSION_DATA.ownerUid,initialPgName:CURRENT_SESSION_DATA.initialPgName||name,pgName:name,tipoPassaggio:pid?(PASSAGE_NAMES[pid]||'Passaggio'):'',passaggioId:pid||'',updatedAt:firebase.firestore.FieldValue.serverTimestamp(),toolVersion:'v21',passagePicker:picker,actionLog:SESSION_ACTIONS};
 }
 function scheduleSave(){
  if(RESTORING_SESSION||SESSION_READONLY||SESSION_DELETING||!CURRENT_SESSION||!sessionCanEdit(CURRENT_SESSION_DATA))return;
@@ -3169,7 +3357,7 @@ function createSession(){
  if(!name){setStatus('session-home-msg','Inserisci prima il nome del PG principale.','bad');if(inp)inp.focus();return;}
  if(!FB.user){setStatus('session-home-msg','Firebase non è ancora pronto. Riprova tra un momento.','bad');return;}
  setCreatingSession(true);setStatus('session-home-msg','Creazione della Ricerca…','');
- var data={ownerUid:FB.user.uid,initialPgName:name,pgName:name,tipoPassaggio:'',passaggioId:'',createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp(),toolVersion:'v19',passagePicker:{attempts:0,locked:false,linked:false,active:null,pending:null,eligible:false,linkedConfirmed:false,linkedChoice:'',legacy:false},actionLog:[]};
+ var data={ownerUid:FB.user.uid,initialPgName:name,pgName:name,tipoPassaggio:'',passaggioId:'',createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp(),toolVersion:'v21',passagePicker:{attempts:0,locked:false,linked:false,active:null,pending:null,eligible:false,linkedConfirmed:false,linkedChoice:'',legacy:false},actionLog:[]};
  FB.db.collection(SESSION_COLLECTION).add(data).then(function(ref){
   setCreatingSession(false);if(inp)inp.value='';var now=null;try{now=firebase.firestore.Timestamp.now();}catch(e){}
   var localData=Object.assign({},data,{createdAt:now,updatedAt:now});setSessionHash(ref.id);
