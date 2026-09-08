@@ -1814,38 +1814,22 @@ function summaryData(){
 }
 function phasePlainName(fase){ return String(fase.nome||'').replace(/^Fase\s+[IVX]+:\s*/i,''); }
 function summaryHtml(){
- var sd=summaryData();
  var h='<h3>Situazione iniziale — '+config.titolo+'</h3>';
  h+='<div class="flow-summary-section"><p><b>Passaggio:</b> '+config.titolo+'</p><p><b>Partecipanti:</b> '+state.pgs.map(function(p){return p.nome;}).join(' · ')+'</p></div>';
- h+='<div class="flow-summary-section"><b>Parametri e struttura delle Fasi</b><ul>';
+ h+='<div class="flow-summary-section"><b>Struttura essenziale delle Fasi</b><ul>';
  config.fasi.forEach(function(f,i){
   var pars=f.campi.map(function(c){return c.label;}).join(', ');
   h+='<li><b>Fase '+(i+1)+':</b> '+phasePlainName(f)+' — '+pars+' — 1d'+f.dado+'</li>';
  });
- h+='</ul><p>I bonus generali ai Parametri sono già inclusi nelle stime quando configurati. Conoscenze, Pozioni e Oggetti/Borsa di Fase vengono considerati soltanto quando realmente applicati; i bonus/malus derivanti dagli esiti delle Fasi precedenti non vengono anticipati.</p></div>';
- var any=sd.phaseEst.some(function(x){return !!x;});
- if(any){
-  h+='<div class="flow-summary-section"><b>Impatto previsto sulle Fasi</b><ul>';
-  sd.phaseEst.forEach(function(x,i){h+='<li>Fase '+(i+1)+': '+(x?x.label:'non ancora stimabile')+'</li>';});
-  h+='</ul></div>';
- }
- if(sd.overall){
-  h+='<div class="flow-difficulty"><b>Difficoltà complessiva stimata del Passaggio:</b> '+sd.overall.label+'<br><span class="muted">Stima di base calcolata sulle soglie attualmente inserite nelle tre Fasi, senza presumere bonus o malus che dipendono da esiti futuri.</span></div>';
- }
+ h+='</ul></div>';
  return h;
 }
 function summaryForumText(){
- var sd=summaryData(), out='[spoiler=Situazione iniziale della Ricerca Maledizioni]\n';
+ var out='[spoiler=Situazione iniziale della Ricerca Maledizioni]\n';
  out+='<b>Passaggio:</b> '+config.titolo+'\n';
  out+='<b>Partecipanti:</b> '+state.pgs.map(function(p){return p.nome;}).join(' · ')+'\n\n';
- out+='<b>Parametri e struttura delle Fasi</b>\n';
+ out+='<b>Struttura essenziale delle Fasi</b>\n';
  config.fasi.forEach(function(f,i){out+='• Fase '+(i+1)+': '+phasePlainName(f)+' — '+f.campi.map(function(c){return c.label;}).join(', ')+' — 1d'+f.dado+'\n';});
- var any=sd.phaseEst.some(function(x){return !!x;});
- if(any){
-  out+='\n<b>Impatto previsto sulle Fasi</b>\n';
-  sd.phaseEst.forEach(function(x,i){out+='• Fase '+(i+1)+': '+(x?x.label:'non ancora stimabile')+'\n';});
- }
- if(sd.overall){out+='\n<b>Difficoltà complessiva stimata del Passaggio:</b> '+sd.overall.label+'\nStima di base sulle soglie attualmente inserite, senza presumere bonus o malus derivanti da esiti futuri.\n';}
  out+='[/spoiler]';
  return out;
 }
@@ -3245,7 +3229,7 @@ function legacyPassageFromActions(actions,data){
  return '';
 }
 function migratePickerState(data){
- if(data&&data.passagePicker&&['v6','v7','v8','v9','v10','v11','v12','v13','v14','v15','v16','v17','v18','v19','v20','v21'].indexOf(String(data.toolVersion||''))!==-1){window.RicercaMaledizioniPicker.restore(data.passagePicker);return;}
+ if(data&&data.passagePicker&&['v6','v7','v8','v9','v10','v11','v12','v13','v14','v15','v16','v17','v18','v19','v20','v21','v22'].indexOf(String(data.toolVersion||''))!==-1){window.RicercaMaledizioniPicker.restore(data.passagePicker);return;}
  var pid=legacyPassageFromActions(SESSION_ACTIONS,data);
  if(pid){window.RicercaMaledizioniPicker.restore({attempts:1,locked:true,linked:false,active:pid,pending:null,eligible:true,legacy:true});}
  else{window.RicercaMaledizioniPicker.restore({attempts:0,locked:false,active:null,eligible:false,legacy:true});}
@@ -3279,7 +3263,7 @@ function applyWorkspaceReadOnlyLocks(){
 function setWorkspaceReadOnly(ro){var next=!!ro;if(!next)clearWorkspaceReadOnlyLocks();SESSION_READONLY=next;if(SESSION_READONLY)applyWorkspaceReadOnlyLocks();updateToolbar();}
 function payload(){
  var pid=selectedPassageId(),name=primaryPgName(),picker={};try{picker=window.RicercaMaledizioniPicker?window.RicercaMaledizioniPicker.state():{};}catch(e){}
- return {ownerUid:CURRENT_SESSION_DATA.ownerUid,initialPgName:CURRENT_SESSION_DATA.initialPgName||name,pgName:name,tipoPassaggio:pid?(PASSAGE_NAMES[pid]||'Passaggio'):'',passaggioId:pid||'',updatedAt:firebase.firestore.FieldValue.serverTimestamp(),toolVersion:'v21',passagePicker:picker,actionLog:SESSION_ACTIONS};
+ return {ownerUid:CURRENT_SESSION_DATA.ownerUid,initialPgName:CURRENT_SESSION_DATA.initialPgName||name,pgName:name,tipoPassaggio:pid?(PASSAGE_NAMES[pid]||'Passaggio'):'',passaggioId:pid||'',updatedAt:firebase.firestore.FieldValue.serverTimestamp(),toolVersion:'v22',passagePicker:picker,actionLog:SESSION_ACTIONS};
 }
 function scheduleSave(){
  if(RESTORING_SESSION||SESSION_READONLY||SESSION_DELETING||!CURRENT_SESSION||!sessionCanEdit(CURRENT_SESSION_DATA))return;
@@ -3357,7 +3341,7 @@ function createSession(){
  if(!name){setStatus('session-home-msg','Inserisci prima il nome del PG principale.','bad');if(inp)inp.focus();return;}
  if(!FB.user){setStatus('session-home-msg','Firebase non è ancora pronto. Riprova tra un momento.','bad');return;}
  setCreatingSession(true);setStatus('session-home-msg','Creazione della Ricerca…','');
- var data={ownerUid:FB.user.uid,initialPgName:name,pgName:name,tipoPassaggio:'',passaggioId:'',createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp(),toolVersion:'v21',passagePicker:{attempts:0,locked:false,linked:false,active:null,pending:null,eligible:false,linkedConfirmed:false,linkedChoice:'',legacy:false},actionLog:[]};
+ var data={ownerUid:FB.user.uid,initialPgName:name,pgName:name,tipoPassaggio:'',passaggioId:'',createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp(),toolVersion:'v22',passagePicker:{attempts:0,locked:false,linked:false,active:null,pending:null,eligible:false,linkedConfirmed:false,linkedChoice:'',legacy:false},actionLog:[]};
  FB.db.collection(SESSION_COLLECTION).add(data).then(function(ref){
   setCreatingSession(false);if(inp)inp.value='';var now=null;try{now=firebase.firestore.Timestamp.now();}catch(e){}
   var localData=Object.assign({},data,{createdAt:now,updatedAt:now});setSessionHash(ref.id);
